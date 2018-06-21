@@ -2,7 +2,6 @@
 
 
 const pu = require('promisefy-util');
-let config = require('./config.js');
 const BigNumber = require('bignumber.js');
 const wanUtil = require("wanchain-util");
 const keythereum = require("keythereum");
@@ -15,7 +14,8 @@ let messageFactory = require('./webSocket/messageFactory.js');
 let socketServer = require("./wanchainsender/index.js").socketServer;
 let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let keystoreDir = require('wanchain-keystore').keystoreDir;
-const logger = config.logDebug.getLogger("crossChain util");
+let logger;
+let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
@@ -36,17 +36,19 @@ const Backend = {
         let gwei = wei.dividedBy(exp.pow(9));
         return  gwei.toString(10);
     },
-    EthKeyStoreDir: new keystoreDir(config.ethKeyStorePath),
-    WanKeyStoreDir: new keystoreDir(config.wanKeyStorePath),
-
+    getConfig(){
+        return config;
+    },
     async init(cfg,ethsender, wansender,cb){
-        config = cfg? cfg:config;
+        config = cfg? cfg:require('.config.js');
+		this.EthKeyStoreDir =  new keystoreDir(config.ethKeyStorePath),
+		this.WanKeyStoreDir =  new keystoreDir(config.wanKeyStorePath),
         this.ethSender = ethsender;
         this.wanSender = wansender;
         if(config.useLocalNode && !this.web3Sender){
             this.web3Sender =  this.createrWeb3Sender(config.rpcIpcPath);
         }
-
+        logger = config.logDebug.getLogger("crossChain util");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
         global.lockedTime = await this.getEthLockTime(this.ethSender);

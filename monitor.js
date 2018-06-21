@@ -2,7 +2,7 @@
 
 
 const pu = require('promisefy-util');
-let config = require('./config.js');
+let config;
 let crosschain = require('./dbDefine/crossTransDefine.js');
 const wanUtil = require("wanchain-util");
 
@@ -20,7 +20,7 @@ const MonitorRecord = {
     },
 
     async init(cfg, ethSender, wanSender){
-        config = cfg? cfg:config;
+        config = cfg? cfg:require('./config.js');
         logger = config.logDebug.getLogger("monitorRecord");
         backendConfig.ethGroupAddr = config.originalChainHtlc;
         backendConfig.wethGroupAddr = config.wanchainHtlcAddr;
