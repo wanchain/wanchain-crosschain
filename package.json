@@ -1,0 +1,15 @@
+{
+  "name": "wanchain-crosschain",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "wanchain-keystore": "^0.0.1",
+    "log4js": "^2.5.3"
+  },
+  "author": "zhanglihua-wanglu",
+  "license": "MIT"
+}
