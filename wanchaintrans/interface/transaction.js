@@ -2,6 +2,7 @@ const errMsg = require("./ErrorMessage.js");
 let wanUtil = require('wanchain-util');
 var Tx = wanUtil.wanchainTx;
 let EthTx = require('ethereumjs-tx');
+let ethUtil = require('ethereumjs-util');
 class ITrans {
     constructor()
     {
@@ -57,7 +58,7 @@ class ITrans {
                 return true;
             if(/^0x[0-9A-F]{40}$/.test(address))
                 return true;
-            return wanUtil.toChecksumAddress(address) == address;
+            return (wanUtil.toChecksumAddress(address) === address)||(ethUtil.toChecksumAddress(address)===address);
         }
         else
         {

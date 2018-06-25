@@ -268,7 +268,7 @@ const Backend = {
         return p;
     },
     getEthW2cRatio(sender){
-        let p = pu.promisefy(sender.sendMessage, ['getWan2CoinRatio','ETH'], sender);
+        let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','ETH'], sender);
         return p;
     },
     getEthBalance(sender, addr) {

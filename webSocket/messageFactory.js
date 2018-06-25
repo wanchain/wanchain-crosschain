@@ -42,8 +42,8 @@ module.exports = {
     getScVar( scAddr, name,abi,chainType,callBack){
         return new socketmessage('getScVar',{scAddr:scAddr, name:name,abi:abi},'value',chainType,callBack);
     },
-    getWan2CoinRatio(crossChain, chainType, callBack){
-        return new socketmessage('getWan2CoinRatio',{crossChain:crossChain},'w2cRatio',chainType,callBack);
+    getCoin2WanRatio(crossChain, chainType, callBack){
+        return new socketmessage('getCoin2WanRatio',{crossChain:crossChain},'w2cRatio',chainType,callBack);
     },
     monitorLog(address,topics,chainType,callBack){
         return new socketmessage('monitorLog',{address:address,topics:topics},'logs',chainType,callBack);
