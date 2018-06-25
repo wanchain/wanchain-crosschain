@@ -52,7 +52,7 @@ const Backend = {
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
         global.lockedTime = await this.getEthLockTime(this.ethSender);
-        global.w2cRatio = await this.getEthW2cRatio(this.ethSender);
+        global.c2wRatio = await this.getEthC2wRatio(this.ethSender);
         if(cb)cb();
     },
 
@@ -267,7 +267,7 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getScVar', config.originalChainHtlc, 'lockedTime',config.HTLCETHInstAbi], sender);
         return p;
     },
-    getEthW2cRatio(sender){
+    getEthC2wRatio(sender){
         let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','ETH'], sender);
         return p;
     },
@@ -294,9 +294,9 @@ const Backend = {
         let v = new BigNumber(value);
         let wei = v.mul(exp.pow(18));
 
-        const wan2CoinRatio = global.w2cRatio;
+        const coin2WanRatio = global.c2wRatio;
         const txFeeratio = 1;
-        let fee = wei * wan2CoinRatio * txFeeratio / 1000 / 1000;
+        let fee = wei * coin2WanRatio * txFeeratio / 1000 / 1000;
         return fee;
     },
     async sendWanHash(sender, tx) {
