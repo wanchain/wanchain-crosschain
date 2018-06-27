@@ -117,7 +117,7 @@ const MonitorRecord = {
 
     monitorTask(){
         let collection = this.getDbCollection();
-        let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished'] } });
+        let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;
         logger.debug('handlingList length is ', handlingList.length);
@@ -206,6 +206,23 @@ const MonitorRecord = {
             console.log("checkHashConfirm:", err);
         }
     },
+    async checkHashReceiptOnline(record){
+        try {
+            let sender = this.getSenderbyChain(record.chain);
+            let receipt = await this.monitorTxConfirm(sender, record.lockTxHash, 0);
+
+            if(receipt){
+                if(receipt.status === '0x1'){
+                    record.status = 'sentHashConfirming';
+                }else{
+                    record.status = 'sentHashFailed';
+                }
+                this.updateRecord(record);
+            }
+        }catch(err){
+            //console.log("checkHashReceiptOnline:", err);
+        }
+    },
     async checkXConfirm(record, waitBlocks){
         try {
             let chain = record.chain=='ETH'?"WAN":"ETH";
@@ -259,6 +276,9 @@ const MonitorRecord = {
     },
 
     async checkHashTimeout( record){
+        if(record.status === "sentHashFailed") {
+            return false;
+        }
         if(record.status == "waitingRevoke,"
             || record.status =="sentRevokePending"
             || record.status =="sentRevokeConfirming"){
@@ -315,7 +335,8 @@ const MonitorRecord = {
         //logger.debug("record status is ", record.status);
         switch(record.status) {
             case 'sentHashPending':
-                await this.checkOriginLockOnline(record);
+                //await this.checkOriginLockOnline(record);
+                await this.checkHashReceiptOnline(record);
                 break;
             case 'sentHashConfirming':
                 waitBlock = record.lockConfirmed < config.confirmBlocks ? record.lockConfirmed: config.confirmBlocks;

@@ -30,7 +30,7 @@ module.exports = {
                 time : '',
                 HTLCtime : '',
                 chain : '',
-                status: '', // sentHashPending, sentHashConfirming, waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
+                status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
                             //                                                              waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
                 lockConfirmed:0,
                 refundConfirmed:0,
