@@ -40,9 +40,9 @@ const Backend = {
         return config;
     },
     async init(cfg,ethsender, wansender,cb){
-        config = cfg? cfg:require('.config.js');
-		this.EthKeyStoreDir =  new keystoreDir(config.ethKeyStorePath),
-		this.WanKeyStoreDir =  new keystoreDir(config.wanKeyStorePath),
+        config = cfg? cfg:require('./config.js');
+        this.EthKeyStoreDir =  new keystoreDir(config.ethKeyStorePath),
+        this.WanKeyStoreDir =  new keystoreDir(config.wanKeyStorePath),
         this.ethSender = ethsender;
         this.wanSender = wansender;
         if(config.useLocalNode && !this.web3Sender){
