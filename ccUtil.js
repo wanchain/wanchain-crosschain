@@ -302,8 +302,7 @@ const Backend = {
     async sendWanHash(sender, tx) {
         let newTrans = this.createSender(sender);
         newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
-        let txValue= web3.toWei(tx.value);
-        newTrans.trans.setValue(txValue);
+        newTrans.trans.setValue(tx.value);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
