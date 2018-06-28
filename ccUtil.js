@@ -51,8 +51,8 @@ const Backend = {
         logger = config.logDebug.getLogger("crossChain util");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
-        global.lockedTime = await this.getEthLockTime(this.ethSender);
-        global.c2wRatio = await this.getEthC2wRatio(this.ethSender);
+        global.lockedTime = await this.getEthLockTime(this.wanSender);
+        this.c2wRatio = await this.getEthC2wRatio(this.wanSender);
         if(cb)cb();
     },
 
@@ -299,25 +299,10 @@ const Backend = {
         //let fee = wei.mul(new BigNumber(coin2WanRatio)).mul(new BigNumber(txFreeRatio)).div(new BigNumber(DEFAULT_PRECISE)).div(new BigNumber(DEFAULT_PRECISE));
         return '0x'+fee.toString(16);
     },
-    caculateWithdrawFee(value){
-        let exp = new BigNumber(10);
-        let v = new BigNumber(value);
-        let wei = v.mul(exp.pow(18));
-
-        const coin2WanRatio = global.c2wRatio;
-        const txFeeratio = 1;
-        let fee = wei * coin2WanRatio * txFeeratio / 1000 / 1000;
-        return fee;
-    },
     async sendWanHash(sender, tx) {
         let newTrans = this.createSender(sender);
         newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
-        let txValue;
-        if(!tx.value){
-            txValue = this.caculateWithdrawFee(tx.amount);
-        }else{
-            txValue = web3.toWei(tx.value)
-        }
+        let txValue= web3.toWei(tx.value);
         newTrans.trans.setValue(txValue);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
