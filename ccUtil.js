@@ -51,7 +51,7 @@ const Backend = {
         logger = config.logDebug.getLogger("crossChain util");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
-        global.lockedTime = await this.getEthLockTime(this.wanSender);
+        global.lockedTime = await this.getEthLockTime(this.ethSender);
         this.c2wRatio = await this.getEthC2wRatio(this.wanSender);
         if(cb)cb();
     },
