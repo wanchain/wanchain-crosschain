@@ -50,25 +50,23 @@ module.exports = class sendTransaction{
 
     createRefundFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
         let self = this;
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let lockTrans = collection.findOne({lockTxHash : lockTxHash});
-            if(lockTrans) {
-                self.createTransaction(lockTrans.crossAdress, tokenAddress, amountWan, storeman,
-                    wanAddress, gas, gasPriceGwei, crossType, nonce);
-                self.trans.setKey(lockTrans.x);
-            }
-        });
+        let collection = global.getCollection(dbname,'crossTransaction');
+        let lockTrans = collection.findOne({lockTxHash : lockTxHash});
+        if(lockTrans) {
+            self.createTransaction(lockTrans.crossAdress, tokenAddress, amountWan, storeman,
+                wanAddress, gas, gasPriceGwei, crossType, nonce);
+            self.trans.setKey(lockTrans.x);
+        }
     }
     createRevokeFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
         let self = this;
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let lockTrans = collection.findOne({lockTxHash : lockTxHash});
-            if(lockTrans) {
-                self.createTransaction(lockTrans.from, tokenAddress, amountWan, storeman,
-                    wanAddress, gas, gasPriceGwei, crossType, nonce);
-                self.trans.setKey(lockTrans.x);
-            }
-        });
+        let collection = global.getCollection(dbname,'crossTransaction');
+        let lockTrans = collection.findOne({lockTxHash : lockTxHash});
+        if(lockTrans) {
+            self.createTransaction(lockTrans.from, tokenAddress, amountWan, storeman,
+                wanAddress, gas, gasPriceGwei, crossType, nonce);
+            self.trans.setKey(lockTrans.x);
+        }
     }
 
     sendLockTrans(password,callback){
