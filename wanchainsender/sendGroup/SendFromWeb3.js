@@ -30,13 +30,4 @@ module.exports = class SendFromWeb3{
     getBalance(address,callBack){
         this.web3.eth.getBalance(address,callBack);
     }
-    getStoremanGroups(){
-        /*
-        let tokenAddress = laojiaAddress;
-        laojiaAbi = [];
-        this.web3.contract.at(laojiaAbi);
-        aaa.laojiaAbi
-        this.web3.eth.getBalance(address,callBack);
-        */
-    }
 }
