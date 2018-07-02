@@ -289,14 +289,14 @@ const Backend = {
         }
         return ps;
     },
-    calculateLocWanFee(value,coin2WanRatio,txFreeRatio){
+    calculateLocWanFee(value,coin2WanRatio,txFeeRatio){
         let exp     = new BigNumber(10);
         let v       = new BigNumber(value);
         let wei     = v.mul(exp.pow(18));
 
         const DEFAULT_PRECISE = 10000;
-        let fee = wei.mul(coin2WanRatio).mul(txFreeRatio).div(DEFAULT_PRECISE).div(DEFAULT_PRECISE);
-        //let fee = wei.mul(new BigNumber(coin2WanRatio)).mul(new BigNumber(txFreeRatio)).div(new BigNumber(DEFAULT_PRECISE)).div(new BigNumber(DEFAULT_PRECISE));
+        let fee = wei.mul(coin2WanRatio).mul(txFeeRatio).div(DEFAULT_PRECISE).div(DEFAULT_PRECISE);
+        //let fee = wei.mul(new BigNumber(coin2WanRatio)).mul(new BigNumber(txFeeRatio)).div(new BigNumber(DEFAULT_PRECISE)).div(new BigNumber(DEFAULT_PRECISE));
         return '0x'+fee.toString(16);
     },
     async sendWanHash(sender, tx) {
