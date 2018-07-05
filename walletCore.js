@@ -1,6 +1,5 @@
 let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let sendTransaction = require('./cross_send/sendTransaction.js');
-let wanDbDefine = require('./dbDefine/wanDbDefine.js');
 let crosschain = require('./dbDefine/crossTransDefine.js');
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
 const sendFromWeb3 = require("./wanchainsender/index.js").SendFromWeb3;
@@ -23,7 +22,7 @@ async function recordMonitor(config, ethSend,wanSend){
     }
 }
 class walletcore  {
-    constructor(config,callBack){
+    constructor(config){
         this.socketUrl = config.socketUrl;
         this.wanSend = new sendFromSocket(null,'WAN');
         this.ethSend = new sendFromSocket(null,'ETH');
@@ -84,9 +83,6 @@ class walletcore  {
                 });
             })
         });
-    }
-    createSender(sender){
-        return new sendTransaction(sender);
     }
     createSendTransaction(ChainType){
         let sendGroup = ChainType == 'ETH' ? this.ethSend : this.wanSend;

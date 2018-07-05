@@ -1,4 +1,6 @@
-const errMsg = require("./ErrorMessage.js");
+'use strict';
+
+const Err_Address =  'Address check error';
 let wanUtil = require('wanchain-util');
 var Tx = wanUtil.wanchainTx;
 let EthTx = require('ethereumjs-tx');
@@ -27,7 +29,7 @@ class ITrans {
         }
         else
         {
-            console.log(errMsg.Err_Address + ": " + from);
+            console.log(Err_Address + ": " + from);
         }
     }
     setTo(to)
@@ -38,7 +40,7 @@ class ITrans {
         }
         else
         {
-            console.log(errMsg.Err_Address + ": " + to);
+            console.log(Err_Address + ": " + to);
         }
 
     }

@@ -1,10 +1,4 @@
 exports.IContract = require('./contract/IContract.js');
-exports.IParseContract = require('./contract/IParseContract.js');
-exports.tokenContract = require('./contract/tokenContract.js');
-exports.wanContract = require('./contract/wanContract.js').wanContract;
-exports.PrivacyContract = require('./contract/wanContract.js').PrivacyContract;
-exports.refundOTAContract = require('./contract/wanContract.js').refundOTAContract;
-exports.stampContract = require('./contract/wanContract.js').stampContract;
 
 exports.hashContract = require('./cross_contract/hashContract.js');
 

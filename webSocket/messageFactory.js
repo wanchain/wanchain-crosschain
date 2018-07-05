@@ -51,7 +51,4 @@ module.exports = {
     getTransactionConfirm(txHash,waitBlocks, chainType,callBack){
         return new socketmessage('getTransactionConfirm',{txHash:txHash, waitBlocks:waitBlocks},'receipt',chainType,callBack);
     },
-    getGasPrice(chainType,callBack){
-        return new socketmessage('getGasPrice',{},'gasPrice',chainType,callBack);
-    },
 }

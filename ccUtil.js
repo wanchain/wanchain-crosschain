@@ -56,14 +56,16 @@ const Backend = {
         if(cb)cb();
     },
 
-    createSender(sender){
+    createTrans(sender){
         return new sendTransaction(sender);
     },
 
     getCollection(dbName,collectionName){
         return databaseGroup.getCollection(dbName,collectionName);
     },
-
+    getCrossdbCollection() {
+        return this.getCollection(config.crossDbname,config.crossCollection);
+    },
     async getSenderbyChain(chainType){
         let sender;
         if(chainType == 'web3'){
@@ -185,9 +187,7 @@ const Backend = {
         return keyObject.address;
     },
     getTxHistory(option) {
-        //if(! this.collection){
-            this.collection = this.getCollection(config.crossDbname,config.crossCollection);
-        //}
+        this.collection = this.getCrossdbCollection();
         let Data = this.collection.find(option);
         let his = [];
         for(var i=0;i<Data.length;++i){
@@ -197,20 +197,20 @@ const Backend = {
         return his;
     },
     async sendEthHash(sender, tx) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction(tx.from, config.originalChainHtlc,tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'ETH2WETH',tx.nonce);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
     async sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction(from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
         return txhash;
     },
     async sendEthCancel(sender, from,gas,gasPrice,x, passwd, nonce) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction(from, config.originalChainHtlc,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
@@ -225,6 +225,11 @@ const Backend = {
         let topics = ['0x'+wanUtil.sha3(config.withdrawOriginLockEvent).toString('hex'), null, null, hashX];
         let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
         return b;
+    },
+    getWithdrawRevokeEvent(sender, hashX) {
+        let topics = ['0x'+wanUtil.sha3(config.withdrawOriginRevokeEvent).toString('hex'), null,  hashX];
+        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
+        return p;
     },
     getWithdrawCrossLockEvent(sender, hashX) {
         let topics = ['0x'+wanUtil.sha3(config.withdrawCrossLockEvent).toString('hex'), null, null, hashX];
@@ -246,8 +251,8 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
-    getDepositethRevokeEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.ethRevokeEvent).toString('hex'), null,  hashX];
+    getDepositRevokeEvent(sender, hashX) {
+        let topics = ['0x'+wanUtil.sha3(config.depositOriginRevokeEvent).toString('hex'), null,  hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
@@ -290,31 +295,28 @@ const Backend = {
         return ps;
     },
     calculateLocWanFee(value,coin2WanRatio,txFeeRatio){
-        let exp     = new BigNumber(10);
-        let v       = new BigNumber(value);
-        let wei     = v.mul(exp.pow(18));
-
+        let wei     = web3.toWei(web3.toBigNumber(value));
         const DEFAULT_PRECISE = 10000;
-        let fee = wei.mul(coin2WanRatio).mul(txFeeRatio).div(DEFAULT_PRECISE).div(DEFAULT_PRECISE);
-        //let fee = wei.mul(new BigNumber(coin2WanRatio)).mul(new BigNumber(txFeeRatio)).div(new BigNumber(DEFAULT_PRECISE)).div(new BigNumber(DEFAULT_PRECISE));
+        let fee = wei.mul(coin2WanRatio).mul(txFeeRatio).div(DEFAULT_PRECISE).div(DEFAULT_PRECISE).trunc();
+
         return '0x'+fee.toString(16);
     },
     async sendWanHash(sender, tx) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
         newTrans.trans.setValue(tx.value);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
     async sendWanX(sender, from,gas,gasPrice,x, passwd, nonce) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction( from, config.originalChainHtlc,null,null,null,gas,this.toGweiString(gasPrice),'WETH2ETH',nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
         return txhash;
     },
     async sendWanCancel(sender, from,gas,gasPrice,x, passwd,nonce) {
-        let newTrans = this.createSender(sender);
+        let newTrans = this.createTrans(sender);
         newTrans.createTransaction( from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'WETH2ETH',nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);

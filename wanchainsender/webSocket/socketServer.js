@@ -1,4 +1,6 @@
-//let messageFactory = require('./messageFactory.js')
+"use strict";
+
+
 let logger = require('log4js');
 let logDebug = logger.getLogger('webSocket');
 const WebSocket = require('ws');

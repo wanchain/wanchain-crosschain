@@ -3,22 +3,15 @@
 
 const pu = require('promisefy-util');
 let config;
-let crosschain = require('./dbDefine/crossTransDefine.js');
-const wanUtil = require("wanchain-util");
+const be = require('./ccUtil.js').Backend;
 
-let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
-let messageFactory = require('./webSocket/messageFactory.js');
-let socketServer = require("./wanchainsender/index.js").socketServer;
-let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
+//let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let backendConfig = {};
 let logger;
 let handlingList = [];
 
-const MonitorRecord = {
-    CreaterSender(ChainType) {
-            return new sendFromSocket(new socketServer(config.socketUrl,messageFactory),ChainType);
-    },
 
+const MonitorRecord = {
     async init(cfg, ethSender, wanSender){
         config = cfg? cfg:require('./config.js');
         logger = config.logDebug.getLogger("monitorRecord");
@@ -27,96 +20,23 @@ const MonitorRecord = {
         this.ethSender = ethSender;
         this.wanSender = wanSender;
     },
-    getDbCollection(){
-        return databaseGroup.getCollection(config.crossDbname,config.crossCollection);
-    },
 
     getSenderbyChain(chainType){
         return chainType == "ETH"? this.ethSender : this.wanSender;
     },
-    async createrSender(ChainType,local=false){
-        if(config.hasLocalNode && ChainType=="WAN" && local){
-            return this.createrWeb3Sender(config.rpcIpcPath);
-        }else{
-            return await this.createrSocketSender(ChainType);
-        }
 
-    },
-    async createrSocketSender(ChainType){
-        let sender =  this.CreaterSender(ChainType);
-        await pu.promiseEvent(this.CreaterSender, [ChainType], sender.socket.connection, "open");
-        return sender;
-    },
     getTxReceipt(sender,txhash){
         let bs = pu.promisefy(sender.sendMessage, ['getTransactionReceipt',txhash], sender);
         return bs;
     },
 
-    getTxHistory(option) {
-        let collection = this.getDbCollection();
-        let Data = collection.find(option);
-        let his = [];
-        for(var i=0;i<Data.length;++i){
-            let Item = Data[i];
-            his.push(Item);
-        }
-        return his;
-    },
-    getDepositOrigenLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.depositOriginLockEvent).toString('hex'), null, null, hashX];
-        let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-        return b;
-    },
-    getWithdrawOrigenLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.withdrawOriginLockEvent).toString('hex'), null, null, hashX];
-        let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
-        return b;
-    },
-    getWithdrawCrossLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.withdrawCrossLockEvent).toString('hex'), null, null, hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-        return p;
-    },
-    getDepositCrossLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.depositCrossLockEvent).toString('hex'), null, null, hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
-        return p;
-    },
-    getDepositOriginRefundEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.depositOriginRefundEvent).toString('hex'), null, null, hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
-        return p;
-    },
-    getWithdrawOriginRefundEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.withdrawOriginRefundEvent).toString('hex'), null, null, hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-        return p;
-    },
-    getDepositRevokeEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.depositOriginRevokeEvent).toString('hex'), null,  hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-        return p;
-    },
-    getWithdrawRevokeEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.withdrawOriginRevokeEvent).toString('hex'), null,  hashX];
-        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
-        return p;
-    },
-    getDepositHTLCLeftLockedTime(sender, hashX){
-        let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.originalChainHtlc, 'getHTLCLeftLockedTime',[hashX],config.HTLCETHInstAbi], sender);
-        return p;
-    },
-    getWithdrawHTLCLeftLockedTime(sender, hashX){
-        let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.wanchainHtlcAddr, 'getHTLCLeftLockedTime',[hashX],config.HTLCWETHInstAbi], sender);
-        return p;
-    },
     monitorTxConfirm(sender, txhash, waitBlocks) {
         let p = pu.promisefy(sender.sendMessage, ['getTransactionConfirm', txhash, waitBlocks], sender);
         return p;
     },
 
     monitorTask(){
-        let collection = this.getDbCollection();
+        let collection = be.getCrossdbCollection();
         let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;
@@ -136,10 +56,10 @@ const MonitorRecord = {
             let receipt;
             if(record.chain == "ETH"){
                 sender = this.getSenderbyChain("ETH");
-                receipt = await this.getDepositOrigenLockEvent(sender,record.HashX);
+                receipt = await be.getDepositOrigenLockEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await this.getWithdrawOrigenLockEvent(sender,record.HashX);
+                receipt = await be.getWithdrawOrigenLockEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -156,10 +76,10 @@ const MonitorRecord = {
             let receipt;
             if(record.chain == "ETH"){
                 sender = this.getSenderbyChain("WAN");
-                receipt = await this.getDepositOriginRefundEvent(sender,record.HashX);
+                receipt = await be.getDepositOriginRefundEvent(sender,record.HashX);
             } else {
                 sender = this.getSenderbyChain("ETH");
-                receipt = await this.getWithdrawOriginRefundEvent(sender,record.HashX);
+                receipt = await be.getWithdrawOriginRefundEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -176,10 +96,10 @@ const MonitorRecord = {
             let receipt;
             if(record.chain == "ETH"){
                 sender = this.getSenderbyChain("ETH");
-                receipt = await this.getDepositRevokeEvent(sender,record.HashX);
+                receipt = await be.getDepositRevokeEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await this.getWithdrawRevokeEvent(sender,record.HashX);
+                receipt = await be.getWithdrawRevokeEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -302,10 +222,10 @@ const MonitorRecord = {
             let sender
             if(record.chain=="ETH"){
                 sender = this.getSenderbyChain("WAN");
-                receipt = await this.getDepositCrossLockEvent(sender,record.HashX);
+                receipt = await be.getDepositCrossLockEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("ETH");
-                receipt = await this.getWithdrawCrossLockEvent(sender,record.HashX);
+                receipt = await be.getWithdrawCrossLockEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -320,7 +240,7 @@ const MonitorRecord = {
         }
     },
     updateRecord(record){
-        let collection = this.getDbCollection();
+        let collection = be.getCrossdbCollection();
         collection.update(record);
     },
 
@@ -377,7 +297,7 @@ const MonitorRecord = {
                 await this.checkXOnline(record);
                 break;
             case 'sentXConfirming':
-                chain = record.chain=='ETH'?"WAN":"ETH";
+
                 waitBlock = record.refundConfirmed < config.confirmBlocks ? record.refundConfirmed: config.confirmBlocks;
                 await this.checkXConfirm(record, waitBlock);
                 break;
