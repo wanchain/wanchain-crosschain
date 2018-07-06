@@ -15,11 +15,10 @@ async function recordMonitor(config, ethSend,wanSend){
     await mr.init(config, ethSend,wanSend);
     if(montimer){
         clearInterval(montimer);
-    }else{
-        montimer = setInterval(function(){
-            mr.monitorTask();
-        }, 6000);        
     }
+    montimer = setInterval(function(){
+        mr.monitorTask();
+    }, 6000);
 }
 class walletcore  {
     constructor(config){
@@ -42,6 +41,7 @@ class walletcore  {
         this.wanSend.socket.connection.close();
     }
     async reinit(config){
+        this.wanSend.socket.connection.close();
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
         this.ethSend.socket = newWebSocket;

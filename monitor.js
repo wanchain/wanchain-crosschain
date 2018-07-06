@@ -47,7 +47,11 @@ const MonitorRecord = {
                 continue;
             }
             handlingList.push(record.HashX);
-            self.monitorRecord(record);
+            try{
+                self.monitorRecord(record);
+            }catch(error){
+                logger.error("monitorRecord error:", error);
+            }
         }
     },
     async checkOriginLockOnline(record){
