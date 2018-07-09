@@ -9,11 +9,11 @@ let CoinAmount = require('../wanchaintrans/index.js').CoinAmount;
 let GWeiAmount = require('../wanchaintrans/index.js').GWeiAmount;
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-
+let logDebug;
 module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
-        this.logDebug = global.getLogger('sendTransaction');
+        logDebug = global.getLogger('sendTransaction');
     }
     createTransaction(from,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
         let amount = amountWan ? new CoinAmount(amountWan) : amountWan;
@@ -112,9 +112,9 @@ module.exports = class sendTransaction{
     sendTrans(trans,password,insert,callback){
         let chainType = this.sendServer.chainType;
         this.sendServer.send(trans,password,function (err,result) {
-            this.logDebug.debug(err,result);
+            logDebug.debug(err,result);
             if(!err){
-                this.logDebug.debug("sendRawTransaction: ",result);
+                logDebug.debug("sendRawTransaction: ",result);
                 insert(trans,result,chainType);
                 callback(err,result);
             }

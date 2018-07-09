@@ -1,6 +1,7 @@
 "use strict";
 
 let index = 0;
+let logDebug;
 module.exports = class socketmessage{
     constructor(action,parameters,result,chainType,callBack){
         this.message = {
@@ -8,7 +9,7 @@ module.exports = class socketmessage{
             action : action,
             parameters : parameters,
         }
-        this.logDebug = global.getLogger('socketmessage');
+        logDebug = global.getLogger('socketmessage');
         this.message.parameters.chainType = chainType;
         this.result = result;
         this.callback = callBack;
@@ -18,16 +19,16 @@ module.exports = class socketmessage{
         return result.status == 'success';
     }
     onMessage(message){
-        this.logDebug.debug(message);
+        logDebug.debug(message);
         if(this.isSuccess(message)){
-            this.logDebug.debug(message[this.result]);
+            logDebug.debug(message[this.result]);
             if(this.callback){
                 this.callback(null,message[this.result]);
             }
         }
         else
         {
-            this.logDebug.debug(message);
+            logDebug.debug(message);
             if(this.callback){
                 this.callback(message.error,null);
             }

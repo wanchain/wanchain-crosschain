@@ -1,18 +1,19 @@
 "use strict";
 
+let logDebug;
 module.exports = class SendFromSocket{
     constructor(socket,chainType){
         this.socket = socket;
-        this.logDebug = global.getLogger('socketmessage');
+        logDebug = global.getLogger('socketmessage');
         this.chainType = chainType;
     }
     close(){
         this.socket.close();
     }
     send(trans,password,callback){
-        this.logDebug.debug(trans.trans);
+        logDebug.debug(trans.trans);
         let rawTx = trans.signFromKeystore(password);
-        this.logDebug.debug('rawTx:',rawTx);
+        logDebug.debug('rawTx:',rawTx);
         if(rawTx){
             this.socket.sendMessage('sendRawTransaction',rawTx,this.chainType,callback);
         }

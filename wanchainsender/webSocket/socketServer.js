@@ -4,15 +4,16 @@ const WebSocket = require('ws');
 const wsOptions = {
   'handshakeTimeout': 12000,
 };
+let logDebug;
 
 module.exports = class socketServer{
     constructor(url,messageFactory){
         let self = this;
         this.connection = new WebSocket(url, wsOptions);
         this.messageFactory = messageFactory;
-        this.logDebug = global.getLogger('socketServer');
+        logDebug = global.getLogger('socketServer');
         this.connection.onerror = function (error) {
-            this.logDebug.error('[+webSocket onError+]', error.toString());
+            logDebug.error('[+webSocket onError+]', error.toString());
         };
         this.connection.onmessage = function (message) {
             let value = JSON.parse(message.data);
@@ -35,12 +36,12 @@ module.exports = class socketServer{
     }
     sendMessageFunc(message){
         this.functionDict[message.message.header.index] = message;
-        this.logDebug.debug(message.message);
+        logDebug.debug(message.message);
         this.send(message.message);
     }
     createMessageFunc(...args){
         let args1 = args.slice(1);
-        this.logDebug.debug('createMessageFunc : ',args);
+        logDebug.debug('createMessageFunc : ',args);
         return this.messageFactory[args[0]](...args1);
     }
 }

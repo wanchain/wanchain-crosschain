@@ -11,6 +11,7 @@ var wanAbi = [{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"m
 
 let ETH2WETHfunc = ['eth2wethLock','eth2wethRefund','eth2wethRevoke','ETH2WETHLock'];
 let WETH2ETHfunc = ['weth2ethLock','weth2ethRefund','weth2ethRevoke','WETH2ETHLock'];
+let logDebug;
 module.exports = class hashContract extends IContract
 {
     constructor(tokenAddress,storeman,crossAddress,crossType,ChainType)
@@ -20,7 +21,7 @@ module.exports = class hashContract extends IContract
             super(abi,ETH2WETHfunc,tokenAddress);
         else
             super(abi,WETH2ETHfunc,tokenAddress);
-        this.logDebug = global.getLogger('wanchainTrans');
+        logDebug = global.getLogger('wanchainTrans');
         this.storeman = storeman;
         this.crossAddress = crossAddress;
         this.key = this.generatePrivateKey();
@@ -38,8 +39,8 @@ module.exports = class hashContract extends IContract
         let h = createKeccakHash('keccak256');
         h.update(kBuf);
         let hashKey = '0x' + h.digest('hex');
-        this.logDebug.debug('input key:', key);
-        this.logDebug.debug('input hash key:', hashKey);
+        logDebug.debug('input key:', key);
+        logDebug.debug('input hash key:', hashKey);
         return hashKey;
 
     }
@@ -56,7 +57,7 @@ module.exports = class hashContract extends IContract
         let funcInterface = this.getFuncInterface(this.contractFunc[0]);
         if(funcInterface)
         {
-            this.logDebug.debug(this.hashKey,this.storeman,this.crossAddress);
+            logDebug.debug(this.hashKey,this.storeman,this.crossAddress);
             if(this.Amount){
                 return funcInterface.getData(this.hashKey,this.storeman,this.crossAddress,this.Amount.getWei());
             }
@@ -70,7 +71,7 @@ module.exports = class hashContract extends IContract
         let funcInterface = this.getFuncInterface(this.contractFunc[1]);
         if(funcInterface)
         {
-            this.logDebug.debug('unlock data Key: ', this.key);
+            logDebug.debug('unlock data Key: ', this.key);
             return funcInterface.getData(this.key);
         }
     }
