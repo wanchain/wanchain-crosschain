@@ -1,3 +1,5 @@
+"use strict";
+
 const solc = require('solc');
 const fs = require('fs');
 let wanUtil = require('wanchain-util');

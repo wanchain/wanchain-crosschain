@@ -1,8 +1,8 @@
+"use strict";
+
 const crypto = require('crypto');
 const secp256k1 = require('secp256k1');
 let IContract = require("../contract/IContract.js");
-let logger = require('log4js');
-let logDebug = logger.getLogger('wanchainTrans');
 const createKeccakHash = require('keccak');
 //let util = require('utility');
 
@@ -20,7 +20,7 @@ module.exports = class hashContract extends IContract
             super(abi,ETH2WETHfunc,tokenAddress);
         else
             super(abi,WETH2ETHfunc,tokenAddress);
-
+        this.logDebug = global.getLogger('wanchainTrans');
         this.storeman = storeman;
         this.crossAddress = crossAddress;
         this.key = this.generatePrivateKey();
@@ -38,8 +38,8 @@ module.exports = class hashContract extends IContract
         let h = createKeccakHash('keccak256');
         h.update(kBuf);
         let hashKey = '0x' + h.digest('hex');
-        logDebug.debug('input key:', key);
-        logDebug.debug('input hash key:', hashKey);
+        this.logDebug.debug('input key:', key);
+        this.logDebug.debug('input hash key:', hashKey);
         return hashKey;
 
     }
@@ -56,7 +56,7 @@ module.exports = class hashContract extends IContract
         let funcInterface = this.getFuncInterface(this.contractFunc[0]);
         if(funcInterface)
         {
-            logDebug.debug(this.hashKey,this.storeman,this.crossAddress);
+            this.logDebug.debug(this.hashKey,this.storeman,this.crossAddress);
             if(this.Amount){
                 return funcInterface.getData(this.hashKey,this.storeman,this.crossAddress,this.Amount.getWei());
             }
@@ -70,7 +70,7 @@ module.exports = class hashContract extends IContract
         let funcInterface = this.getFuncInterface(this.contractFunc[1]);
         if(funcInterface)
         {
-            logDebug.debug('unlock data Key: ', this.key);
+            this.logDebug.debug('unlock data Key: ', this.key);
             return funcInterface.getData(this.key);
         }
     }

@@ -1,3 +1,5 @@
+"use strict";
+
 let BigNumber = require('bignumber.js');
 class IAmount{
     constructor(amount,exp)

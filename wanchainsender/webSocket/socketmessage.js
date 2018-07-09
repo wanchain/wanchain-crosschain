@@ -1,5 +1,5 @@
-let logger = require('log4js');
-let logDebug = logger.getLogger('webSocket');
+"use strict";
+
 let index = 0;
 module.exports = class socketmessage{
     constructor(action,parameters,result,chainType,callBack){
@@ -8,6 +8,7 @@ module.exports = class socketmessage{
             action : action,
             parameters : parameters,
         }
+        this.logDebug = global.getLogger('socketmessage');
         this.message.parameters.chainType = chainType;
         this.result = result;
         this.callback = callBack;
@@ -17,16 +18,16 @@ module.exports = class socketmessage{
         return result.status == 'success';
     }
     onMessage(message){
-        logDebug.debug(message);
+        this.logDebug.debug(message);
         if(this.isSuccess(message)){
-            logDebug.debug(message[this.result]);
+            this.logDebug.debug(message[this.result]);
             if(this.callback){
                 this.callback(null,message[this.result]);
             }
         }
         else
         {
-            logDebug.debug(message);
+            this.logDebug.debug(message);
             if(this.callback){
                 this.callback(message.error,null);
             }

@@ -1,8 +1,6 @@
 "use strict";
 
 
-let logger = require('log4js');
-let logDebug = logger.getLogger('wanchainWalletCore');
 let dbname = 'crossTransDb';
 let wanHashXSend = require('../wanchaintrans/index.js').wanHashXSend;
 let ethHashXSend = require('../wanchaintrans/index.js').ethHashXSend;
@@ -15,6 +13,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
+        this.logDebug = global.getLogger('sendTransaction');
     }
     createTransaction(from,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
         let amount = amountWan ? new CoinAmount(amountWan) : amountWan;
@@ -113,9 +112,9 @@ module.exports = class sendTransaction{
     sendTrans(trans,password,insert,callback){
         let chainType = this.sendServer.chainType;
         this.sendServer.send(trans,password,function (err,result) {
-            logDebug.debug(err,result);
+            this.logDebug.debug(err,result);
             if(!err){
-                logDebug.debug("sendRawTransaction: ",result);
+                this.logDebug.debug("sendRawTransaction: ",result);
                 insert(trans,result,chainType);
                 callback(err,result);
             }

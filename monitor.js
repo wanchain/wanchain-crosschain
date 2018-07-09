@@ -14,7 +14,7 @@ let handlingList = [];
 const MonitorRecord = {
     async init(cfg, ethSender, wanSender){
         config = cfg? cfg:require('./config.js');
-        logger = config.logDebug.getLogger("monitorRecord");
+        logger = config.getLogger("monitorRecord");
         backendConfig.ethGroupAddr = config.originalChainHtlc;
         backendConfig.wethGroupAddr = config.wanchainHtlcAddr;
         this.ethSender = ethSender;
@@ -138,6 +138,12 @@ const MonitorRecord = {
             if(receipt){
                 if(receipt.status === '0x1'){
                     record.status = 'sentHashConfirming';
+                    // update the time to block time.
+                    let block = await be.getBlockByNumber(sender, receipt.blockNumber)
+                    let newtime = Number(block.timestamp)*1000;
+                    record.time = newtime.toString();
+                    record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
+                    record.HTLCtime = (100000+2*1000*Number(global.lockedTime)+newtime).toString();
                 }else{
                     record.status = 'sentHashFailed';
                 }
@@ -210,8 +216,13 @@ const MonitorRecord = {
         }
         try {
             let HTLCtime = Number(record.HTLCtime);
+            let suspendTime = Number(record.suspendTime);
             if(HTLCtime <= Date.now()){
                 record.status = 'waitingRevoke';
+                this.updateRecord(record);
+                return true;
+            }else if(suspendTime <= Date.now()){
+                record.status = 'suspending';
                 this.updateRecord(record);
                 return true;
             }
@@ -282,6 +293,9 @@ const MonitorRecord = {
                     record.status = 'sentXPending';
                     this.updateRecord(record);
                 }
+                break;
+            case 'suspending':
+                // do nothing.
                 break;
             case 'waitingRevoke':
                 if(record.revokeTxHash){

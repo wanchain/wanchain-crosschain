@@ -5,8 +5,6 @@ const fs = require('fs');
 const Q = require('bluebird');
 const Loki = require('lokijs');
 let collections = require('./collections.js');
-let logger = require('log4js');
-let logDebug = logger.getLogger('wanchainDb');
 const path = require('path');
 function mkdirsSync(dirname) {
     if (fs.existsSync(dirname)) {
@@ -25,6 +23,7 @@ module.exports = class wandb
         this.dbName = databaseDefine.name;
         this.db = null;
         this.collections = new collections(this,databaseDefine.collections);
+        this.logDebug = global.getLogger('wanchaindb');
         this.filePath = filePath;
     }
     init() {
@@ -35,11 +34,11 @@ module.exports = class wandb
         return Q.try(() => {
             // if db file doesn't exist then create it
             try {
-                logDebug.debug(`Check that db exists and it's writeable: ${filePath}`);
+                this.logDebug.debug(`Check that db exists and it's writeable: ${filePath}`);
                 fs.accessSync(filePath, fs.R_OK | fs.W_OK);
                 return Q.resolve();
             } catch (err) {
-                logDebug.info(`Creating db: ${filePath}`);
+                this.logDebug.info(`Creating db: ${filePath}`);
 
                 const tempdb = new Loki(filePath, {
                     env: 'NODEJS',
@@ -50,7 +49,7 @@ module.exports = class wandb
             }
         })
         .then(() => {
-            logDebug.debug(`Loading db: ${filePath}`);
+            this.logDebug.debug(`Loading db: ${filePath}`);
 
             return new Q((resolve, reject) => {
                 temp.db = new Loki(filePath, {
@@ -60,7 +59,7 @@ module.exports = class wandb
                     autoload: true,
                     autoloadCallback(err) {
                         if (err) {
-                            logDebug.error(err);
+                            this.logDebug.error(err);
                             reject(new Error('Error instantiating db'));
                         }
                         resolve();

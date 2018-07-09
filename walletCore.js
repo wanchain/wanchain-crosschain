@@ -1,3 +1,5 @@
+"use strict";
+
 let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let sendTransaction = require('./cross_send/sendTransaction.js');
 let crosschain = require('./dbDefine/crossTransDefine.js');
@@ -23,6 +25,7 @@ async function recordMonitor(config, ethSend,wanSend){
 class walletcore  {
     constructor(config){
         this.socketUrl = config.socketUrl;
+        global.getLogger = config.getLogger;
         this.wanSend = new sendFromSocket(null,'WAN');
         this.ethSend = new sendFromSocket(null,'ETH');
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath);

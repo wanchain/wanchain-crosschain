@@ -28,10 +28,11 @@ module.exports = {
                 txValue: '', // the value in the tx object, this is the native coin value;
                 x : '',
                 time : '',
+                suspendTime:'',
                 HTLCtime : '',
                 chain : '',
                 status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
-                            //                                                              waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
+                            //                                                              suspending,waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
                 lockConfirmed:0,
                 refundConfirmed:0,
                 revokeConfirmed:0,

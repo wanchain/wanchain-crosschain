@@ -48,7 +48,7 @@ const Backend = {
         if(config.useLocalNode && !this.web3Sender){
             this.web3Sender =  this.createrWeb3Sender(config.rpcIpcPath);
         }
-        logger = config.logDebug.getLogger("crossChain util");
+        logger = config.getLogger("crossChainUtil");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
         global.lockedTime = await this.getEthLockTime(this.ethSender);
@@ -278,6 +278,10 @@ const Backend = {
     },
     getEthBalance(sender, addr) {
         let bs = pu.promisefy(sender.sendMessage, ['getBalance',addr], sender);
+        return bs;
+    },
+    getBlockByNumber(sender, blockNumber) {
+        let bs = pu.promisefy(sender.sendMessage, ['getBlockByNumber',blockNumber], sender);
         return bs;
     },
     getWanBalance(sender, addr) {

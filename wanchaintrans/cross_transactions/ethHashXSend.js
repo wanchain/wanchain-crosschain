@@ -1,3 +1,5 @@
+"use strict";
+
 let hashContract = require('../cross_contract/hashContract.js');
 let hashXSend = require('./hashXSend.js');
 

@@ -18,6 +18,9 @@ module.exports = {
     getGasPrice(chainType, callBack){
         return new socketmessage('getGasPrice',{}, "gasPrice", chainType, callBack);
     },
+    getBlockByNumber(blockNumber, chainType, callBack){
+        return new socketmessage('getBlockByNumber',{blockNumber:blockNumber}, "block", chainType, callBack);
+    },
     getTransactionReceipt(txHash,chainType,callBack){
         return new socketmessage('getTransactionReceipt',{txHash:txHash},'receipt',chainType,callBack);
     },

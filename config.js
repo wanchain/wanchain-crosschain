@@ -1,3 +1,5 @@
+"use strict";
+
 const config = {};
 config.socketUrl = 'ws://18.236.235.133:80/';
 var wanchainNet = 'testnet';
@@ -64,28 +66,6 @@ config.useLocalNode = true;
 
 config.loglevel = 'debug';
 
-
-const logDebug = require('log4js');
-const log4jsOptions = {
-    appenders: {
-        console: { type: 'console' }
-    },
-    categories: {
-        default: { appenders: ['console'], level: (config.loglevel || 'info').toUpperCase()}
-    }
-};
-
-if (config.logfile) {
-    log4jsOptions.appenders.filelog = {
-        type: 'file',
-        filename: config.logfile,
-        maxLogSize: 10 * 1000 * 1000,
-        alwaysIncludePattern: true
-    };
-
-}
-config.logDebug = logDebug;
-logDebug.configure(log4jsOptions);
 config.listOption = true;
 
 

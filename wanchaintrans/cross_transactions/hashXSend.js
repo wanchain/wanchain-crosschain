@@ -1,3 +1,5 @@
+"use strict";
+
 let TokenSend = require("../interface/transaction.js").TokenSend;
 module.exports = class hashXSend extends TokenSend
 {
