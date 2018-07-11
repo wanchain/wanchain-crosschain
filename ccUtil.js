@@ -147,7 +147,10 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getTransactionReceipt',txhash], sender);
         return bs;
     },
-
+    getTxInfo(sender,txhash){
+        let bs = pu.promisefy(sender.sendMessage, ['getTxInfo',txhash], sender);
+        return bs;
+    },
     createEthAddr(keyPassword){
         let params = { keyBytes: 32, ivBytes: 16 };
         let dk = keythereum.create(params);

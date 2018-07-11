@@ -8,7 +8,7 @@ const be = require('./ccUtil.js').Backend;
 //let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let backendConfig = {};
 let logger;
-let handlingList = [];
+let handlingList = {};
 
 
 const MonitorRecord = {
@@ -19,6 +19,7 @@ const MonitorRecord = {
         backendConfig.wethGroupAddr = config.wanchainHtlcAddr;
         this.ethSender = ethSender;
         this.wanSender = wanSender;
+        handlingList = {};
     },
 
     getSenderbyChain(chainType){
@@ -43,10 +44,15 @@ const MonitorRecord = {
         logger.debug('handlingList length is ', handlingList.length);
         for(let i=0; i<history.length; i++){
             let record = history[i];
-            if( handlingList.indexOf(record.HashX) != -1) {
-                continue;
+            let cur = Date.now();
+            if( handlingList[record.HashX]) {
+                if(handlingList[record.HashX]+300000 < cur){
+                    delete handlingList[record.HashX];
+                }else{
+                    continue;
+                }
             }
-            handlingList.push(record.HashX);
+            handlingList[record.HashX] = cur;
             try{
                 self.monitorRecord(record);
             }catch(error){
@@ -326,9 +332,8 @@ const MonitorRecord = {
             default:
                 break;
         }
-        let pos = handlingList.indexOf(record.HashX);
-        if(pos != -1){
-            handlingList.splice(pos,1);
+        if( handlingList[record.HashX]) {
+            delete handlingList[record.HashX];
         }
 
     },

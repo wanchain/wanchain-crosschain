@@ -1,14 +1,34 @@
 {
   "name": "wanchain-crosschain",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "bignumber.js": "^4.0.2",
+    "bluebird": "^3.5.1",
+    "crypt": "0.0.2",
+    "ethereumjs-tx": "^1.3.6",
+    "ethereumjs-util": "^5.1.2",
+    "keccak": "^1.4.0",
+    "keccakjs": "^0.2.1",
+    "keythereum": "^1.0.2",
+    "log4js": "^2.5.3",
+    "lokijs": "^1.5.1",
+    "net": "^1.0.2",
+    "promisefy-util": "^1.2.0",
+    "scryptsy": "^2.0.0",
+    "secp256k1": "^3.4.0",
+    "solc": "^0.4.16",
+    "sprintf-js": "^1.1.1",
+    "util": "^0.11.0",
+    "uuid": "^3.1.0",
     "wanchain-keystore": "^0.0.1",
-    "log4js": "^2.5.3"
+    "wanchain-util": "^1.2.0",
+    "web3": "^0.20.6",
+    "ws": "^5.1.0"
   },
   "author": "zhanglihua-wanglu",
   "license": "MIT"

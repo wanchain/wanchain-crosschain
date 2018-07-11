@@ -24,6 +24,9 @@ module.exports = {
     getTransactionReceipt(txHash,chainType,callBack){
         return new socketmessage('getTransactionReceipt',{txHash:txHash},'receipt',chainType,callBack);
     },
+    getTxInfo(txHash,chainType,callBack){
+        return new socketmessage('getTxInfo',{txHash:txHash},'txInfo',chainType,callBack);
+    },
     getNonce(address,chainType,callBack){
         return new socketmessage('getNonceIncludePending',{address:address},'nonce',chainType,callBack);
     },
