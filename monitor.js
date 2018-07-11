@@ -41,7 +41,7 @@ const MonitorRecord = {
         let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;
-        logger.debug('handlingList length is ', handlingList.length);
+        logger.debug('handlingList length is ', Object.keys(handlingList).length);
         for(let i=0; i<history.length; i++){
             let record = history[i];
             let cur = Date.now();
