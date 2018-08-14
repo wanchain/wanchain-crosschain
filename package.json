@@ -8,8 +8,10 @@
   },
   "dependencies": {
     "bignumber.js": "^4.0.2",
+    "bip65": "^1.0.3",
     "bitcoin-core": "^2.0.0",
     "bitcoinjs-lib": "^4.0.1",
+    "bitcore-mnemonic": "^1.5.0",
     "bluebird": "^3.5.1",
     "chai": "^4.1.2",
     "crypt": "0.0.2",
