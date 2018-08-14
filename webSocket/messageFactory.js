@@ -51,8 +51,8 @@ module.exports = {
     getCoin2WanRatio(crossChain, chainType, callBack){
         return new socketmessage('getCoin2WanRatio',{crossChain:crossChain},'c2wRatio',chainType,callBack);
     },
-    getUTXO(crossChain, chainType, callBack){
-        return new socketmessage('getUTXO',{crossChain:crossChain},'UTXOs',chainType,callBack);
+    getUTXO(minconf, maxconf, addresses, chainType, callBack){
+        return new socketmessage('getUTXO',{minconf:minconf, maxconf:maxconf, addresses:addresses},'UTXOs',chainType,callBack);
     },
     monitorLog(address,topics,chainType,callBack){
         return new socketmessage('monitorLog',{address:address,topics:topics},'logs',chainType,callBack);

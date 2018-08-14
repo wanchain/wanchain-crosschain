@@ -52,8 +52,8 @@ const Backend = {
         logger = config.getLogger("crossChainUtil");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
-        global.lockedTime = await this.getEthLockTime(this.ethSender);
-        this.c2wRatio = await this.getEthC2wRatio(this.wanSender);
+        //global.lockedTime = await this.getEthLockTime(this.ethSender);
+        //this.c2wRatio = await this.getEthC2wRatio(this.wanSender);
         if(cb)cb();
     },
 
@@ -280,8 +280,8 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','ETH'], sender);
         return p;
     },
-    getBtcUtxo(sender, addrs){
-        let p = pu.promisefy(sender.sendMessage, ['getUTXO','BTC'], sender);
+    getBtcUtxo(sender, minconf, maxconf, addresses){
+        let p = pu.promisefy(sender.sendMessage, ['getUTXO', minconf, maxconf, addresses], sender);
         return p;
     },
     getEthBalance(sender, addr) {
@@ -290,6 +290,10 @@ const Backend = {
     },
     getBlockByNumber(sender, blockNumber) {
         let bs = pu.promisefy(sender.sendMessage, ['getBlockByNumber',blockNumber], sender);
+        return bs;
+    },
+    getBlockNumber(sender, blockNumber) {
+        let bs = pu.promisefy(sender.sendMessage, ['getBlockNumber'], sender);
         return bs;
     },
     getWanBalance(sender, addr) {
