@@ -1,7 +1,7 @@
 "use strict";
 
 const config = {};
-config.socketUrl = 'ws://18.236.235.133:80/';
+config.socketUrl = 'ws://18.237.186.227:8080/';
 var wanchainNet = 'testnet';
 var ethereumNet = '';
 const path=require('path');
@@ -62,11 +62,15 @@ if (process.platform === 'win32') {
 config.port = 8545;
 config.OTAMixNumber = 8;
 config.StampMixNumber = 3;
-config.useLocalNode = true;
+config.useLocalNode = false;
 
 config.loglevel = 'debug';
 
 config.listOption = true;
+const Logger = require('./logger.js');
+config.getLogger = function(name){
+    return new Logger(name,config.ccLog, config.ccErr,config.loglevel);
+}
 
 
 config.databasePath = process.env.HOME;

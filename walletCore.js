@@ -28,6 +28,7 @@ class walletcore  {
         global.getLogger = config.getLogger;
         this.wanSend = new sendFromSocket(null,'WAN');
         this.ethSend = new sendFromSocket(null,'ETH');
+        this.btcSend = new sendFromSocket(null,'BTC');
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath);
         this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath);
         this.databaseGroup = databaseGroup;
@@ -48,6 +49,7 @@ class walletcore  {
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
         this.ethSend.socket = newWebSocket;
+        this.btcSend.socket = newWebSocket;
         let self = this;
         return new Promise(function(resolve, fail){
             newWebSocket.connection.on('error', function _cb(err){
@@ -74,6 +76,7 @@ class walletcore  {
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
         this.ethSend.socket = newWebSocket;
+        this.btcSend.socket = newWebSocket;
         let self = this;
         return new Promise(function(resolve, fail){
             newWebSocket.connection.on('error', function _cb(err){
@@ -81,7 +84,7 @@ class walletcore  {
             });
             newWebSocket.connection.on('open', function _cb(){
                 recordMonitor(config,self.ethSend, self.wanSend);
-                be.init(config, self.ethSend, self.wanSend,function(){
+                be.init(config, self.ethSend, self.wanSend,self.btcSend,function(){
                     resolve();
                 });
             })

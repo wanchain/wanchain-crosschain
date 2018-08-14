@@ -39,11 +39,12 @@ const Backend = {
     getConfig(){
         return config;
     },
-    async init(cfg,ethsender, wansender,cb){
+    async init(cfg,ethsender, wansender,btcsender, cb){
         config = cfg? cfg:require('./config.js');
         this.EthKeyStoreDir =  new keystoreDir(config.ethKeyStorePath),
         this.WanKeyStoreDir =  new keystoreDir(config.wanKeyStorePath),
         this.ethSender = ethsender;
+        this.btcSender = btcsender;
         this.wanSender = wansender;
         if(config.useLocalNode && !this.web3Sender){
             this.web3Sender =  this.createrWeb3Sender(config.rpcIpcPath);
@@ -277,6 +278,10 @@ const Backend = {
     },
     getEthC2wRatio(sender){
         let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','ETH'], sender);
+        return p;
+    },
+    getBtcUtxo(sender, addrs){
+        let p = pu.promisefy(sender.sendMessage, ['getUTXO','BTC'], sender);
         return p;
     },
     getEthBalance(sender, addr) {
