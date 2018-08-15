@@ -19,20 +19,24 @@ const btcserver={
 
 const client = new Client(btcserver.regtest);
 
+let wanchainCore;
 let ccUtil;
+let btcUtil;
 describe('btc api test', ()=>{
     before(async ()=>{
-        let wanchainCore = new WanchainCore(config);
+        wanchainCore = new WanchainCore(config);
         ccUtil = wanchainCore.be;
+        btcUtil = wanchainCore.btcUtil;
         await wanchainCore.init(config);
         console.log("start");
     });
+    /*
     it('TC001: send a transaction', async ()=>{
         const aliceAddr = "mxTSiHT4fRVysL6URcGwD5WmELTSiJV8PV";
         const aliceWif = "cTDgGYxyf1psvn2x1CueypAWNTXvCFL9kzhZhKZFHsP6o7LejjRi";
         const alice = bitcoin.ECPair.fromWIF(aliceWif,bitcoin.networks.testnet );
         let {address} = bitcoin.payments.p2pkh({pubkey: alice.publicKey, network: bitcoin.networks.testnet});
-        assert(address, aliceAddr, "address is wrong");
+        assert.equal(address, aliceAddr, "address is wrong");
         let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [aliceAddr]);
         console.log("utxos: ", utxos);
 
@@ -54,7 +58,7 @@ describe('btc api test', ()=>{
                 break;
             }
         }
-        assert(amount, utxo.amount, "utxo is wrong");
+        assert.equal(amount, utxo.amount, "utxo is wrong");
         console.log("utxo: ", utxo);
         const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 
@@ -66,10 +70,9 @@ describe('btc api test', ()=>{
         const rawTx = txb.build().toHex();
         console.log("rawTx: ", rawTx);
 
-        let result = await client.sendRawTransaction(rawTx, true);
+        let result = await ccUtil.sendRawTransaction(ccUtil.btcSender,rawTx);
         console.log("result hash:", result);
     });
-    /*
     it('TC001: get utxo of a random address', async ()=>{
         let toPair = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
         let {address} = bitcoin.payments.p2pkh({pubkey: toPair.publicKey, network: bitcoin.networks.testnet});
@@ -91,8 +94,11 @@ describe('btc api test', ()=>{
         console.log("get transaction: ", tx);
     });
     */
-    it('end', ()=>{
-        console.log("end");
+    it('create btc addr', ()=>{
+        btcUtil.createBtcAddr();
     });
+    after('end', async ()=>{
+        wanchainCore.close();
+    })
 })
 

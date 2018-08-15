@@ -12,6 +12,8 @@ let messageFactory = require('./webSocket/messageFactory.js');
 let socketServer = require("./wanchainsender/index.js").socketServer;
 const mr =  require('./monitor.js').MonitorRecord;
 const be =  require('./ccUtil.js').Backend;
+const btcUtil =  require('./btcUtil.js').btcUtil;
+
 let montimer;
 async function recordMonitor(config, ethSend,wanSend){
     await mr.init(config, ethSend,wanSend);
@@ -34,6 +36,7 @@ class walletcore  {
         this.databaseGroup = databaseGroup;
         databaseGroup.useDatabase(config.databasePath,[crosschain]);
         this.be = be;
+        this.btcUtil = btcUtil;
         this.sendFromSocket = sendFromSocket;
         this.wanchaintrans = wanchaintrans;
     }

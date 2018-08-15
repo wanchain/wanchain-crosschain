@@ -296,6 +296,10 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getBlockNumber'], sender);
         return bs;
     },
+    sendRawTransaction(sender, signedTx) {
+        let bs = pu.promisefy(sender.sendMessage, ['sendRawTransaction', signedTx], sender);
+        return bs;
+    },
     getWanBalance(sender, addr) {
         let bs = pu.promisefy(sender.sendMessage, ['getBalance',addr], sender);
         return bs;
