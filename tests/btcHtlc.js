@@ -66,6 +66,19 @@ async function findOneTxToAddress(dest){
     return null
 }
 
+function selectUtxo(utxos, value) {
+    let utxo;
+    for(let i=0; i<utxos.length; i++){
+        if(utxos[i].amount >= value){
+            utxo = utxos[i];
+            console.log("find utxo:", utxo);
+            return utxo;
+        }
+    }
+    console.log("can't find");
+    return null;
+}
+
 
 async function hashtimelockcontract(commitment, locktime){
     let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
@@ -118,32 +131,22 @@ async function hashtimelockcontract(commitment, locktime){
 
 }
 
-async function fundHtlc(p2sh, amount){
-
-    assert.equal(address, aliceAddr, "address is wrong");
+async function fundHtlc(){
     let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [aliceAddr]);
     console.log("utxos: ", utxos);
+    const value = 1;
 
-    utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
-    console.log("utxos: ", utxos);
-    let utxo;
-    for(let i=0; i<utxos.length; i++){
-        console.log("typeof amount:", typeof(utxos[i].amount));
-        console.log("amount:", utxos[i].amount);
-        console.log("Number(amount):", Number(amount));
-        if(utxos[i].amount == Number(amount)){
-            utxo = utxos[i];
-            console.log("find utxo:", utxo);
-            break;
-        }
-    }
-    assert.equal(amount, utxo.amount, "utxo is wrong");
+    let utxo = selectUtxo(utxos, value);
+    assert.equal(value, utxo.amount, "getBtcUtxo is wrong");
     console.log("utxo: ", utxo);
-    const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 
+    // generate script and p2sh address
+    let contract = await hashtimelockcontract(commitment, 10);
+
+    const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
     txb.setVersion(1);
     txb.addInput(utxo.txid, utxo.vout);
-    txb.addOutput('mkuNvfqgGM3EEWkYNEMxP4KzzDWfXc5cEX', Number(amount2));
+    txb.addOutput(contract['p2sh'], value);
     txb.sign(0, alice);
 
     const rawTx = txb.build().toHex();
@@ -151,9 +154,7 @@ async function fundHtlc(p2sh, amount){
 
     let result = await ccUtil.sendRawTransaction(ccUtil.btcSender,rawTx);
     console.log("result hash:", result);
-
-    const txid = await client.sendToAddress(p2sh, amount);
-    return txid;
+    return result;
 }
 
 
@@ -228,7 +229,7 @@ async function refund(contract, fundtx){
 async function testRefund(){
     contract = await hashtimelockcontract(commitment, 10);
 
-    await fundHtlc(contract['p2sh'], 16);
+    await fundHtlc();
     const fundtx = await findOneTxToAddress(contract['p2sh']);
     print4debug("fundtx:" + JSON.stringify(fundtx, null, 4));
 
@@ -281,16 +282,11 @@ describe('btc api test', ()=> {
         assert.equal('bf19f1b16bea379e6c3978920afabb506a6694179464355191d9a7f76ab79483', hashx, "sha256 is wrong");
     });
 
-    it('TC001: htlc redeem', async ()=>{
-        let contract = await hashtimelockcontract(commitment, 10);
-
-        await fundHtlc(contract['p2sh'], 16);
-        const fundtx = await findOneTxToAddress(contract['p2sh']);
-        print4debug("fundtx:" + JSON.stringify(fundtx, null, 4));
-
-        await redeem(contract, fundtx, secret);
-
+    it('TC002: htlc lock', async ()=>{
+        let txhash = await fundHtlc();
+        console.log("htcl lock hash: ", txhash);
     });
+
     after('end', async ()=>{
         wanchainCore.close();
     });

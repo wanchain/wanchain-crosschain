@@ -346,6 +346,9 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);
         return bs;
     },
+    async sendWanNotice(sender, info) {
+
+    },
     getMultiWanBalances(sender, addrs) {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);
         return bs;
