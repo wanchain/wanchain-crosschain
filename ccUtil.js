@@ -4,6 +4,19 @@
 const pu = require('promisefy-util');
 const BigNumber = require('bignumber.js');
 const wanUtil = require("wanchain-util");
+const Client = require('bitcoin-core');
+const bitcoin  = require('bitcoinjs-lib');
+const btcUtil = require('./btcUtil');
+const btcserver={
+    regtest:{
+        network: 'regtest',
+        host: "18.237.186.227",
+        port: 18443,
+        username: "USER",
+        password: "PASS"
+    }
+};
+const client = new Client(btcserver.regtest);
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
@@ -284,6 +297,63 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getUTXO', minconf, maxconf, addresses], sender);
         return p;
     },
+    generateP2shScript(p2shAddr){
+        let b1 = Buffer.from('a9','hex');
+        let b2 = Buffer.from(p2shAddr, 'hex');
+        let b3 = Buffer.from('87','hex');
+        let b = Buffer.concat([b1,b2,b3]);
+        return b;
+    },
+    // storeman
+    async _verifyBtcUtxo(storemanAddr, txHash, xHash, lockedTimestamp){ // utxo.amount
+        try {
+            let rewTx = await client.getRawTransaction(txHash);
+            //ccUtil.getTxInfo();
+            let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'),bitcoin.networks.testnet);
+            console.log("verifyBtcUtxo ctx:", ctx);
+            let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
+            let p2sh == contract['p2sh'];
+            if() {
+                return true;
+            }
+            return false;
+        }catch(err){
+            console.log("verifyBtcUtxo: ",err);
+            return false;
+        }
+    },
+    // async _spendP2SHUtxo(storemanAddr, txHash, xHash, x, lockedTimestamp){
+    //     try {
+    //         let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
+    //         let p2sh = contract['p2sh'];
+    //         let rawTx = await client.getRawTransaction(txHash);
+    //         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+    //         console.log("verifyBtcUtxo ctx:", ctx);
+    //         let outs = ctx.outs;
+    //         let i;
+    //         for(i=0; i<outs.length; i++) {
+    //             let out = outs[i];
+    //             let outScAsm = bitcoin.script.toASM(out.script);
+    //             let outScHex = out.script.toString('hex');
+    //             console.log("outScAsm", outScAsm);
+    //             console.log("outScHex", outScHex);
+    //             let p2shSc = generateP2shScript(p2sh).toString('hex');
+    //             if(outScHex == p2shSc){
+    //                 break;
+    //             }
+    //         }
+    //         if(i == outs.length){
+    //             throw "error p2sh";
+    //         }
+    //         let hashid = await redeem(contract, {txid:txHash, vout:i}, x);
+    //         console.log("redeem hashid: ", hashid);
+    //         return hashid;
+    //     }catch(err){
+    //         console.log("verifyBtcUtxo: ",err);
+    //         throw err;
+    //     }
+    //
+    // },
     getEthBalance(sender, addr) {
         let bs = pu.promisefy(sender.sendMessage, ['getBalance',addr], sender);
         return bs;
