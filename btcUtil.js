@@ -19,6 +19,12 @@ const btcUtil = {
         const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
         return pkh.address;
     },
+    getECPairs(passwd){
+        var alice = bitcoin.ECPair.fromWIF(
+            'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
+        );
+        return [alice];
+    },
 
 
     hashtimelockcontract(storemanHash160,xHash, redeemblocknum){
