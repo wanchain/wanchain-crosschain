@@ -335,7 +335,7 @@ class HTLCBTC  {
                 //record it in map
                 contractsMap[txId] = contract;
                 XXMap[txId] = XX;
-                return txId;
+                return {txId:txId,hashX:hashX,redeemblocknum:contract['redeemblocknum']};
 
             } else {
 
