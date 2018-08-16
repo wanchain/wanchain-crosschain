@@ -49,6 +49,12 @@ const Backend = {
         let gwei = wei.dividedBy(exp.pow(9));
         return  gwei.toString(10);
     },
+    toGwei(swei){
+        let exp = new BigNumber(10);
+        let wei = new BigNumber(swei);
+        let gwei = wei.dividedBy(exp.pow(9));
+        return  gwei;
+    },
     getConfig(){
         return config;
     },
@@ -157,6 +163,10 @@ const Backend = {
         let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
         return b;
     },
+    getBtcSmgList(sender) {
+        let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
+        return b;
+    },
     getTxReceipt(sender,txhash){
         let bs = pu.promisefy(sender.sendMessage, ['getTransactionReceipt',txhash], sender);
         return bs;
@@ -219,6 +229,14 @@ const Backend = {
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
+    async sendWanNotice(sender, tx) {
+        let newTrans = this.createTrans(sender);
+        //    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice, wanFrom)
+        newTrans.createDepositNotice(tx.storeman,tx.userWanAddr,tx.hashx, tx.txhash,tx.lockedTimestamp,
+            tx.gas,this.toGwei(tx.gasPrice.toString()));
+        let txhash =  await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
+        return txhash;
+    },
     async sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
         newTrans.createTransaction(from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
@@ -265,6 +283,11 @@ const Backend = {
     },
     getWithdrawOriginRefundEvent(sender, hashX) {
         let topics = ['0x'+wanUtil.sha3(config.withdrawOriginRefundEvent).toString('hex'), null, null, hashX];
+        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
+        return p;
+    },
+    getWithdrawBtcRedeemEvent(sender, hashX) {
+        let topics = ['0x'+wanUtil.sha3(config.withdrawBtcRedeemNoticeEvent).toString('hex'), null, null, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
@@ -428,9 +451,6 @@ const Backend = {
     getMultiEthBalances(sender, addrs) {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);
         return bs;
-    },
-    async sendWanNotice(sender, info) {
-
     },
     getMultiWanBalances(sender, addrs) {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);

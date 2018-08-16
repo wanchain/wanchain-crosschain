@@ -65,7 +65,7 @@ config.OTAMixNumber = 8;
 config.StampMixNumber = 3;
 config.useLocalNode = false;
 
-config.loglevel = 'info';
+config.loglevel = 'debug';
 
 config.listOption = true;
 const Logger = require('./logger.js');
@@ -94,7 +94,7 @@ config.wanRefundGas = 120000; // 34881;
 config.wanRevokeGas = 80000; // 49917;
 
 config.originalChainHtlc = "0xc99dd674d4821f9d7e2471547e769cc62878ff13";
-config.wanchainHtlcAddr = "0xa7cd98f9fad5b0eb0151b8af0dec959dda3d018f";
+config.wanchainHtlcAddr = "0x7413a85e6398105774b4205f0d76d52619156eac";
 
 config.depositOriginLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256,address)';
 config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';
@@ -102,6 +102,7 @@ config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';
 //btc
 config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,uint256)';
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
+config.withdrawBtcRedeemNoticeEvent = 'WBTC2BTCLockNotice(address,address,bytes32,bytes32,uint256)';
 
 
 config.withdrawOriginLockEvent = 'WETH2ETHLock(address,address,bytes32,uint256,address,uint256)';
