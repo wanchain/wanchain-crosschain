@@ -99,6 +99,11 @@ config.wanchainHtlcAddr = "0xa7cd98f9fad5b0eb0151b8af0dec959dda3d018f";
 config.depositOriginLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256,address)';
 config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';
 
+//btc
+config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,uint256)';
+config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
+
+
 config.withdrawOriginLockEvent = 'WETH2ETHLock(address,address,bytes32,uint256,address,uint256)';
 config.withdrawCrossLockEvent = 'WETH2ETHLock(address,address,bytes32,uint256)';
 

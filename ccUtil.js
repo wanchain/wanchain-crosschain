@@ -312,14 +312,27 @@ const Backend = {
             let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'),bitcoin.networks.testnet);
             console.log("verifyBtcUtxo ctx:", ctx);
             let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
-            let p2sh == contract['p2sh'];
-            if() {
-                return true;
+            let p2sh = contract['p2sh'];
+            let outs = ctx.outs;
+            let i;
+            for(i=0; i<outs.length; i++) {
+                let out = outs[i];
+                let outScAsm = bitcoin.script.toASM(out.script);
+                let outScHex = out.script.toString('hex');
+                console.log("outScAsm", outScAsm);
+                console.log("outScHex", outScHex);
+                let p2shSc = generateP2shScript(p2sh).toString('hex');
+                if(outScHex == p2shSc){
+                    break;
+                }
             }
-            return false;
+            if(i == outs.length){
+                return 0;
+            }
+            return outs[i].amount;
         }catch(err){
             console.log("verifyBtcUtxo: ",err);
-            return false;
+            return 0;
         }
     },
     // async _spendP2SHUtxo(storemanAddr, txHash, xHash, x, lockedTimestamp){
