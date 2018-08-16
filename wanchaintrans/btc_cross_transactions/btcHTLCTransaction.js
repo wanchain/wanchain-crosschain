@@ -1,28 +1,67 @@
 var bitcoin  = require('bitcoinjs-lib');
 var config = require('../../config.js');
-var utxo = require('./utxo/utxo.js');
+var coinselect = require('./utxo/utxo.js');
 var bip65 = require('bip65');
 
+var crypto = require('crypto');
+var secp256k1 = require('secp256k1');
+var createKeccakHash = require('keccak');
+var WanchainCore = require('../../walletCore.js');
+
+var wanchainCore;
 var ccUtil;
 var btcUtil;
+
 var contractsMap = {};
+var XXMap = {};
 
 //FEE = 0.001
 const MAX_CONFIRM_BLKS = 10000000;
 const MIN_CONFIRM_BLKS = 0;
 const LOCK_BLK_NUMBER = 10;
-const feeRate = 55; // satoshis per byte
 
 const network = bitcoin.networks.testnet;
 
+const feeOptions = { minChange: 100, fee: 100 }
+const feeRate = 55;
+
 class HTLCBTC  {
 
-        getAddress(keypair){
-            pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
+    getAddress(keypair){
+            let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
             return pkh.address;
-        }
+    }
 
-        async init(){
+
+    setKey(key){
+        this.key = key;
+        this.hashKey = this.getHashKey(this.key);
+    }
+
+    getHashKey(key){
+        //return BigNumber.random().toString(16);
+
+        let kBuf = new Buffer(key.slice(2), 'hex');
+//        let hashKey = '0x' + util.sha256(kBuf);
+        let h = createKeccakHash('keccak256');
+        h.update(kBuf);
+        let hashKey = '0x' + h.digest('hex');
+        console.log('input key:', key);
+        console.log('input hash key:', hashKey);
+        return hashKey;
+
+    }
+
+    generatePrivateKey(){
+        let randomBuf;
+        do{
+            randomBuf = crypto.randomBytes(32);
+        }while (!secp256k1.privateKeyVerify(randomBuf));
+        return '0x' + randomBuf.toString('hex');
+    }
+
+
+    async init(){
             wanchainCore = new WanchainCore(config);
             ccUtil = wanchainCore.be;
             btcUtil = wanchainCore.btcUtil;
@@ -31,13 +70,13 @@ class HTLCBTC  {
         }
 
 
-        async hashtimelockcontract(hashX, locktime,destPub/*smg publickey*/,revokerPub/**revoker publickey*/){
+        async hashtimelockcontract(hashX, locktime,destHash160/*smg address*/,revokerHash160/**revoker address*/){
             let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
 
-            print4debug("blocknum:" + blocknum);
-            print4debug("Current blocknum on Bitcoin: " + blocknum);
+            console.log("blocknum:" + blocknum);
+            console.log("Current blocknum on Bitcoin: " + blocknum);
             let redeemblocknum = blocknum + locktime;
-            print4debug("Redeemblocknum on Bitcoin: " + redeemblocknum);
+            console.log("Redeemblocknum on Bitcoin: " + redeemblocknum);
 
             let redeemScript = bitcoin.script.compile([
                 /* MAIN IF BRANCH */
@@ -48,7 +87,7 @@ class HTLCBTC  {
                 bitcoin.opcodes.OP_DUP,
                 bitcoin.opcodes.OP_HASH160,
 
-                bitcoin.crypto.hash160(smgPub),//bob.getPublicKeyBuffer(),// redeemer address
+                destHash160,//bob.getPublicKeyBuffer(),// redeemer address
 
                 bitcoin.opcodes.OP_ELSE,
                 bitcoin.script.number.encode(redeemblocknum),
@@ -57,7 +96,7 @@ class HTLCBTC  {
                 bitcoin.opcodes.OP_DUP,
                 bitcoin.opcodes.OP_HASH160,
 
-                bitcoin.crypto.hash160(revokerPub),//alice.getPublicKeyBuffer(), // funder addr
+                revokerHash160,//alice.getPublicKeyBuffer(), // funder addr
 
                 /* ALMOST THE END. */
                 bitcoin.opcodes.OP_ENDIF,
@@ -68,7 +107,7 @@ class HTLCBTC  {
             ]);
 
 
-            print4debug(redeemScript.toString('hex'));
+            console.log(redeemScript.toString('hex'));
             //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
             //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
 
@@ -94,23 +133,28 @@ class HTLCBTC  {
 
             //define target utxo
             let targets = [
-                    {
-                        address: contract['p2sh'],
-                        value: amount
-                    }
+                {
+                    address: contract['p2sh'],
+                    value: amount*100000000
+                }
             ]
 
-
-
-            for (kp in keyPairArray) {
-                let address = getAddress(kp);
+            let i;
+            for (i = 0; i < keyPairArray.length; i++) {
+                let kp = keyPairArray[i];
+                let address = this.getAddress(kp);
                 addressArray.push(address);
                 addressKeyMap[address] = kp;
             }
 
-            let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addressArray);
+            let utxos= await ccUtil.getBtcUtxo(ccUtil.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addressArray);
 
-            let {inputs, outputs, fee} = utxo.coinSelect(utxos, targets, feeRate);
+            utxos = utxos.map(function(item,index){
+                item.value = item.amount * 100000000;
+                return item;
+            });
+
+            let {inputs, outputs, fee} = coinselect.coinSelect(utxos,targets, feeRate);
 
             // .inputs and .outputs will be undefined if no solution was found
             if (!inputs || !outputs) {
@@ -120,34 +164,41 @@ class HTLCBTC  {
             console.log(fee);
 
             let txb = new bitcoin.TransactionBuilder(network);
-            txb.setVersion(1)
+            txb.setVersion(1);
 
-            let i = 0;
-            for (inItem in inputs) {
-                from = inItem.vout.address;
-                signer = addressKeyMap[from];
-
-                txb.addInput(inItem.txId, inItem.vout);
-                txb.sign(i++, signer);
+            for (i = 0; i < inputs.length; i++) {
+                let inItem = inputs[i];
+                let from = inItem.address;
+                let signer = addressKeyMap[from];
+                txb.addInput(inItem.txid, inItem.vout);
             }
 
-            for (outItem in outputs) {
-                //change will be back to the sender
+
+            //put p2sh at 0 position
+            for (i = 0; i < outputs.length; i++) {
+                let outItem = outputs[i];
                 if (!outItem.address) {
                     outItem.address = addressArray[0];
                 }
-
-                txb.addOutput(outItem.address, output.value);
+                txb.addOutput(outItem.address, outItem.value);
             }
 
-            const rawTx = txb.build().toHex();
-            console.log("rawTx: ", rawTx);
+            for (i = 0; i < inputs.length; i++) {
+                let inItem = inputs[i];
+                let from = inItem.address;
+                let signer = addressKeyMap[from];
+                txb.sign(i, signer);
+            }
 
-            let result = await ccUtil.sendRawTransaction(ccUtil.btcSender,rawTx);
-            console.log("result hash:", result);
+             const rawTx = txb.build().toHex();
+             console.log("rawTx: ", rawTx);
 
-            return txid;
+             let result = await ccUtil.sendRawTransaction(ccUtil.btcSender, rawTx);
+             console.log("result hash:", result);
+
+             return result;
         }
+
 
 
         // call this function to refund locked btc
@@ -168,7 +219,7 @@ class HTLCBTC  {
             print4debug('----W----A----N----C----H----A----I----N----');
 
             txb.addInput(fundtx.txid, fundtx.vout);
-            txb.addOutput(getAddress(refunderKeyPair), (fundtx.amount-FEE)*100000000);
+            txb.addOutput(this.getAddress(refunderKeyPair), (fundtx.amount-FEE)*100000000);
 
             let tx = txb.buildIncomplete()
             let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -213,7 +264,7 @@ class HTLCBTC  {
             txb.setLockTime(contract['redeemblocknum']);
             txb.setVersion(1);
             txb.addInput(fundtx.txid, fundtx.vout, 0);
-            txb.addOutput(getAddress(revokerKeyPair), (fundtx.amount-FEE)*100000000);
+            txb.addOutput(this.getAddress(revokerKeyPair), (fundtx.amount-FEE)*100000000);
 
             let tx = txb.buildIncomplete();
             let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -242,38 +293,84 @@ class HTLCBTC  {
 
 
         //user call this to lock btc
-        async btc2wbtcLock(amount,keyPairArray,feeRate,hashX,destPub) {
+        async btc2wbtcLock(keyPairArray,amount,feeRate,destHash160) {
+
+            let XX = this.generatePrivateKey();
+            let hashX = this.getHashKey(XX);
+
             // generate script and p2sh address
-            let contract = await hashtimelockcontract(hashX, LOCK_BLK_NUMBER * 2, destPub, keyPairArray[0].pubkey);
-            //record it in map
-            contractsMap[contract['p2sh']] = contract;
+            let revokerHash160 = bitcoin.crypto.hash160(keyPairArray[0].publicKey);
 
-            lock(contract,amount,keyPairArray,feeRate);
+            let contract = await this.hashtimelockcontract(hashX, LOCK_BLK_NUMBER * 2, destHash160, revokerHash160);
+
+            //record it in map
+            let txId = await this.lock(contract,amount,keyPairArray,feeRate);
+
+            if (txId != undefined) {
+                //record it in map
+                contractsMap[txId] = contract;
+                XXMap[txId] = XX;
+                return txId;
+
+            } else {
+
+                return null;
+
+            }
+
         }
 
-        async wbtc2btcLock(amount,keyPairArray,feeRate,hashX,destPub) {
+        async wbtc2btcLock(keyPairArray,amount,feeRate,destPub) {
+
+            let XX = this.generatePrivateKey();
+            let hashX = this.getHashKey(XX);
+
             // generate script and p2sh address
-            let contract = await hashtimelockcontract(hashX, LOCK_BLK_NUMBER, destPub, keyPairArray[0].pubkey);
-            //record it in map
-            contractsMap[contract['p2sh']] = contract;
+            let contract = await this.hashtimelockcontract(hashX, LOCK_BLK_NUMBER, destPub, keyPairArray[0].pubkey);
 
-            lock(contract,amount,keyPairArray,feeRate);
+
+            let txId = await this.lock(contract,amount,keyPairArray,feeRate);
+
+            if (txId != undefined) {
+                //record it in map
+                contractsMap[txId] = contract;
+                XXMap[txId] = XX;
+                return txId;
+
+            } else {
+
+                return null;
+
+            }
+
         }
 
-        async btc2wbtcRefund(fundtx,XX,refunderKeyPair){
-            return refund(fundtx,XX,refunderKeyPair);
+        async btc2wbtcRefund(txHash,refunderKeyPair){
+
+            let rawTx = ccUtil.getTxInfo(txHash);
+            let XX = XXMap[txHash];
+
+            return this.refund(rawTx,XX,refunderKeyPair);
         }
 
-        async wbtc2btcrefund(fundtx,XX,refunderKeyPair){
-            return refund(fundtx,XX,refunderKeyPair);
+        async wbtc2btcrefund(txHash,refunderKeyPair){
+            let XX = XXMap[txHash];
+            let rawTx = ccUtil.getTxInfo(txHash);
+            return this.refund(rawTx,XX,refunderKeyPair);
         }
 
-        async btc2wbtcRevoke(fundtx,revokerKeyPair){
-            return revoke(fundtx,revokerKeyPair);
+        async btc2wbtcRevoke(txHash,revokerKeyPair){
+
+            let hashX = this.getHashKey(XXMap[txHash])
+            let rawTx = ccUtil.getTxInfo(txHash);
+
+            return await this.revoke(rawTx,revokerKeyPair);
         }
 
-        async wbtc2btcRevoke(fundtx,revokerKeyPair){
-            return revoke(fundtx,revokerKeyPair);
+        async wbtc2btcRevoke(txHash,revokerKeyPair){
+
+            let rawTx = ccUtil.getTxInfo(txHash);
+            return await this.revoke(rawTx,revokerKeyPair);
         }
 }
 
