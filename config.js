@@ -94,7 +94,7 @@ config.wanRefundGas = 120000; // 34881;
 config.wanRevokeGas = 80000; // 49917;
 
 config.originalChainHtlc = "0xc99dd674d4821f9d7e2471547e769cc62878ff13";
-config.wanchainHtlcAddr = "0x7413a85e6398105774b4205f0d76d52619156eac";
+config.wanchainHtlcAddr = "0x78f365b6b605a460587781a37824f3ea165c16db";
 
 config.depositOriginLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256,address)';
 config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';
