@@ -23,6 +23,21 @@ describe('wan api test', ()=>{
         console.log("start");
     });
     it('TC001: wan notice check', async ()=>{
+        let currentBlock = web3.eth.blockNumber;
+        let filterValue = {
+            fromBlock: 1000000,
+            toBlock: currentBlock,
+            address: config.wanchainHtlcAddr,
+            topics: ["0xbc5d2ea574e7cf33bf89888310d2e83efc204c5741f027dc1e36e0c482f75504", null, null, "0xd629eb0d7a23530fabc8715bba8194b2f93d389d2efdd8c7af2a6d8707ba51d0"]
+        };
+        let filter = web3.eth.filter(filterValue);
+        filter.get( function(error, result){
+            if (!error)
+                console.log(result);
+        });
+    });
+
+    it('TC001: wan notice check', async ()=>{
         // const tx = {};
         // tx.storeman = '0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe';
         // tx.userWanAddr = '0xbd100cf8286136659a7d63a38a154e28dbf3e0fd';

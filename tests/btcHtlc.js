@@ -306,6 +306,7 @@ describe('btc api test', ()=> {
         // console.log(ctx);
     });
     it('TC002: htlc lock and wan notice', async ()=>{
+        let tx = btcUtil.btc2wbtcLock();
         let txhash = await fundHtlc();
         lastTxid = txhash;
         console.log("htcl lock hash: ", txhash);

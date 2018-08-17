@@ -11,6 +11,7 @@ const print4debug = console.log;
 var alice = bitcoin.ECPair.fromWIF(
     'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
 );
+const secp256k1 = require("secp256k1");
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 var contractsMap = {};
@@ -48,9 +49,7 @@ const btcUtil = {
     },
 
 
-    hashtimelockcontract(storemanHash160, redeemblocknum,destHash160, revokerHash160){
-        let x = redeemblocknum.toString(16);
-        let hashx = bitcoin.crypto.sha256(x).toString('hex');
+    hashtimelockcontract(hashx, redeemblocknum,destHash160, revokerHash160){
         let redeemScript = bitcoin.script.compile([
             /* MAIN IF BRANCH */
             bitcoin.opcodes.OP_IF,
@@ -87,7 +86,6 @@ const btcUtil = {
 
         return {
             'p2sh': address,
-            'x': x,
             'hashx': hashx,
             'redeemblocknum' : redeemblocknum,
             'redeemScript': redeemScript
@@ -130,7 +128,7 @@ const btcUtil = {
         }
     },
 
-    async getAddress() {
+    async getAddressList() {
         return await  lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
             let btcAddressList = await btcAddress.find();
             lokiDbCollection.btcDb.close();
@@ -236,7 +234,7 @@ const btcUtil = {
         let txId = await this.lock(contract,amount,keyPairArray,feeRate);
 
         if (txId != undefined) {
-            //record it in map
+            //record it in map; TODO change to DB.
             contractsMap[txId] = contract;
             XXMap[txId] = XX;
             return {txId:txId,hashX:hashX,redeemblocknum:contract['redeemblocknum']};
