@@ -1,12 +1,6 @@
 'use strict';
 
-<<<<<<< HEAD
 const pu = require('promisefy-util');
-=======
-const Htlc = require('./wanchaintrans/btc_cross_transactions/btcHTLCTransaction');
-var htlc;
-
->>>>>>> 7c47ddf5e7363b6dd0f4139ce4f7c436ea70a441
 const bitcoin  = require('bitcoinjs-lib');
 const wif = require('wif');
 const bip38 = require('bip38');
@@ -29,16 +23,12 @@ const LOCK_BLK_NUMBER = 10;
 
 const network = bitcoin.networks.testnet;
 
-const feeOptions = { minChange: 100, fee: 100 }
+const feeOptions = { minChange: 100, fee: 100 };
 const feeRate = 55;
-
-
-
 
 
 let bitcoinNetwork = config.bitcoinNetwork;
 let version = config.bitcoinVersion;
-
 
 const btcUtil = {
     createBtcAddr(){
@@ -51,24 +41,16 @@ const btcUtil = {
         console.log("WIF: ", WIF);
         // todo save address to where?
     },
-<<<<<<< HEAD
 
     getAddressbyKeypair(keypair) {
         const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
         return pkh.address;
     },
 
-    hashtimelockcontract(storemanHash160,xHash, redeemblocknum){
-=======
-    getECPairs(passwd){
-        return [alice];
-    },
-
 
     hashtimelockcontract(storemanHash160, redeemblocknum,destHash160, revokerHash160){
         let x = redeemblocknum.toString(16);
         let hashx = bitcoin.crypto.sha256(x).toString('hex');
->>>>>>> 7c47ddf5e7363b6dd0f4139ce4f7c436ea70a441
         let redeemScript = bitcoin.script.compile([
             /* MAIN IF BRANCH */
             bitcoin.opcodes.OP_IF,
@@ -112,8 +94,6 @@ const btcUtil = {
         }
 
     },
-
-<<<<<<< HEAD
 
     async decryptedWIF(encrypted, pwd) {
         let decryptedKey = await bip38.decrypt(encrypted, pwd);
@@ -197,19 +177,17 @@ const btcUtil = {
                 return null
             }
         });
-    }
+    },
 
-
-=======
     // init() {
     //     htlc = new Htlc();
     //     htlc.init();
     // },
 
-    getAddress(keypair){
-        let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
-        return pkh.address;
-    },
+    // getAddress(keypair){
+    //     let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
+    //     return pkh.address;
+    // },
 
 
 
@@ -543,10 +521,6 @@ const btcUtil = {
         delete contractsMap[fundtx.vout.address];
         return result;
     }
-
-
-
->>>>>>> 7c47ddf5e7363b6dd0f4139ce4f7c436ea70a441
 };
 
 exports.btcUtil = btcUtil;
