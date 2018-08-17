@@ -1,5 +1,7 @@
 'use strict';
 
+const Htlc = require('./wanchaintrans/btc_cross_transactions/btcHTLCTransaction');
+var htlc;
 
 const bitcoin  = require('bitcoinjs-lib');
 const print4debug = console.log;
@@ -73,7 +75,42 @@ const btcUtil = {
             'redeemScript': redeemScript
         }
 
+    },
+
+    init() {
+        htlc = new Htlc();
+        htlc.init();
+    },
+
+    getAddress(keypair){
+        htlc.getAddress(keypair);
+    },
+
+    async btc2wbtcLock(keyPairArray, amount, feeRate, destHash160) {
+        return htlc.btc2wbtcLock(keyPairArray, amount, feeRate, destHash160);
+    },
+
+    async wbtc2btcLock(keyPairArray, amount, feeRate, destHash160) {
+        return htlc.wbtc2btcLock(keyPairArray, amount, feeRate, destHash160);
+    },
+
+
+    async btc2wbtcRefund(txHash, refunderKeyPair) {
+        return htlc.btc2wbtcRefund(txHash, refunderKeyPair);
+    },
+
+    async wbtc2btcrefund(txHash, refunderKeyPair) {
+        return htlc.wbtc2btcrefund(txHash, refunderKeyPair);
+    },
+
+    async btc2wbtcRevoke(txHash, revokerKeyPair) {
+        return htlc.btc2wbtcRevoke(txHash, revokerKeyPair);
+    },
+
+    async wbtc2btcRevoke(txHash, revokerKeyPair) {
+        return htlc.wbtc2btcRevoke(txHash, revokerKeyPair);
     }
+
 };
 
 exports.btcUtil = btcUtil;
