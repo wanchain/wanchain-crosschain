@@ -26,6 +26,7 @@ async function recordMonitor(config, ethSend,wanSend){
 }
 class walletcore  {
     constructor(config){
+        global.config = config;
         this.socketUrl = config.socketUrl;
         global.getLogger = config.getLogger;
         this.wanSend = new sendFromSocket(null,'WAN');
@@ -87,6 +88,7 @@ class walletcore  {
             });
             newWebSocket.connection.on('open', function _cb(){
                 recordMonitor(config,self.ethSend, self.wanSend);
+                //btcUtil.init();
                 be.init(config, self.ethSend, self.wanSend,self.btcSend,function(){
                     resolve();
                 });

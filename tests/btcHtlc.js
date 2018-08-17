@@ -7,6 +7,8 @@ const Client = require('bitcoin-core');
 const config = require('../config.js');
 const pu = require('promisefy-util');
 const assert = require('chai').assert;
+const Web3 = require("web3");
+var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const btcserver={
     regtest:{
@@ -36,9 +38,10 @@ function getAddress(keypair){
     return pkh.address;
 }
 
-const secret = 'LgsQ5Y89f3IVkyGJ6UeRnEPT4Aum7Hvz';
-const commitment = 'bf19f1b16bea379e6c3978920afabb506a6694179464355191d9a7f76ab79483';
+let secret = 'LgsQ5Y89f3IVkyGJ6UeRnEPT4Aum7Hvz';
+let commitment = 'bf19f1b16bea379e6c3978920afabb506a6694179464355191d9a7f76ab79483';
 const storemanHash160 = Buffer.from('d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'hex');
+const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
 const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
 var storeman = bitcoin.ECPair.fromWIF(
     storemanWif, bitcoin.networks.testnet
@@ -83,57 +86,59 @@ function selectUtxo(utxos, value) {
 }
 
 
-async function hashtimelockcontract(storemanHash160,xHash, locktime){
-    let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
 
-    print4debug("blocknum:" + blocknum);
-    print4debug("Current blocknum on Bitcoin: " + blocknum);
-    let redeemblocknum = blocknum + locktime;
-    print4debug("Redeemblocknum on Bitcoin: " + redeemblocknum);
-
-    let redeemScript = bitcoin.script.compile([
-        /* MAIN IF BRANCH */
-        bitcoin.opcodes.OP_IF,
-        bitcoin.opcodes.OP_SHA256,
-        Buffer.from(xHash, 'hex'),
-        bitcoin.opcodes.OP_EQUALVERIFY,
-        bitcoin.opcodes.OP_DUP,
-        bitcoin.opcodes.OP_HASH160,
-
-        storemanHash160,// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
-        //bitcoin.crypto.hash160(storeman.publicKey),
-        bitcoin.opcodes.OP_ELSE,
-        bitcoin.script.number.encode(redeemblocknum),
-        bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
-        bitcoin.opcodes.OP_DROP,
-        bitcoin.opcodes.OP_DUP,
-        bitcoin.opcodes.OP_HASH160,
-
-        bitcoin.crypto.hash160(alice.publicKey),//alice.getPublicKeyBuffer(), // funder addr
-        /* ALMOST THE END. */
-        bitcoin.opcodes.OP_ENDIF,
-
-        // Complete the signature check.
-        bitcoin.opcodes.OP_EQUALVERIFY,
-        bitcoin.opcodes.OP_CHECKSIG
-    ]);
-    print4debug(redeemScript.toString('hex'));
-    //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
-    //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
-
-    let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: network }, network: network });
-    let address = addressPay.address;
-
-    await ccUtil.getBtcUtxo(ccUtil.btcSender, 1, 100, [address]);
-
-    return {
-        'p2sh': address,
-        'redeemblocknum' : redeemblocknum,
-        'redeemScript': redeemScript,
-        'locktime': locktime
-    }
-
-}
+//
+// async function hashtimelockcontract(storemanHash160,xHash, redeemblocknum){
+//     let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
+//
+//     print4debug("blocknum:" + blocknum);
+//     print4debug("Current blocknum on Bitcoin: " + blocknum);
+//     let redeemblocknum = blocknum + locktime;
+//     print4debug("Redeemblocknum on Bitcoin: " + redeemblocknum);
+//
+//     let redeemScript = bitcoin.script.compile([
+//         /* MAIN IF BRANCH */
+//         bitcoin.opcodes.OP_IF,
+//         bitcoin.opcodes.OP_SHA256,
+//         Buffer.from(xHash, 'hex'),
+//         bitcoin.opcodes.OP_EQUALVERIFY,
+//         bitcoin.opcodes.OP_DUP,
+//         bitcoin.opcodes.OP_HASH160,
+//
+//         storemanHash160,// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
+//         //bitcoin.crypto.hash160(storeman.publicKey),
+//         bitcoin.opcodes.OP_ELSE,
+//         bitcoin.script.number.encode(redeemblocknum),
+//         bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
+//         bitcoin.opcodes.OP_DROP,
+//         bitcoin.opcodes.OP_DUP,
+//         bitcoin.opcodes.OP_HASH160,
+//
+//         bitcoin.crypto.hash160(alice.publicKey),//alice.getPublicKeyBuffer(), // funder addr
+//         /* ALMOST THE END. */
+//         bitcoin.opcodes.OP_ENDIF,
+//
+//         // Complete the signature check.
+//         bitcoin.opcodes.OP_EQUALVERIFY,
+//         bitcoin.opcodes.OP_CHECKSIG
+//     ]);
+//     print4debug(redeemScript.toString('hex'));
+//     //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
+//     //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
+//
+//     let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: network }, network: network });
+//     let address = addressPay.address;
+//
+//     await ccUtil.getBtcUtxo(ccUtil.btcSender, 1, 100, [address]);
+//
+//     return {
+//         'p2sh': address,
+//         'redeemblocknum' : redeemblocknum,
+//         'redeemScript': redeemScript,
+//         'locktime': locktime
+//     }
+//
+// }
 // for test information.
 let lastContract;
 let lastTxid;
@@ -151,7 +156,7 @@ async function fundHtlc(){
     let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
     const lockTime = 1000;
     let redeemLockTimeStamp = blocknum + lockTime;
-    let contract = await hashtimelockcontract(storemanHash160, commitment, redeemLockTimeStamp);
+    let contract = await btcUtil.hashtimelockcontract(storemanHash160,  redeemLockTimeStamp);
     lastContract = contract;
     const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
     txb.setVersion(1);
@@ -300,23 +305,29 @@ describe('btc api test', ()=> {
         // let ctx = bitcoin.Transaction.fromHex(btx,bitcoin.networks.testnet);
         // console.log(ctx);
     });
-    it('TC002: htlc lock', async ()=>{
+    it('TC002: htlc lock and wan notice', async ()=>{
         let txhash = await fundHtlc();
         lastTxid = txhash;
         console.log("htcl lock hash: ", txhash);
-        let rawTx = await ccUtil.getTxInfo(ccUtil.btcSender, txhash);
-        console.log("rawTx:", rawTx);
-        console.log("rawTx.length:", rawTx.length);
-        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'));
-        console.log(ctx.outs);
-        let outs = ctx.outs;
-        for(let i=0; i<outs.length; i++) {
-            let out = outs[i];
-            let outScAsm = bitcoin.script.toASM(out.script);
-            let outScHex = out.script.toString('hex');
-            console.log("outScAsm", outScAsm);
-            console.log("outScHex", outScHex);
-        }
+        const tx = {};
+        tx.storeman = storemanHash160Addr;
+        tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.hashx=lastContract.hashx;
+        tx.txhash = '0x'+txhash;
+        tx.lockedTimestamp = lastContract.lockedTimestamp;
+        tx.gas = '1000000';
+        tx.gasPrice = '200000000000'; //200G;
+        tx.passwd='wanglu';
+        let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
+        console.log("sendWanNotice txHash:", txHash);
+
+        // check the utxo is received.
+        // async _verifyBtcUtxo(storemanAddr, txHash, xHash, lockedTimestamp)
+        let amount = await ccUtil._verifyBtcUtxo(storemanHash160, txhash, lastContract.hashx, lastContract.lockedTlimestamp);
+        console.log("amount:   ", amount);
+        await pu.sleep(40000);
+        console.log( await web3.eth.getTransactionReceipt(txHash));
+
     });
     // it('TC002: htlc lock', async ()=>{
     //     let txhash = await fundHtlc();

@@ -7,6 +7,7 @@ let ethHashXSend = require('../wanchaintrans/index.js').ethHashXSend;
 let NormalSend = require('../wanchaintrans/index.js').NormalSend;
 let CoinAmount = require('../wanchaintrans/index.js').CoinAmount;
 let GWeiAmount = require('../wanchaintrans/index.js').GWeiAmount;
+let TokenSend = require("../wanchaintrans/interface/transaction.js").TokenSend;
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 let logDebug;
@@ -14,6 +15,8 @@ module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
         logDebug = global.getLogger('sendTransaction');
+        let wanSc = web3.eth.contract(global.config.HTLCWBTCInstAbi);
+        this.wanIns = wanSc.at(global.config.wanchainHtlcAddr);
     }
     createTransaction(from,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
         let amount = amountWan ? new CoinAmount(amountWan) : amountWan;
@@ -31,6 +34,21 @@ module.exports = class sendTransaction{
         }
     }
 
+    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice){
+        //function btc2wbtcLockNotice(address storeman, address userWanAddr, bytes32 xHash, bytes32 txHash, uint lockedTimestamp)
+        let payload = this.wanIns.btc2wbtcLockNotice.getData(storeman,userWanAddr,hashx,txhash, lockedTimestamp);
+        // TokenSend(from, to, gas, gasprice nonce);
+        this.trans = new TokenSend(userWanAddr, config.wanchainHtlcAddr, gas, pasPrice);
+        this.trans.setAccount(WanKeyStoreDir);
+        this.trans.trans.data = payload;
+        console.log(this.trans);
+    }
+    sendNoticeTrans(password,callback){
+        let self = this;
+        self.getNonce(function () {
+            self.sendTrans(self.trans,password,self.insertNoticeData,callback);
+        })
+    }
     createNormalTransaction(from,to,value,gas,gasPriceGwei,nonce){
         let amount = value ? new CoinAmount(value) : value;
         let gasPrice = gasPriceGwei ? new GWeiAmount(gasPriceGwei) : gasPriceGwei;
@@ -115,7 +133,9 @@ module.exports = class sendTransaction{
             logDebug.debug(err,result);
             if(!err){
                 logDebug.debug("sendRawTransaction: ",result);
-                insert(trans,result,chainType);
+                if(insert){
+                    insert(trans,result,chainType);
+                }
                 callback(err,result);
             }
             else{

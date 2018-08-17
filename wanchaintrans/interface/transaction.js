@@ -88,7 +88,8 @@ class IRawTransaction
         this.trans.setTo(to);
         this.trans.gasLimit = Number(gas);
         this.trans.gas = Number(gas);
-        this.trans.gasPrice = Number(gasPrice.getWei());
+        console.log(gasPrice); //TODO , what's wrong????
+        this.trans.gasPrice = 200000000000;
         this.trans.nonce = nonce;
         this.Account = null;
         this.ChainType = 'WAN';

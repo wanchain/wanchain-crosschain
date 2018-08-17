@@ -6,7 +6,8 @@ const BigNumber = require('bignumber.js');
 const wanUtil = require("wanchain-util");
 const Client = require('bitcoin-core');
 const bitcoin  = require('bitcoinjs-lib');
-const btcUtil = require('./btcUtil');
+const btcUtil = require('./btcUtil').btcUtil;
+const bs58check = require('bs58check');
 const btcserver={
     regtest:{
         network: 'regtest',
@@ -48,6 +49,12 @@ const Backend = {
         let wei = new BigNumber(swei);
         let gwei = wei.dividedBy(exp.pow(9));
         return  gwei.toString(10);
+    },
+    toGwei(swei){
+        let exp = new BigNumber(10);
+        let wei = new BigNumber(swei);
+        let gwei = wei.dividedBy(exp.pow(9));
+        return  gwei;
     },
     getConfig(){
         return config;
@@ -157,6 +164,10 @@ const Backend = {
         let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
         return b;
     },
+    getBtcSmgList(sender) {
+        let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
+        return b;
+    },
     getTxReceipt(sender,txhash){
         let bs = pu.promisefy(sender.sendMessage, ['getTransactionReceipt',txhash], sender);
         return bs;
@@ -219,6 +230,14 @@ const Backend = {
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
+    async sendWanNotice(sender, tx) {
+        let newTrans = this.createTrans(sender);
+        //    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice, wanFrom)
+        newTrans.createDepositNotice(tx.storeman,tx.userWanAddr,tx.hashx, tx.txhash,tx.lockedTimestamp,
+            tx.gas,this.toGwei(tx.gasPrice.toString()));
+        let txhash =  await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
+        return txhash;
+    },
     async sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
         newTrans.createTransaction(from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
@@ -254,7 +273,7 @@ const Backend = {
         return p;
     },
     getDepositCrossLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.depositCrossLockEvent).toString('hex'), null, null, hashX];
+        let topics = ['0x'+wanUtil.sha3(config.depositBtcCrossLockEvent).toString('hex'), null, null, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
         return p;
     },
@@ -265,6 +284,11 @@ const Backend = {
     },
     getWithdrawOriginRefundEvent(sender, hashX) {
         let topics = ['0x'+wanUtil.sha3(config.withdrawOriginRefundEvent).toString('hex'), null, null, hashX];
+        let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
+        return p;
+    },
+    getWithdrawBtcRedeemEvent(sender, hashX) {
+        let topics = ['0x'+wanUtil.sha3(config.withdrawBtcRedeemNoticeEvent).toString('hex'), null, null, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
@@ -321,13 +345,16 @@ const Backend = {
                 let outScHex = out.script.toString('hex');
                 console.log("outScAsm", outScAsm);
                 console.log("outScHex", outScHex);
-                let p2shSc = generateP2shScript(p2sh).toString('hex');
+                const payload = bs58check.decode(p2sh).toString('hex');
+                let p2shSc = this.generateP2shScript(payload).toString('hex');
                 if(outScHex == p2shSc){
                     break;
                 }
             }
             if(i == outs.length){
-                return 0;
+                console.log("TODO: p2sh, hash160");
+                console.log(outs[0]);
+                return outs[0].value;
             }
             return outs[i].amount;
         }catch(err){
@@ -428,9 +455,6 @@ const Backend = {
     getMultiEthBalances(sender, addrs) {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);
         return bs;
-    },
-    async sendWanNotice(sender, info) {
-
     },
     getMultiWanBalances(sender, addrs) {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiBalances',addrs], sender);
