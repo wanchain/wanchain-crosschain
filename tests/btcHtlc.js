@@ -323,7 +323,7 @@ describe('btc api test', ()=> {
 
         // check the utxo is received.
         // async _verifyBtcUtxo(storemanAddr, txHash, xHash, lockedTimestamp)
-        let amount = await ccUtil._verifyBtcUtxo(storemanHash160, txhash, commitment, lastContract.lockedTlimestamp);
+        let amount = await ccUtil._verifyBtcUtxo(storemanHash160, txhash, lastContract.hashx, lastContract.lockedTlimestamp);
         console.log("amount:   ", amount);
         await pu.sleep(40000);
         console.log( await web3.eth.getTransactionReceipt(txHash));
