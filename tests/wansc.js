@@ -5,10 +5,17 @@ const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const WanchainCore = require('../walletCore.js');
 const pu = require('promisefy-util');
+const bitcoin  = require('bitcoinjs-lib');
 const config = require('../config.js');
 let wanchainCore;
 let ccUtil;
 let btcUtil;
+const storemanHash160 = Buffer.from('d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'hex');
+const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
+const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
+var storeman = bitcoin.ECPair.fromWIF(
+    storemanWif, bitcoin.networks.testnet
+);
 
 describe('wan api test', ()=>{
     before(async () => {
@@ -16,13 +23,13 @@ describe('wan api test', ()=>{
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
         await wanchainCore.init(config);
-        let kps = btcUtil.getECPairs("xx");
-        let addr = btcUtil.getAddress(kps[0]);
-        console.log("##########addr:", addr);
+        // let kps = btcUtil.getECPairs("xx");
+        // let addr = btcUtil.getAddressbyKeypair(kps[0]);
+        // console.log("##########addr:", addr);
 
         console.log("start");
     });
-    it('TC001: wan notice check', async ()=>{
+    it('TC001: wan filter check', async ()=>{
         let currentBlock = web3.eth.blockNumber;
         let filterValue = {
             fromBlock: 1000000,
@@ -37,20 +44,31 @@ describe('wan api test', ()=>{
         });
     });
 
-    it('TC001: wan notice check', async ()=>{
-        // const tx = {};
-        // tx.storeman = '0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe';
-        // tx.userWanAddr = '0xbd100cf8286136659a7d63a38a154e28dbf3e0fd';
-        // tx.hashx='0x0011223344';
-        // tx.txhash = '0x0011223344';
-        // tx.lockedTimestamp = 1234567;
-        // tx.gas = '1000000';
-        // tx.gasPrice = '200000000000'; //200G;
-        // tx.passwd='wanglu';
-        // let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
-        // console.log(txHash);
-        // await pu.sleep(20000);
-        // console.log( await web3.eth.getTransactionReceipt(txHash));
+    it('TC001: lockWbtcTest', async ()=>{
+        console.log("lockWbtcTest");
+        let btckp = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
+        let wdTx = {};
+        wdTx.storemanGroup = storemanHash160Addr;
+        wdTx.gas = '1000000';
+        wdTx.gasPrice = '200000000000'; //200G;
+        wdTx.passwd='wanglu';
+        wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        wdTx.amount = 1;
+        //newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
+        let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
+        console.log("wdHash: ",wdHash);
+        let currentBlock = web3.eth.blockNumber;
+        let filterValue = {
+            fromBlock: 1000000,
+            toBlock: currentBlock,
+            address: config.wanchainHtlcAddr,
+            topics: ["0xbc5d2ea574e7cf33bf89888310d2e83efc204c5741f027dc1e36e0c482f75504", null, null, "0xd629eb0d7a23530fabc8715bba8194b2f93d389d2efdd8c7af2a6d8707ba51d0"]
+        };
+        let filter = web3.eth.filter(filterValue);
+        let filterResult  = await pu.promisefy(filter.watch,[],filter);
+        console.log(filterResult);
+        filter.stopWatching();
+
     });
 
     after('end', async ()=>{

@@ -40,6 +40,7 @@ const btcUtil = {
         console.log("publicKey:", Pair.publicKey);
         console.log("hash160 PK:", bitcoin.crypto.hash160(Pair.publicKey).toString('hex'));
         console.log("WIF: ", WIF);
+        return Pair;
         // todo save address to where?
     },
 
