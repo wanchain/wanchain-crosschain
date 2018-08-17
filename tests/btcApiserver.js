@@ -94,11 +94,30 @@ describe('btc api test', ()=>{
         console.log("get transaction: ", tx);
     });
     */
-    it('create btc addr', ()=>{
-        btcUtil.createBtcAddr();
+    // it('create btc addr', ()=>{
+    //     btcUtil.createBtcAddr();
+    // });
+
+    // it('get all ECPair', async ()=>{
+    //     // mocha --timeout 100000 test.js
+    //     let result = await btcUtil.getECPairs('1234567890');
+    //     console.log('result: ', result);
+    // });
+
+    it('get all btcAddress', async ()=>{
+        // mocha --timeout 100000 test.js
+        let result = await btcUtil.getAddress();
+        console.log('result: ', result);
     });
+
+    // it('create btcAddress', async ()=>{
+    //     // mocha --timeout 100000 test.js
+    //     let result = await btcUtil.createAddress('1234567890');
+    //     console.log('result: ', result);
+    // });
+
     after('end', async ()=>{
         wanchainCore.close();
     })
-})
+});
 
