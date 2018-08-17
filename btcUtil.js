@@ -3,6 +3,11 @@
 
 const bitcoin  = require('bitcoinjs-lib');
 const print4debug = console.log;
+var alice = bitcoin.ECPair.fromWIF(
+    'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
+);
+const Web3 = require("web3");
+var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const btcUtil = {
     createBtcAddr(){
@@ -20,19 +25,18 @@ const btcUtil = {
         return pkh.address;
     },
     getECPairs(passwd){
-        var alice = bitcoin.ECPair.fromWIF(
-            'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
-        );
         return [alice];
     },
 
 
-    hashtimelockcontract(storemanHash160,xHash, redeemblocknum){
+    hashtimelockcontract(storemanHash160, redeemblocknum){
+        let x = redeemblocknum.toString(16);
+        let hashx = bitcoin.crypto.sha256(x).toString('hex');
         let redeemScript = bitcoin.script.compile([
             /* MAIN IF BRANCH */
             bitcoin.opcodes.OP_IF,
             bitcoin.opcodes.OP_SHA256,
-            Buffer.from(xHash, 'hex'),
+            Buffer.from(hashx, 'hex'),
             bitcoin.opcodes.OP_EQUALVERIFY,
             bitcoin.opcodes.OP_DUP,
             bitcoin.opcodes.OP_HASH160,
@@ -58,11 +62,13 @@ const btcUtil = {
         //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
         //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
 
-        let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: network }, network: network });
+        let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: bitcoin.networks.testnet }, network: bitcoin.networks.testnet });
         let address = addressPay.address;
 
         return {
             'p2sh': address,
+            'x': x,
+            'hashx': hashx,
             'redeemblocknum' : redeemblocknum,
             'redeemScript': redeemScript
         }

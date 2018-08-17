@@ -94,10 +94,11 @@ config.wanRefundGas = 120000; // 34881;
 config.wanRevokeGas = 80000; // 49917;
 
 config.originalChainHtlc = "0xc99dd674d4821f9d7e2471547e769cc62878ff13";
-config.wanchainHtlcAddr = "0x78f365b6b605a460587781a37824f3ea165c16db";
+config.wanchainHtlcAddr = "0x3f3b40c6d458ba3caa460c007e9e77ddeac272ae";
 
 config.depositOriginLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256,address)';
 config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';
+config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
 
 //btc
 config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,uint256)';
@@ -127,7 +128,7 @@ config.HTLCWBTCInstAbi=[{"constant":true,"inputs":[{"name":"","type":"bytes32"}]
 config.btcServer={
     regtest:{
         network: 'regtest',
-        host: "192.168.1.58",
+        host: "18.237.186.227",
         port: 18443,
         username: "USER",
         password: "PASS"
