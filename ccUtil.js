@@ -72,8 +72,10 @@ const Backend = {
         logger = config.getLogger("crossChainUtil");
         this.ethAddrs  = Object.keys(this.EthKeyStoreDir.getAccounts());
         this.wanAddrs  = Object.keys(this.WanKeyStoreDir.getAccounts());
-        //global.lockedTime = await this.getEthLockTime(this.ethSender);
-        //this.c2wRatio = await this.getEthC2wRatio(this.wanSender);
+        global.lockedTime = await this.getWanLockTime(this.wanSender);
+        console.log("global.lockedTime: ",global.lockedTime);
+        this.c2wRatio = await this.getBtcC2wRatio(this.wanSender);
+        console.log("this.c2wRatio:", this.c2wRatio);
         if(cb)cb();
     },
 
@@ -314,8 +316,12 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getScVar', config.originalChainHtlc, 'lockedTime',config.HTLCETHInstAbi], sender);
         return p;
     },
-    getEthC2wRatio(sender){
-        let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','ETH'], sender);
+    getWanLockTime(sender){
+        let p = pu.promisefy(sender.sendMessage, ['getScVar', config.wanchainHtlcAddr, 'lockedTime',config.HTLCWBTCInstAbi], sender);
+        return p;
+    },
+    getBtcC2wRatio(sender){
+        let p = pu.promisefy(sender.sendMessage, ['getCoin2WanRatio','BTC'], sender);
         return p;
     },
     getBtcUtxo(sender, minconf, maxconf, addresses){

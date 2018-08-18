@@ -13,7 +13,7 @@ module.exports = {
         return new socketmessage('getMultiBalances',{address:address},'balance',chainType,callBack);
     },
     getMultiTokenBalance(address,chainType,callBack){
-        return new socketmessage('getMultiTokenBalance',{address:address, tokenType:"WETH"},'tokenBalance',chainType,callBack);
+        return new socketmessage('getMultiTokenBalance',{address:address, tokenScAddr:global.config.WBTCToken},'tokenBalance',chainType,callBack);
     },
     getGasPrice(chainType, callBack){
         return new socketmessage('getGasPrice',{}, "gasPrice", chainType, callBack);
