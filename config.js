@@ -101,6 +101,7 @@ config.wanRevokeGas = 80000; // 49917;
 
 config.originalChainHtlc = "0xc99dd674d4821f9d7e2471547e769cc62878ff13";
 config.wanchainHtlcAddr = "0x3f3b40c6d458ba3caa460c007e9e77ddeac272ae";
+config.WBTCToken = "0x758a6a5541e17a2f166893f4b9adb6224fdf964a";
 
 config.depositOriginLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256,address)';
 config.depositCrossLockEvent = 'ETH2WETHLock(address,address,bytes32,uint256)';

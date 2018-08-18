@@ -13,7 +13,8 @@ let socketServer = require("./wanchainsender/index.js").socketServer;
 const mr =  require('./monitor.js').MonitorRecord;
 const be =  require('./ccUtil.js').Backend;
 const btcUtil =  require('./btcUtil.js').btcUtil;
-
+const _ = require('underscore');
+let config = require('./config');
 let montimer;
 async function recordMonitor(config, ethSend,wanSend){
     await mr.init(config, ethSend,wanSend);
@@ -25,7 +26,8 @@ async function recordMonitor(config, ethSend,wanSend){
     }, 6000);
 }
 class walletcore  {
-    constructor(config){
+    constructor(cfg){
+        _.extend(config, cfg);
         global.config = config;
         this.socketUrl = config.socketUrl;
         global.getLogger = config.getLogger;
