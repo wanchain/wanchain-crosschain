@@ -94,6 +94,18 @@ const btcUtil = {
 
     },
 
+    selectUtxoTest(utxos, value) {
+        let utxo;
+        for(let i=0; i<utxos.length; i++){
+            if(utxos[i].amount >= value){
+                utxo = utxos[i];
+                console.log("find utxo:", utxo);
+                return utxo;
+            }
+        }
+        console.log("can't find");
+        return null;
+    },
     async decryptedWIF(encrypted, pwd) {
         let decryptedKey = await bip38.decrypt(encrypted, pwd);
         let privateKeyWif = await wif.encode(version, decryptedKey.privateKey, decryptedKey.compressed);

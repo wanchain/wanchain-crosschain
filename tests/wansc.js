@@ -17,6 +17,7 @@ var storeman = bitcoin.ECPair.fromWIF(
     storemanWif, bitcoin.networks.testnet
 );
 
+
 describe('wan api test', ()=>{
     before(async () => {
         wanchainCore = new WanchainCore(config);
@@ -71,6 +72,88 @@ describe('wan api test', ()=>{
 
     });
 
+    it('TC001: lockBtcTest', async ()=>{
+        let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [aliceAddr]);
+        console.log("utxos: ", utxos);
+
+        let utxo = btcUtil.selectUtxoTest(utxos, value2);
+        if(!utxo){
+            console.log("############## no utxo");
+            return;
+        }
+        //console.log("utxo: ", utxo);
+
+        // generate script and p2sh address
+        let blocknum = await ccUtil.getBlockNumber(ccUtil.btcSender);
+        const lockTime = 1000;
+        let redeemLockTimeStamp = blocknum + lockTime;
+        let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        console.log("############### x:",x);
+        console.log("############### hashx:",hashx);
+
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, storemanHash160,aliceHash160Addr);
+        contract.x = x;
+
+        const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setVersion(1);
+        txb.addInput(utxo.txid, utxo.vout);
+        txb.addOutput(contract['p2sh'], value*100000000); // fee is 1
+        txb.sign(0, alice);
+
+        const rawTx = txb.build().toHex();
+        console.log("rawTx: ", rawTx);
+
+        let btcHash = await ccUtil.sendRawTransaction(ccUtil.btcSender,rawTx);
+        console.log("btc result hash:", btcHash);
+
+        // notice wan.
+        const tx = {};
+        tx.storeman = storemanHash160Addr;
+        tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.hashx = '0x'+lastContract.hashx;
+        tx.txhash = btcHash;
+        tx.lockedTimestamp = lastContract.redeemblocknum;
+        tx.gas = '1000000';
+        tx.gasPrice = '200000000000'; //200G;
+        tx.passwd='wanglu';
+        console.log("######## tx.hashx: ", tx.hashx);
+        let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
+        console.log("sendWanNotice txHash:", txHash);
+
+        //wait storeman lock
+        console.log("check storeman lock tx");
+        while(1){
+            let crossEvent = await ccUtil.getDepositCrossLockEvent(ccUtil.wanSender, tx.hashx);
+            console.log(crossEvent);
+            if(crossEvent.length == 0){
+                console.log("wait...");
+                await pu.sleep(10000);
+            }
+            else{
+                break;
+            }
+        }
+
+        // sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce)
+        console.log("x: ", lastContract.x);
+        let redeemHash = await ccUtil.sendDepositX(ccUtil.wanSender, tx.userWanAddr,tx.gas,tx.gasPrice,'0x'+lastContract.x, tx.passwd);
+        console.log("redeemHash: ", redeemHash);
+
+        // filteer watch.
+        let currentBlock = web3.eth.blockNumber;
+        let filterValue = {
+            fromBlock: 1000000,
+            toBlock: currentBlock,
+            address: config.wanchainHtlcAddr,
+            topics: ["0xbc5d2ea574e7cf33bf89888310d2e83efc204c5741f027dc1e36e0c482f75504", null, null, "0xd629eb0d7a23530fabc8715bba8194b2f93d389d2efdd8c7af2a6d8707ba51d0"]
+        };
+        let filter = web3.eth.filter(filterValue);
+        let filterResult  = await pu.promisefy(filter.watch,[],filter);
+        console.log(filterResult);
+        filter.stopWatching();
+
+    });
     after('end', async ()=>{
         wanchainCore.close();
     });
