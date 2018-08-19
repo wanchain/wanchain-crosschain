@@ -580,7 +580,15 @@ const Backend = {
             network: bitcoin.networks.testnet
         }).input;
         tx.setInputScript(0, redeemScriptSig);
-        console.log("===redeemScriptSig: ", bitcoin.script.toASM(redeemScriptSig));
+        console.log("?????????????????redeemScriptSig: ", redeemScriptSig.toString('hex'));
+        console.log("?????????????????redeemScriptSig: ASM ", bitcoin.script.toASM(redeemScriptSig));
+        let lockS = bitcoin.script.toASM(redeemScriptSig).split(' ');
+        console.log(lockS[4]);
+        let sc2 = bitcoin.script.compile(Buffer.from(lockS[4],'hex'));
+        console.log("?????????????????lockS: ASM ", bitcoin.script.toASM(sc2));
+
+
+        console.log("alice.publicKey:", alice.publicKey.toString('hex'));
         console.log("redeem tx: ", tx);
         console.log("redeem raw tx: \n" + tx.toHex());
         const btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex(),
