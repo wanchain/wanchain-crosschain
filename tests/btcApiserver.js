@@ -140,6 +140,16 @@ describe('btc api test', ()=>{
         let result = await btcUtil.getAddress();
         console.log('result: ', result);
     });
+    it('TC001: getUtxoValueById', async ()=>{
+        const txid = "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774";  // 12345000
+        let value;
+        value = await ccUtil.getUtxoValueByIdStoreman(txid);
+        console.log('result: ', value);
+        assert(value, 12345000,"wrong value");
+        value = await ccUtil.getUtxoValueByIdWallet(txid);
+        assert(value, 12345000,"wrong value");
+        console.log('result: ', value);
+    });
 
     after('end', async ()=>{
         wanchainCore.close();

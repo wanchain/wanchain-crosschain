@@ -205,6 +205,9 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getTxInfo',txhash], sender);
         return bs;
     },
+    getRawTransaction(sender,txhash){
+        return getTxInfo(sender,txhash);
+    },
     createEthAddr(keyPassword){
         let params = { keyBytes: 32, ivBytes: 16 };
         let dk = keythereum.create(params);
@@ -567,6 +570,19 @@ const Backend = {
         contract.txHash = btcHash;
         return contract;
     },
+    // wallet api, use api server.
+    async  getUtxoValueByIdWallet(txid){
+        let rawTx = await this.getRawTransaction(this.btcSender, txid);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        return ctx.outs[0].value;
+    },
+    // wallet api, use client.
+    async getUtxoValueByIdStoreman(txid){
+        let rawTx = await client.getRawTransaction(txid);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        return ctx.outs[0].value;
+    },
+
     // when wbtc->btc,  storeman --> wallet.
     //storeman is sender.  wallet is receiverKp.
     // when btc->wbtc,  wallet --> storeman;
