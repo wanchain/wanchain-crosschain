@@ -32,7 +32,7 @@ let aliceAddr;
 
 const aliceHash160Addr = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
 let storemanAddr;
-
+console.log("aliceHash160Addr:", aliceHash160Addr);
 async function waitEventbyHashx(eventName,abi, hashx) {
     let eventHash = ccUtil.getEventHash(eventName, abi);
     console.log("eventHash: ", eventHash);

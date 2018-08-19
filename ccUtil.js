@@ -571,20 +571,19 @@ const Backend = {
     //storeman is sender.  wallet is receiverKp.
     // when btc->wbtc,  wallet --> storeman;
     // wallet is sender, storeman is receiver;
-    async redeem(x,hashx, redeemLockTimeStamp, senderKp,receiverKp, value, txid, record){
+    async redeem(x,hashx, redeemLockTimeStamp, senderH160Addr,receiverKp, value, txid){
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
-            bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex'),bitcoin.crypto.hash160(senderKp.publicKey).toString('hex'));
+            bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex'),senderH160Addr);
         let redeemScript = contract['redeemScript'];
-        //return this._redeem(redeemScript, txid, x,senderKp, receiverKp, value)
-        return this._redeem(redeemScript,txid , x, storeman, alice, value);
+        return this._redeem(redeemScript,txid , x, storeman,  value);
     },
-    async _redeem(redeemScript, txid, x, senderKp, receiverKp, value){
+    async _redeem(redeemScript, txid, x,  receiverKp, value){
         //const redeemScript = contract['redeemScript'];
 
         var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(txid, 0);
-        txb.addOutput(btcUtil.getAddressbyKeypair(alice), (value-FEE-FEE-FEE)*100000000);
+        txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value-FEE-FEE-FEE)*100000000);
 
         const tx = txb.buildIncomplete();
         const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -592,8 +591,8 @@ const Backend = {
         const redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
                 input: bitcoin.script.compile([  // TODO: alias is who
-                    bitcoin.script.signature.encode(alice.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-                    alice.publicKey,
+                    bitcoin.script.signature.encode(receiverKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
+                    receiverKp.publicKey,
                     Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
                 ]),
