@@ -559,7 +559,7 @@ const Backend = {
         const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(utxo.txid, utxo.vout);
-        txb.addOutput(contract['p2sh'], (value-FEE-FEE)*100000000); // fee is 1
+        txb.addOutput(contract['p2sh'], (value-900000)); // fee is 1
         txb.sign(0, senderKp);
 
         const rawTx = txb.build().toHex();
@@ -595,7 +595,7 @@ const Backend = {
         const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(utxo.txid, utxo.vout);
-        txb.addOutput(contract['p2sh'], (value-FEE-FEE)*100000000); // fee is 1
+        txb.addOutput(contract['p2sh'], (value-9000000)); // fee is 1
         txb.sign(0, senderKp);
 
         const rawTx = txb.build().toHex();
@@ -635,7 +635,7 @@ const Backend = {
         var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(txid, 0);
-        txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value-FEE-FEE-FEE)*100000000);
+        txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value-9000000));
 
         const tx = txb.buildIncomplete();
         const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);

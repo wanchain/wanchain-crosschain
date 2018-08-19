@@ -90,22 +90,29 @@ describe('wan api test', ()=>{
         console.log("wdHash: ",wdHash);
 
         // wait tx confirm
-        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, wdHash);
+        // await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, wdHash);
 
         // wait storeman lock notice.
-        // await client.sendToAddress(storemanAddr, 2);
-        // await client.generate(1);
-        // let withdrawValue = value;// TODO: how to get hte value.
-        // let record = await ccUtil.fund(storeman, aliceHash160Addr, withdrawValue);
-        // await client.generate(1);
-        // await client.generate(1);
-        // // stomen send notice.
-        // // wait confirm
+        await client.sendToAddress(storemanAddr, 2);
+        await client.generate(1);
+        let withdrawValue = value;// TODO: how to get hte value.
+        let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, withdrawValue, hashx);
+        await client.generate(1);
+        await client.generate(1);
+        // stomen send notice.
+        // wait confirm
 
         // wallet wait storeman event.
+        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
+
         // wallet send redeem.
-        // let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
-        // console.log(walletRedeem);
+        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
+        console.log(walletRedeem);
+        let rawTx = await client.getRawTransaction(walletRedeem);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        console.log("lockWbtcTest redeem:",ctx);
 
     });
     it('TC001: scanBlock', async ()=>{
