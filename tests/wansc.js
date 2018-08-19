@@ -111,7 +111,13 @@ describe('wan api test', ()=>{
         console.log(walletRedeem);
 
     });
-
+    it('TC001: scanBlock', async ()=>{
+        let bheight = await client.getBlockCount();
+        let cur = bheight ; // wait 1 block;
+        let bhash = await client.getBlockHash(cur);
+        let block = await client.getBlock(bhash, 2); // include txs
+        console.log(block);
+    });
     it('TC001: lockBtcTest', async ()=>{
         await client.sendToAddress(aliceAddr, 2);
         await client.generate(1);

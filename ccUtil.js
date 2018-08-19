@@ -363,34 +363,39 @@ const Backend = {
         return b;
     },
     // storeman
-    async _verifyBtcUtxo(storemanAddr, txHash, xHash, lockedTimestamp){ // utxo.amount
+    async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp){ // utxo.amount
         try {
             let rewTx = await client.getRawTransaction(txHash);
             //ccUtil.getTxInfo();
             let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'),bitcoin.networks.testnet);
             console.log("verifyBtcUtxo ctx:", ctx);
-            let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
-            let p2sh = contract['p2sh'];
-            let outs = ctx.outs;
-            let i;
-            for(i=0; i<outs.length; i++) {
-                let out = outs[i];
-                let outScAsm = bitcoin.script.toASM(out.script);
-                let outScHex = out.script.toString('hex');
-                console.log("outScAsm", outScAsm);
-                console.log("outScHex", outScHex);
-                const payload = bs58check.decode(p2sh).toString('hex');
-                let p2shSc = this.generateP2shScript(payload).toString('hex');
-                if(outScHex == p2shSc){
-                    break;
-                }
+            if(ctx){
+                return ctx.outs[0].value;
             }
-            if(i == outs.length){
-                console.log("TODO: p2sh, hash160");
-                console.log(outs[0]);
-                return outs[0].value;
-            }
-            return outs[i].amount;
+            return 0;
+            //TODO: add user.
+            // let contract = btcUtil.hashtimelockcontract(hashx, lockedTimestamp,storemanAddr, );
+            // let p2sh = contract['p2sh'];
+            // let outs = ctx.outs;
+            // let i;
+            // for(i=0; i<outs.length; i++) {
+            //     let out = outs[i];
+            //     let outScAsm = bitcoin.script.toASM(out.script);
+            //     let outScHex = out.script.toString('hex');
+            //     console.log("outScAsm", outScAsm);
+            //     console.log("outScHex", outScHex);
+            //     const payload = bs58check.decode(p2sh).toString('hex');
+            //     let p2shSc = this.generateP2shScript(payload).toString('hex');
+            //     if(outScHex == p2shSc){
+            //         break;
+            //     }
+            // }
+            // if(i == outs.length){
+            //     console.log("TODO: p2sh, hash160");
+            //     console.log(outs[0]);
+            //     return outs[0].value;
+            // }
+            // return outs[i].amount;
         }catch(err){
             console.log("verifyBtcUtxo: ",err);
             return 0;
