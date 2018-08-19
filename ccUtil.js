@@ -33,6 +33,7 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+const FEE = 0.001
 
 const Backend = {
     CreaterSockSenderByChain(ChainType) {
@@ -235,7 +236,7 @@ const Backend = {
     async sendWanNotice(sender, tx) {
         let newTrans = this.createTrans(sender);
         //    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice, wanFrom)
-        newTrans.createDepositNotice(tx.storeman,tx.userWanAddr,tx.hashx, tx.txhash,tx.lockedTimestamp,
+        newTrans.createDepositNotice(tx.storeman,tx.userWanAddr,tx.hashx, tx.txHash,tx.lockedTimestamp,
             tx.gas,this.toGwei(tx.gasPrice.toString()));
         let txhash =  await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
         return txhash;
@@ -471,13 +472,108 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getMultiTokenBalance',addrs], sender);
         return bs;
     },
+    getEventHash(eventName, contractAbi) {
+        return '0x' + wanUtil.sha3(this.getcommandString(eventName, contractAbi)).toString('hex');
+    },
 
+    getcommandString(funcName, contractAbi) {
+        for (var i = 0; i < contractAbi.length; ++i) {
+            let item = contractAbi[i];
+            if (item.name == funcName) {
+                let command = funcName + '(';
+                for (var j = 0; j < item.inputs.length; ++j) {
+                    if (j != 0) {
+                        command = command + ',';
+                    }
+                    command = command + item.inputs[j].type;
+                }
+                command = command + ')';
+                console.log("commmand: ",command);
+                return command;
+            }
+        }
+    },
     updateStatus(key, Status){
         let value = this.collection.findOne({HashX:key});
         if(value){
             value.status = Status;
             this.collection.update(value);
         }
+    },
+    async fund(senderKp, ReceiverHash160Addr, value ){
+        // generate script and p2sh address
+        let blocknum = await this.getBlockNumber(this.btcSender);
+        const lockTime = 1000;
+        let redeemLockTimeStamp = blocknum + lockTime;
+
+        let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        console.log("############### x:",x);
+        console.log("############### hashx:",hashx);
+        let senderH160Addr = bitcoin.crypto.hash160(senderKp.publicKey).toString('hex');
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr,senderH160Addr);
+        contract.x = x;
+        contract.hashx = hashx;
+
+        let utxos = await this.getBtcUtxo(this.btcSender, 0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
+        let utxo = btcUtil.selectUtxoTest(utxos, value-FEE);
+        if(!utxo){
+            console.log("############## no utxo");
+            throw("no utox.");
+        }
+        console.log("utxo: ", utxo);
+        const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setVersion(1);
+        txb.addInput(utxo.txid, utxo.vout);
+        txb.addOutput(contract['p2sh'], (value-FEE-FEE)*100000000); // fee is 1
+        txb.sign(0, senderKp);
+
+        const rawTx = txb.build().toHex();
+        console.log("rawTx: ", rawTx);
+
+        let btcHash = await this.sendRawTransaction(this.btcSender,rawTx);
+        console.log("btc result hash:", btcHash);
+        contract.txHash = btcHash;
+        return contract;
+    },
+    async redeem(x,hashx, redeemLockTimeStamp, senderKp,receiverKp, value, txid){
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
+            bitcoin.crypto.hash160(receiverKp.publicKey),bitcoin.crypto.hash160(senderKp.publicKey));
+        const redeemScript = contract['redeemScript'];
+        return this._redeem(redeemScript, txid, x,senderKp, receiverKp, value)
+    },
+    async _redeem(redeemScript, txid, x, senderKp, receiverKp, value){
+        //const redeemScript = contract['redeemScript'];
+
+        var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setVersion(1);
+        txb.addInput(txid, 0);
+        txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value-FEE-FEE-FEE)*100000000);
+
+        const tx = txb.buildIncomplete();
+        const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+
+        const redeemScriptSig = bitcoin.payments.p2sh({
+            redeem: {
+                input: bitcoin.script.compile([
+                    bitcoin.script.signature.encode(senderKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
+                    senderKp.publicKey,
+                    Buffer.from(x, 'utf-8'),
+                    bitcoin.opcodes.OP_TRUE
+                ]),
+                output: redeemScript,
+            },
+            network: bitcoin.networks.regtest
+        }).input;
+        tx.setInputScript(0, redeemScriptSig);
+        console.log("===redeemScriptSig: ", bitcoin.script.toASM(redeemScriptSig));
+        console.log("redeem tx: ", tx);
+        console.log("redeem raw tx: \n" + tx.toHex());
+        const btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex(),
+            function(err){console.log(err);}
+        );
+        console.log("redeem tx id:" + btcHash);
+        return btcHash;
     },
 
 }

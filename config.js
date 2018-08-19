@@ -71,7 +71,7 @@ config.OTAMixNumber = 8;
 config.StampMixNumber = 3;
 config.useLocalNode = false;
 
-config.loglevel = 'debug';
+config.loglevel = 'info';
 
 config.listOption = true;
 const Logger = require('./logger.js');

@@ -17,7 +17,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 var contractsMap = {};
 var XXMap = {};
 
-//FEE = 0.001
+const FEE = 0.001
 const MAX_CONFIRM_BLKS = 10000000;
 const MIN_CONFIRM_BLKS = 0;
 const LOCK_BLK_NUMBER = 10;
@@ -30,6 +30,15 @@ const feeRate = 55;
 
 let bitcoinNetwork = config.bitcoinNetwork;
 let version = config.bitcoinVersion;
+function addressTrip0x(addr){
+    if(0 == addr.indexOf('0x')){
+        console.log("????????????old addr: ", addr);
+        console.log("????????????new addr: ", addr.slice(2));
+
+        return addr.slice(2);
+    }
+    return addr;
+}
 
 const btcUtil = {
     createBtcAddr(){
@@ -49,8 +58,7 @@ const btcUtil = {
         return pkh.address;
     },
 
-
-    hashtimelockcontract(hashx, redeemblocknum,destHash160, revokerHash160){
+    hashtimelockcontract(hashx, redeemblocknum,destHash160Addr, revokerHash160Addr){
         let redeemScript = bitcoin.script.compile([
             /* MAIN IF BRANCH */
             bitcoin.opcodes.OP_IF,
@@ -60,7 +68,7 @@ const btcUtil = {
             bitcoin.opcodes.OP_DUP,
             bitcoin.opcodes.OP_HASH160,
 
-            Buffer.from(destHash160, 'hex'),// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
+            Buffer.from(addressTrip0x(destHash160Addr), 'hex'),// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
             //bitcoin.crypto.hash160(storeman.publicKey),
             bitcoin.opcodes.OP_ELSE,
             bitcoin.script.number.encode(redeemblocknum),
@@ -69,7 +77,7 @@ const btcUtil = {
             bitcoin.opcodes.OP_DUP,
             bitcoin.opcodes.OP_HASH160,
 
-            Buffer.from(revokerHash160, 'hex'),
+            Buffer.from(addressTrip0x(revokerHash160Addr), 'hex'),
             //bitcoin.crypto.hash160(alice.publicKey),//alice.getPublicKeyBuffer(), // funder addr
             /* ALMOST THE END. */
             bitcoin.opcodes.OP_ENDIF,
