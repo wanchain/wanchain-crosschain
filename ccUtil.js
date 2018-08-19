@@ -20,7 +20,9 @@ const btcserver={
 var alice = bitcoin.ECPair.fromWIF(
     'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
 );
+const aliceHash160Addr = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
 const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
+const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
 var storeman = bitcoin.ECPair.fromWIF(
     storemanWif, bitcoin.networks.testnet
 );
@@ -543,11 +545,13 @@ const Backend = {
         contract.txHash = btcHash;
         return contract;
     },
-    // when alice --> bob.
-    //alice is sender.  bob is receiverKp.
+    // when wbtc->btc,  storeman --> wallet.
+    //storeman is sender.  wallet is receiverKp.
+    // when btc->wbtc,  wallet --> storeman;
+    // wallet is sender, storeman is receiver;
     async redeem(x,hashx, redeemLockTimeStamp, senderKp,receiverKp, value, txid, record){
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
-            bitcoin.crypto.hash160(senderKp.publicKey),bitcoin.crypto.hash160(receiverKp.publicKey));
+            bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex'),bitcoin.crypto.hash160(senderKp.publicKey).toString('hex'));
         let redeemScript = contract['redeemScript'];
         //return this._redeem(redeemScript, txid, x,senderKp, receiverKp, value)
         return this._redeem(redeemScript,txid , x, storeman, alice, value);

@@ -107,7 +107,7 @@ describe('wan api test', ()=>{
 
         // wallet wait storeman event.
         //wallet send redeem.
-        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemblocknum, storeman,alice, value, record.txHash, record);
+        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
         console.log(walletRedeem);
 
     });
