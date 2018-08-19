@@ -30,7 +30,7 @@ var alice = bitcoin.ECPair.fromWIF(
 const userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
 let aliceAddr;
 
-const aliceHash160Addr = bitcoin.crypto.hash160(storeman.publicKey).toString('hex');
+const aliceHash160Addr = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
 let storemanAddr;
 
 async function waitEventbyHashx(eventName,abi, hashx) {
@@ -56,12 +56,12 @@ async function waitEventbyHashx(eventName,abi, hashx) {
 }
 describe('wan api test', ()=>{
     before(async () => {
-        wanchainCore = new WanchainCore(config);
+        wanchainCore = new WanchainCore({});
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
         aliceAddr = btcUtil.getAddressbyKeypair(alice);
         storemanAddr = btcUtil.getAddressbyKeypair(storeman);
-        await wanchainCore.init(config);
+        await wanchainCore.init();
         // let kps = btcUtil.getECPairs("xx");
         // let addr = btcUtil.getAddressbyKeypair(kps[0]);
         // console.log("##########addr:", addr);
@@ -75,37 +75,39 @@ describe('wan api test', ()=>{
 
     it('TC001: lockWbtcTest', async ()=>{
         console.log("lockWbtcTest");
-        let wdTx = {};
-        wdTx.storemanGroup = storemanWanAddr;
-        wdTx.gas = '1000000';
-        wdTx.gasPrice = '200000000000'; //200G;
-        wdTx.passwd='wanglu';
-        wdTx.cross = '0x'+aliceHash160Addr;
-        wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
-        wdTx.amount = 0.000000000001;
-        const txFeeRatio = 3;
-        wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
-        //wdTx.value = 0x1770000;
-        console.log("########## wdTx.value: ", wdTx.value);
-
-        //newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
-        let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
-        console.log("wdHash: ",wdHash);
+        // let wdTx = {};
+        // wdTx.storemanGroup = storemanWanAddr;
+        // wdTx.gas = '1000000';
+        // wdTx.gasPrice = '200000000000'; //200G;
+        // wdTx.passwd='wanglu';
+        // wdTx.cross = '0x'+aliceHash160Addr;
+        // wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        // wdTx.amount = 0.000000000001;
+        // const txFeeRatio = 3;
+        // wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
+        // //wdTx.value = 0x1770000;
+        // console.log("########## wdTx.value: ", wdTx.value);
+        //
+        // //newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
+        // let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
+        // console.log("wdHash: ",wdHash);
 
         //wait tx confirm
-        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, wdHash);
+        //await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, wdHash);
 
         // wait storeman lock notice.
         await client.sendToAddress(storemanAddr, 2);
         await client.generate(1);
         let withdrawValue = value;// TODO: how to get hte value.
         let record = await ccUtil.fund(storeman, aliceHash160Addr, withdrawValue);
+        await client.generate(1);
+        await client.generate(1);
         // stomen send notice.
         // wait confirm
 
         // wallet wait storeman event.
         //wallet send redeem.
-        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash);
+        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemblocknum, storeman,alice, value, record.txHash, record);
         console.log(walletRedeem);
 
     });

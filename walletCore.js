@@ -50,7 +50,8 @@ class walletcore  {
         }
         this.wanSend.socket.connection.close();
     }
-    async reinit(config){
+    async reinit(){
+        let config = global.config;
         this.wanSend.socket.connection.close();
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
@@ -69,7 +70,8 @@ class walletcore  {
             })
         });
     }    
-    async init(config){
+    async init(){
+        let config = global.config;
         global.getCollection = this.getCollection;
         global.getCollectionCb = this.getCollectionCb;
         global.EthKeyStoreDir = this.EthKeyStoreDir;

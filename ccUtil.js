@@ -17,6 +17,13 @@ const btcserver={
         password: "PASS"
     }
 };
+var alice = bitcoin.ECPair.fromWIF(
+    'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
+);
+const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
+var storeman = bitcoin.ECPair.fromWIF(
+    storemanWif, bitcoin.networks.testnet
+);
 const client = new Client(btcserver.regtest);
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
@@ -536,11 +543,14 @@ const Backend = {
         contract.txHash = btcHash;
         return contract;
     },
-    async redeem(x,hashx, redeemLockTimeStamp, senderKp,receiverKp, value, txid){
+    // when alice --> bob.
+    //alice is sender.  bob is receiverKp.
+    async redeem(x,hashx, redeemLockTimeStamp, senderKp,receiverKp, value, txid, record){
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
-            bitcoin.crypto.hash160(receiverKp.publicKey),bitcoin.crypto.hash160(senderKp.publicKey));
-        const redeemScript = contract['redeemScript'];
-        return this._redeem(redeemScript, txid, x,senderKp, receiverKp, value)
+            bitcoin.crypto.hash160(senderKp.publicKey),bitcoin.crypto.hash160(receiverKp.publicKey));
+        let redeemScript = contract['redeemScript'];
+        //return this._redeem(redeemScript, txid, x,senderKp, receiverKp, value)
+        return this._redeem(redeemScript,txid , x, storeman, alice, value);
     },
     async _redeem(redeemScript, txid, x, senderKp, receiverKp, value){
         //const redeemScript = contract['redeemScript'];
@@ -548,22 +558,22 @@ const Backend = {
         var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(txid, 0);
-        txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value-FEE-FEE-FEE)*100000000);
+        txb.addOutput(btcUtil.getAddressbyKeypair(alice), (value-FEE-FEE-FEE)*100000000);
 
         const tx = txb.buildIncomplete();
         const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
 
         const redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
-                input: bitcoin.script.compile([
-                    bitcoin.script.signature.encode(senderKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-                    senderKp.publicKey,
-                    Buffer.from(x, 'utf-8'),
+                input: bitcoin.script.compile([  // TODO: alias is who
+                    bitcoin.script.signature.encode(alice.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
+                    alice.publicKey,
+                    Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
                 ]),
                 output: redeemScript,
             },
-            network: bitcoin.networks.regtest
+            network: bitcoin.networks.testnet
         }).input;
         tx.setInputScript(0, redeemScriptSig);
         console.log("===redeemScriptSig: ", bitcoin.script.toASM(redeemScriptSig));

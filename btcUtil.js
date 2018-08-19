@@ -58,7 +58,7 @@ const btcUtil = {
         return pkh.address;
     },
 
-    hashtimelockcontract(hashx, redeemblocknum,destHash160Addr, revokerHash160Addr){
+    hashtimelockcontract(hashx, redeemLockTimeStamp,destHash160Addr, revokerHash160Addr){
         let redeemScript = bitcoin.script.compile([
             /* MAIN IF BRANCH */
             bitcoin.opcodes.OP_IF,
@@ -71,7 +71,7 @@ const btcUtil = {
             Buffer.from(addressTrip0x(destHash160Addr), 'hex'),// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
             //bitcoin.crypto.hash160(storeman.publicKey),
             bitcoin.opcodes.OP_ELSE,
-            bitcoin.script.number.encode(redeemblocknum),
+            bitcoin.script.number.encode(redeemLockTimeStamp),
             bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
             bitcoin.opcodes.OP_DROP,
             bitcoin.opcodes.OP_DUP,
@@ -96,7 +96,7 @@ const btcUtil = {
         return {
             'p2sh': address,
             'hashx': hashx,
-            'redeemblocknum' : redeemblocknum,
+            'redeemLockTimeStamp' : redeemLockTimeStamp,
             'redeemScript': redeemScript
         }
 
