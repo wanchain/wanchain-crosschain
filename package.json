@@ -44,7 +44,8 @@
     "web3": "^0.20.6",
     "wif": "^2.0.6",
     "winston": "^3.0.0",
-    "ws": "^5.1.0"
+    "ws": "^5.1.0",
+    "coinselect": "*"
   },
   "author": "zhanglihua-wanglu",
   "license": "MIT"
