@@ -103,7 +103,7 @@ describe('wan api test', ()=>{
         // // wait confirm
 
         // wallet wait storeman event.
-        //wallet send redeem.
+        // wallet send redeem.
         // let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
         // console.log(walletRedeem);
 
@@ -115,6 +115,16 @@ describe('wan api test', ()=>{
         let block = await client.getBlock(bhash, 2); // include txs
         console.log(block);
     });
+    it('TC001: Storemanfund', async ()=>{
+        //Storemanfund(senderKp, ReceiverHash160Addr, value, hashx )
+        let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        let tx = await ccUtil.Storemanfund(storeman, aliceHash160Addr, '0.9', hashx );
+        let rawTx = await client.getRawTransaction(tx.txHash);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        console.log("Storemanfund:",ctx);
+    });
+
     it('TC001: lockBtcTest', async ()=>{
         await client.sendToAddress(aliceAddr, 2);
         await client.generate(1);

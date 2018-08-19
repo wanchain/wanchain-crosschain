@@ -300,7 +300,7 @@ const Backend = {
         return p;
     },
     getWithdrawCrossLockEvent(sender, hashX) {
-        let topics = ['0x'+wanUtil.sha3(config.withdrawCrossLockEvent).toString('hex'), null, null, hashX];
+        let topics = ['0x'+wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
@@ -566,6 +566,42 @@ const Backend = {
         console.log("rawTx: ", rawTx);
 
         let btcHash = await this.sendRawTransaction(this.btcSender,rawTx);
+        console.log("btc result hash:", btcHash);
+        contract.txHash = btcHash;
+        return contract;
+    },
+
+    async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx ){
+        // generate script and p2sh address
+        let blocknum = await this.getBlockNumber(this.btcSender);
+        const lockTime = 1000;
+        let redeemLockTimeStamp = blocknum + lockTime;
+
+        // let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+        // let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        // console.log("############### x:",x);
+        console.log("############### hashx:",hashx);
+        let senderH160Addr = bitcoin.crypto.hash160(senderKp.publicKey).toString('hex');
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr,senderH160Addr);
+        contract.hashx = hashx;
+
+        let utxos = await client.listUnspent(0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
+        let utxo = btcUtil.selectUtxoTest(utxos, value-FEE);
+        if(!utxo){
+            console.log("############## no utxo");
+            throw("no utox.");
+        }
+        console.log("utxo: ", utxo);
+        const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setVersion(1);
+        txb.addInput(utxo.txid, utxo.vout);
+        txb.addOutput(contract['p2sh'], (value-FEE-FEE)*100000000); // fee is 1
+        txb.sign(0, senderKp);
+
+        const rawTx = txb.build().toHex();
+        console.log("rawTx: ", rawTx);
+
+        let btcHash = await client.sendRawTransaction(rawTx,true);
         console.log("btc result hash:", btcHash);
         contract.txHash = btcHash;
         return contract;

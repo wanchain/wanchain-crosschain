@@ -115,6 +115,7 @@ config.withdrawBtcRedeemNoticeEvent = 'WBTC2BTCLockNotice(address,address,bytes3
 
 config.withdrawOriginLockEvent = 'WETH2ETHLock(address,address,bytes32,uint256,address,uint256)';
 config.withdrawCrossLockEvent = 'WETH2ETHLock(address,address,bytes32,uint256)';
+config.withdrawBtcCrossLockEvent = 'WBTC2BTCLock(address,address,bytes32,uint256)';
 
 
 config.depositOriginRefundEvent = 'ETH2WETHRefund(address,address,bytes32,bytes32)';
