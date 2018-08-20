@@ -53,10 +53,11 @@ async function waitEventbyHashx(eventName,abi, hashx) {
         let filterResult  = await pu.promisefy(filter.get,[],filter);
         console.log(filterResult);
         if(filterResult.length != 0){
-            break;
+	        return filterResult;
         }
         await pu.sleep(10000);
     }
+
 }
 describe('wan api test', ()=>{
     before(async () => {
@@ -81,7 +82,7 @@ describe('wan api test', ()=>{
         console.log("lockWbtcTest");
         let wdTx = {};
         wdTx.storemanGroup = storemanWanAddr;
-        wdTx.gas = '0x'+(1000000).toString(16);;
+        wdTx.gas = '0x'+(1000000).toString(16);
         wdTx.gasPrice = '0x'+(200000000000).toString(16); //200G;
         wdTx.passwd='wanglu';
         wdTx.cross = '0x'+aliceHash160Addr;
@@ -112,10 +113,10 @@ describe('wan api test', ()=>{
         // // wait confirm
 
         //wallet wait storeman event.
-        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
-
-        // wallet send redeem.
-        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
+        let filterResult = await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
+		let info = {}; // storeman info
+        // wallet send redeem. redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid)
+        let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, value, wdHash);
         console.log(walletRedeem);
         let rawTx = await client.getRawTransaction(walletRedeem);
         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
