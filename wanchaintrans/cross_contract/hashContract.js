@@ -5,11 +5,18 @@ const secp256k1 = require('secp256k1');
 let IContract = require("../contract/IContract.js");
 const createKeccakHash = require('keccak');
 //let util = require('utility');
+const bitcoin  = require('bitcoinjs-lib');
 
 
 let ETH2WETHfunc = ['','btc2wbtcRefund','','BTC2WBTCLock'];
 let WETH2ETHfunc = ['wbtc2btcLock','','wbtc2btcRevoke','WBTC2BTCLock'];
 let logDebug;
+function hexTrip0x(hexs){
+    if(0 == hexs.indexOf('0x')){
+        return hexs.slice(2);
+    }
+    return hexs;
+}
 module.exports = class hashContract extends IContract
 {
     constructor(tokenAddress,storeman,crossAddress,crossType,ChainType)
@@ -29,16 +36,10 @@ module.exports = class hashContract extends IContract
         this.key = key;
         this.hashKey = this.getHashKey(this.key);
     }
-    getHashKey(key){
+    getHashKey(key1){
         //return BigNumber.random().toString(16);
-
-        let kBuf = new Buffer(key.slice(2), 'hex');
-//        let hashKey = '0x' + util.sha256(kBuf);
-        let h = createKeccakHash('keccak256');
-        h.update(kBuf);
-        let hashKey = '0x' + h.digest('hex');
-        logDebug.debug('input key:', key);
-        logDebug.debug('input hash key:', hashKey);
+        let key = hexTrip0x(key1);
+        let hashKey = '0x'+bitcoin.crypto.sha256(Buffer.from(key, 'hex')).toString('hex');
         return hashKey;
 
     }
@@ -49,15 +50,15 @@ module.exports = class hashContract extends IContract
         }while (!secp256k1.privateKeyVerify(randomBuf));
         return '0x' + randomBuf.toString('hex');
     }
-    getLockData(Amount)
+    getLockData(amount)
     {
-        this.Amount = Amount;
+        this.amount = amount;
         let funcInterface = this.getFuncInterface(this.contractFunc[0]);
         if(funcInterface)
         {
             logDebug.debug(this.hashKey,this.storeman,this.crossAddress);
-            if(this.Amount){
-                return funcInterface.getData(this.hashKey,this.storeman,this.crossAddress,this.Amount.getWei());
+            if(this.amount){
+                return funcInterface.getData(this.hashKey,this.storeman,this.crossAddress,this.amount);
             }
             else
             {

@@ -7,7 +7,7 @@ module.exports = class hashXSend extends TokenSend
     {
         super(from,tokenAddress,gas,gasPrice,nonce);
         this.Contract = contract;
-        this.Amount = amount;
+        this.amount = amount;
     }
     setKey(key){
         this.Contract.setKey(key);
@@ -25,7 +25,7 @@ module.exports = class hashXSend extends TokenSend
         }
         else
         {
-            this.trans.setData(this.Contract.getLockData(this.Amount));
+            this.trans.setData(this.Contract.getLockData(this.amount));
         }
     }
     setRefundData(){

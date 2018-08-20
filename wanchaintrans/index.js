@@ -6,5 +6,3 @@ exports.hashXSend = require('./cross_transactions/hashXSend.js');
 exports.ethHashXSend = require('./cross_transactions/ethHashXSend.js');
 exports.wanHashXSend = require('./cross_transactions/wanHashXSend.js');
 exports.NormalSend = require('./interface/transaction.js').NormalSend;
-exports.CoinAmount = require('./interface/Amount.js').CoinAmount;
-exports.GWeiAmount = require('./interface/Amount.js').GWeiAmount;

@@ -142,10 +142,10 @@ class IRawTransaction
 //normal transaction
 class NormalSend extends IRawTransaction
 {
-    constructor(from,to,IAmount,gas,gasPrice,nonce)
+    constructor(from,to,amount,gas,gasPrice,nonce)
     {
         super(from,to,gas,gasPrice,nonce);
-        this.trans.setValue(IAmount.getWei());
+        this.trans.setValue(amount);
     }
 };
 class TokenSend extends IRawTransaction

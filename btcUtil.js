@@ -30,14 +30,11 @@ const feeRate = 55;
 
 let bitcoinNetwork = config.bitcoinNetwork;
 let version = config.bitcoinVersion;
-function addressTrip0x(addr){
-    if(0 == addr.indexOf('0x')){
-        console.log("????????????old addr: ", addr);
-        console.log("????????????new addr: ", addr.slice(2));
-
-        return addr.slice(2);
+function hexTrip0x(hexs){
+    if(0 == hexs.indexOf('0x')){
+        return hexs.slice(2);
     }
-    return addr;
+    return hexs;
 }
 
 const btcUtil = {
@@ -68,7 +65,7 @@ const btcUtil = {
             bitcoin.opcodes.OP_DUP,
             bitcoin.opcodes.OP_HASH160,
 
-            Buffer.from(addressTrip0x(destHash160Addr), 'hex'),// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
+            Buffer.from(hexTrip0x(destHash160Addr), 'hex'),// wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
             //bitcoin.crypto.hash160(storeman.publicKey),
             bitcoin.opcodes.OP_ELSE,
             bitcoin.script.number.encode(redeemLockTimeStamp),
@@ -77,7 +74,7 @@ const btcUtil = {
             bitcoin.opcodes.OP_DUP,
             bitcoin.opcodes.OP_HASH160,
 
-            Buffer.from(addressTrip0x(revokerHash160Addr), 'hex'),
+            Buffer.from(hexTrip0x(revokerHash160Addr), 'hex'),
             //bitcoin.crypto.hash160(alice.publicKey),//alice.getPublicKeyBuffer(), // funder addr
             /* ALMOST THE END. */
             bitcoin.opcodes.OP_ENDIF,
@@ -105,7 +102,7 @@ const btcUtil = {
     selectUtxoTest(utxos, value) {
         let utxo;
         for(let i=0; i<utxos.length; i++){
-            if(utxos[i].amount >= value){
+            if(utxos[i].value >= value){
                 utxo = utxos[i];
                 console.log("find utxo:", utxo);
                 return utxo;
@@ -448,7 +445,63 @@ const btcUtil = {
 
         return result;
     },
+    async buildRawTransaction(targets,keyPairArray,feeRate) {
 
+        let addressArray = [];
+        let addressKeyMap = {};
+
+        let i;
+        for (i = 0; i < keyPairArray.length; i++) {
+            let kp = keyPairArray[i];
+            let address = this.getAddress(kp);
+            addressArray.push(address);
+            addressKeyMap[address] = kp;
+        }
+
+        let utxos= await ccUtil.getBtcUtxo(ccUtil.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addressArray);
+        utxos.map(function(item,index){item.value *= 100000000;item.amount = value});
+
+        let {inputs, outputs, fee} = coinselect.coinSelect(utxos,targets, feeRate);
+
+        // .inputs and .outputs will be undefined if no solution was found
+        if (!inputs || !outputs) {
+            return null;
+        }
+
+        console.log(fee);
+
+        let txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setVersion(1);
+
+        for (i = 0; i < inputs.length; i++) {
+            let inItem = inputs[i];
+            let from = inItem.address;
+            let signer = addressKeyMap[from];
+            txb.addInput(inItem.txid, inItem.vout);
+        }
+
+
+        //put p2sh at 0 position
+        for (i = 0; i < outputs.length; i++) {
+            let outItem = outputs[i];
+            if (!outItem.address) {
+                outItem.address = addressArray[0];
+            }
+            txb.addOutput(outItem.address, outItem.value);
+        }
+
+        for (i = 0; i < inputs.length; i++) {
+            let inItem = inputs[i];
+            let from = inItem.address;
+            let signer = addressKeyMap[from];
+            txb.sign(i, signer);
+        }
+
+        const rawTx = txb.build().toHex();
+        console.log("rawTx: ", rawTx);
+
+        return rawTx;
+    },
 
 
     // call this function to refund locked btc

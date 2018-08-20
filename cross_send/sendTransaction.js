@@ -5,8 +5,6 @@ let dbname = 'crossTransDb';
 let wanHashXSend = require('../wanchaintrans/index.js').wanHashXSend;
 let ethHashXSend = require('../wanchaintrans/index.js').ethHashXSend;
 let NormalSend = require('../wanchaintrans/index.js').NormalSend;
-let CoinAmount = require('../wanchaintrans/index.js').CoinAmount;
-let GWeiAmount = require('../wanchaintrans/index.js').GWeiAmount;
 let TokenSend = require("../wanchaintrans/interface/transaction.js").TokenSend;
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
@@ -18,9 +16,8 @@ module.exports = class sendTransaction{
         let wanSc = web3.eth.contract(global.config.HTLCWBTCInstAbi);
         this.wanIns = wanSc.at(global.config.wanchainHtlcAddr);
     }
-    createTransaction(from,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
-        let amount = amountWan ? new CoinAmount(amountWan) : amountWan;
-        let gasPrice = gasPriceGwei ? new GWeiAmount(gasPriceGwei) : gasPriceGwei;
+    // the min decimal,wei.
+    createTransaction(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce){
         let WanKeyStoreDir = global.WanKeyStoreDir;
         let EthKeyStoreDir = global.EthKeyStoreDir;
         if(this.sendServer.chainType == 'WAN'){
@@ -49,9 +46,7 @@ module.exports = class sendTransaction{
             self.sendTrans(self.trans,password,self.insertNoticeData,callback);
         })
     }
-    createNormalTransaction(from,to,value,gas,gasPriceGwei,nonce){
-        let amount = value ? new CoinAmount(value) : value;
-        let gasPrice = gasPriceGwei ? new GWeiAmount(gasPriceGwei) : gasPriceGwei;
+    createNormalTransaction(from,to,amount,gas,gasPrice,nonce){
         let WanKeyStoreDir = global.WanKeyStoreDir;
         let EthKeyStoreDir = global.EthKeyStoreDir;
         this.trans = new NormalSend(from,to,amount,gas,gasPrice,nonce);
@@ -65,23 +60,23 @@ module.exports = class sendTransaction{
         }
     }
 
-    createRefundFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
+    createRefundFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPrice,crossType,nonce){
         let self = this;
         let collection = global.getCollection(dbname,'crossTransaction');
         let lockTrans = collection.findOne({lockTxHash : lockTxHash});
         if(lockTrans) {
             self.createTransaction(lockTrans.crossAdress, tokenAddress, amountWan, storeman,
-                wanAddress, gas, gasPriceGwei, crossType, nonce);
+                wanAddress, gas, gasPrice, crossType, nonce);
             self.trans.setKey(lockTrans.x);
         }
     }
-    createRevokeFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
+    createRevokeFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPrice,crossType,nonce){
         let self = this;
         let collection = global.getCollection(dbname,'crossTransaction');
         let lockTrans = collection.findOne({lockTxHash : lockTxHash});
         if(lockTrans) {
             self.createTransaction(lockTrans.from, tokenAddress, amountWan, storeman,
-                wanAddress, gas, gasPriceGwei, crossType, nonce);
+                wanAddress, gas, gasPrice, crossType, nonce);
             self.trans.setKey(lockTrans.x);
         }
     }
@@ -153,7 +148,7 @@ module.exports = class sendTransaction{
                     to : trans.trans.to,
                     storeman:trans.Contract.storeman,
                     crossAdress : trans.Contract.crossAddress,
-                    value : trans.Amount.getAmount(),
+                    value : trans.amount,
                     txValue: trans.trans.value,
                     x : trans.Contract.key,
                     time : cur.toString(),

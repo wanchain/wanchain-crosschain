@@ -31,6 +31,14 @@ const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
 var storeman = bitcoin.ECPair.fromWIF(
     storemanWif, bitcoin.networks.testnet
 );
+function getAddress(keypair){
+    const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
+    return pkh.address;
+}
+const aliceAddr = getAddress(alice);
+const storemanAddr = getAddress(storeman);
+
+
 const client = new Client(btcserver.regtest);
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
@@ -47,7 +55,7 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-const FEE = 0.001
+const FEE = 100000
 const MAX_CONFIRM_BLKS = 10000000
 const MIN_CONFIRM_BLKS = 0
 const LOCK_BLK_NUMBER = 10
@@ -258,28 +266,28 @@ const Backend = {
     },
     async sendEthHash(sender, tx) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction(tx.from, config.originalChainHtlc,tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'ETH2WETH',tx.nonce);
+        newTrans.createTransaction(tx.from, config.originalChainHtlc,tx.amount.toString(16),tx.storemanGroup,tx.cross,
+            tx.gas,tx.gasPrice.toString(16),'ETH2WETH',tx.nonce);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
     async sendWanNotice(sender, tx) {
         let newTrans = this.createTrans(sender);
-        //    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice, wanFrom)
         newTrans.createDepositNotice(tx.storeman,tx.userWanAddr,tx.hashx, tx.txHash,tx.lockedTimestamp,
-            tx.gas,this.toGwei(tx.gasPrice.toString()));
+            tx.gas,tx.gasPrice.toString(16));
         let txhash =  await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
         return txhash;
     },
     async sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction(from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
+        newTrans.createTransaction(from, config.wanchainHtlcAddr,null,null,null,gas,gasPrice,'ETH2WETH', nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
         return txhash;
     },
     async sendEthCancel(sender, from,gas,gasPrice,x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction(from, config.originalChainHtlc,null,null,null,gas,this.toGweiString(gasPrice),'ETH2WETH', nonce);
+        newTrans.createTransaction(from, config.originalChainHtlc,null,null,null,gas,gasPrice,'ETH2WETH', nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
         return txhash;
@@ -467,7 +475,7 @@ const Backend = {
         return ps;
     },
     calculateLocWanFee(value,coin2WanRatio,txFeeRatio){
-        let wei     = web3.toWei(web3.toBigNumber(value));
+        let wei     = web3.toBigNumber(value);
         const DEFAULT_PRECISE = 10000;
         let fee = wei.mul(coin2WanRatio).mul(txFeeRatio).div(DEFAULT_PRECISE).div(DEFAULT_PRECISE).trunc();
 
@@ -475,21 +483,23 @@ const Backend = {
     },
     async sendWanHash(sender, tx) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(),tx.storemanGroup,tx.cross,tx.gas,this.toGweiString(tx.gasPrice.toString()),'WETH2ETH',tx.nonce);
+        newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(16),tx.storemanGroup,tx.cross,
+            tx.gas,tx.gasPrice.toString(16),'WETH2ETH',tx.nonce);
+        if(tx.x) newTrans.trans.setKey(tx.x);
         newTrans.trans.setValue(tx.value);
         let txhash =  await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
     async sendWanX(sender, from,gas,gasPrice,x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction( from, config.originalChainHtlc,null,null,null,gas,this.toGweiString(gasPrice),'WETH2ETH',nonce);
+        newTrans.createTransaction( from, config.originalChainHtlc,null,null,null,gas,gasPrice,'WETH2ETH',nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
         return txhash;
     },
     async sendWanCancel(sender, from,gas,gasPrice,x, passwd,nonce) {
         let newTrans = this.createTrans(sender);
-        newTrans.createTransaction( from, config.wanchainHtlcAddr,null,null,null,gas,this.toGweiString(gasPrice),'WETH2ETH',nonce);
+        newTrans.createTransaction( from, config.wanchainHtlcAddr,null,null,null,gas,gasPrice,'WETH2ETH',nonce);
         newTrans.trans.setKey(x);
         let txhash =  await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
         return txhash;
@@ -550,6 +560,7 @@ const Backend = {
         contract.hashx = hashx;
 
         let utxos = await this.getBtcUtxo(this.btcSender, 0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
+        utxos.map(function(item,index){item.value *= 100000000;item.amount = item.value});
         let utxo = btcUtil.selectUtxoTest(utxos, value-FEE);
         if(!utxo){
             console.log("############## no utxo");
@@ -559,11 +570,22 @@ const Backend = {
         const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(utxo.txid, utxo.vout);
-        txb.addOutput(contract['p2sh'], (value-900000)); // fee is 1
+        txb.addOutput(contract['p2sh'], (value-FEE)); // fee is 1
         txb.sign(0, senderKp);
-
         const rawTx = txb.build().toHex();
         console.log("rawTx: ", rawTx);
+        // let targets = [
+        //     {
+        //         address: contract['p2sh'],
+        //         value: value
+        //     }
+        // ];
+        // const {rawTx,fee} = this.btcBuildTransaction([senderKp],  targets, feeRate);
+        // if(!rawTx){
+        //     console.log("no enough utxo.");
+        //     return null;
+        // }
+        // console.log("rawTx: ", rawTx);
 
         let btcHash = await this.sendRawTransaction(this.btcSender,rawTx);
         console.log("btc result hash:", btcHash);
@@ -595,7 +617,7 @@ const Backend = {
         const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
         txb.setVersion(1);
         txb.addInput(utxo.txid, utxo.vout);
-        txb.addOutput(contract['p2sh'], (value-9000000)); // fee is 1
+        txb.addOutput(contract['p2sh'], (value-FEE)); // fee is 1
         txb.sign(0, senderKp);
 
         const rawTx = txb.build().toHex();
@@ -723,7 +745,7 @@ const Backend = {
     let sum = 0
     let i = 0
     for (i = 0; i < utxos.length; i++) {
-      sum += utxos[i].amount
+      sum += utxos[i].value
     }
     console.log('utxo balance=' + sum)
 
@@ -877,7 +899,78 @@ const Backend = {
     let rawTx = getTxInfo(txHash)
     return await this.revoke(rawTx, revokerKeyPair)
   },
+    async btcBuildTransaction (keyPairArray,  targets, feeRate) {
+        let addressArray = []
+        let addressKeyMap = {}
 
+        let i
+        for (i = 0; i < keyPairArray.length; i++) {
+            let kp = keyPairArray[i]
+            let address = btcUtil.getAddressbyKeypair(kp)
+            addressArray.push(address)
+            addressKeyMap[address] = kp
+        }
+        console.log("addressArray:",addressArray);
+        let utxos;
+        try{
+            let aliceAddr = btcUtil.getAddressbyKeypair(alice);
+
+            utxos = await this.getBtcUtxo(this.btcSender, 0, 10000000, [btcUtil.getAddressbyKeypair(keyPairArray[0])]);
+            //utxos = await this.getBtcUtxo(this.btcSender, 0, 1000000, [aliceAddr])
+        }catch(err){
+            console.log("err:", err);
+            return;
+        }
+        utxos.map(function(item,index){item.value *= 100000000;item.amount = item.value});
+
+        let balance = this.getUTXOSBalance(utxos)
+
+        if (balance <= targets[0].value) {
+            console.log( " balance <= targets[0].value");
+            return null;
+        }
+
+        utxos.map(function(item,index){item.value *= 100000000;item.amount = item.value});
+
+
+        let {inputs, outputs, fee} = this.coinselect(utxos, targets, feeRate)
+
+        // .inputs and .outputs will be undefined if no solution was found
+        if (!inputs || !outputs) {
+            return {'result': null, 'error': new Error('utxo balance is not enough')}
+        }
+
+        console.log('fee', fee)
+
+        let txb = new bitcoin.TransactionBuilder(network)
+
+        for (i = 0; i < inputs.length; i++) {
+            let inItem = inputs[i]
+            txb.addInput(inItem.txid, inItem.vout)
+        }
+
+        // put out at 0 position
+        for (i = 0; i < outputs.length; i++) {
+            let outItem = outputs[i]
+            if (!outItem.address) {
+                txb.addOutput(addressArray[0], Math.round(outItem.value))
+            } else {
+                txb.addOutput(outItem.address,  Math.round(outItem.value))
+            }
+        }
+
+        for (i = 0; i < inputs.length; i++) {
+            let inItem = inputs[i]
+            let from = inItem.address
+            let signer = addressKeyMap[from]
+            txb.sign(i, signer)
+        }
+
+        const rawTx = txb.build().toHex()
+        console.log('rawTx: ', rawTx)
+
+        return {rawTx:rawTx, fee:fee};
+    },
   async btcTxBuildSend (keyPairArray, amount, targets, feeRate) {
     let addressArray = []
     let addressKeyMap = {}
@@ -891,6 +984,7 @@ const Backend = {
     }
 
     let utxos = await this.getBtcUtxo(this.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addressArray)
+    utxos.map(function(item,index){item.value *= 100000000;item.amount = item.value});
 
     let balance = this.getUTXOSBalance(utxos)
 
@@ -898,10 +992,7 @@ const Backend = {
       return {'result': null, 'error': new Error('utxo balance is not enough')}
     }
 
-    utxos = utxos.map(function (item, index) {
-      item.value = item.amount * 100000000
-      return item
-    })
+
 
     let {inputs, outputs, fee} = this.coinselect(utxos, targets, feeRate)
 

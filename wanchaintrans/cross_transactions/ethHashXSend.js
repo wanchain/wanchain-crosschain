@@ -10,7 +10,7 @@ module.exports = class ethHashXSend extends hashXSend
         let Contract = new hashContract(tokenAddress,storeman,wanAddress,crossType,'ETH');
         super(from,tokenAddress,amount,Contract,gas,gasPrice,nonce);
         if(amount){
-            this.trans.setValue(amount.getWei());
+            this.trans.setValue(amount);
         }
         this.ChainType = 'ETH';
     }
