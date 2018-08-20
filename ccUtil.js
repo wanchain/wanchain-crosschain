@@ -582,7 +582,8 @@ const Backend = {
 		if(wallet){
 			senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
 		}else {
-			senrResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
+			senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
+			//senrResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
 		}
 		contract.txHash = senrResult.result;
 		console.log("btc result hash:", contract.txHash);
@@ -904,8 +905,8 @@ const Backend = {
 		console.log("addressArray:", addressArray);
 		let utxos;
 		try {
-			//utxos = await this.getBtcUtxo(this.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, [btcUtil.getAddressbyKeypair(keyPairArray[0])]);
-			utxos = await this.getBtcUtxo(this.btcSender, 0, 1000000, [aliceAddr])
+			utxos = await this.getBtcUtxo(this.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, [btcUtil.getAddressbyKeypair(keyPairArray[0])]);
+			//utxos = await this.getBtcUtxo(this.btcSender, 0, 1000000, [aliceAddr])
 		} catch (err) {
 			console.log("err:", err);
 			throw err;
