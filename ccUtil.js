@@ -560,7 +560,9 @@ const Backend = {
         contract.hashx = hashx;
 
         let utxos = await this.getBtcUtxo(this.btcSender, 0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
-        utxos.map(function(item,index){item.value *= 100000000;item.amount = item.value});
+        utxos.map(function(item,index){
+            let av=item.value?item.value:item.amount; item.value = av*100000000;item.amount = av*100000000;
+        });
         let utxo = btcUtil.selectUtxoTest(utxos, value-FEE);
         if(!utxo){
             console.log("############## no utxo");
@@ -608,6 +610,10 @@ const Backend = {
         contract.hashx = hashx;
 
         let utxos = await client.listUnspent(0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
+        utxos.map(function(item,index){
+            let av=item.value?item.value:item.amount; item.value = av*100000000;item.amount = av*100000000;
+        });
+
         let utxo = btcUtil.selectUtxoTest(utxos, value-FEE);
         if(!utxo){
             console.log("############## no utxo");
