@@ -3,6 +3,7 @@
 const WebSocket = require('ws');
 const wsOptions = {
   'handshakeTimeout': 12000,
+    rejectUnauthorized: false
 };
 let logDebug;
 

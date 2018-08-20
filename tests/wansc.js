@@ -2,6 +2,7 @@
 
 
 const Web3 = require("web3");
+const assert = require('chai').assert;
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const WanchainCore = require('../walletCore.js');
 const pu = require('promisefy-util');
@@ -110,15 +111,15 @@ describe('wan api test', ()=>{
         // // stomen send notice.
         // // wait confirm
 
-        // wallet wait storeman event.
-        //await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
+        //wallet wait storeman event.
+        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
 
         // wallet send redeem.
-        // let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
-        // console.log(walletRedeem);
-        // let rawTx = await client.getRawTransaction(walletRedeem);
-        // let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
-        // console.log("lockWbtcTest redeem:",ctx);
+        let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, storeman,alice, value, record.txHash, record);
+        console.log(walletRedeem);
+        let rawTx = await client.getRawTransaction(walletRedeem);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        console.log("lockWbtcTest redeem:",ctx);
 
     });
     it('TC001: scanBlock', async ()=>{
@@ -142,7 +143,14 @@ describe('wan api test', ()=>{
         await client.sendToAddress(aliceAddr, 2);
         await client.generate(1);
 
-        let record = await ccUtil.fund(alice, storemanHash160Addr, value);
+        let record;
+        try{
+            record = await ccUtil.fund(alice, storemanHash160Addr, value);
+        }catch(err){
+            assert.equal(err.toString(), "");
+            return;
+        }
+
 
         // notice wan.
         const tx = {};

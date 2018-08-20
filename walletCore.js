@@ -63,7 +63,7 @@ class walletcore  {
                 fail(err);
             });
             newWebSocket.connection.on('open', function _cb(){
-                recordMonitor(config,self.ethSend, self.wanSend);
+                //recordMonitor(config,self.ethSend, self.wanSend);
                 be.init(config, self.ethSend, self.wanSend,function(){
                     resolve();
                 });

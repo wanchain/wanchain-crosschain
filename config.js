@@ -5,10 +5,11 @@ const path=require('path');
 
 const config = {};
 // config.socketUrl = 'ws://192.168.1.77:8080/';
-config.socketUrl = 'ws://18.237.186.227:8080/';
+config.socketUrl = 'wss://18.237.186.227';
 var wanchainNet = 'testnet';
 var ethereumNet = '';
-
+config.lockTime = 1000;
+config.feeRate = 55;
 config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
 
