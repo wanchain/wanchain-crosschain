@@ -113,10 +113,12 @@ describe('wan api test', ()=>{
         // // wait confirm
 
         //wallet wait storeman event.
-        let filterResult = await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
+        let filterResult = await waitEventbyHashx('WBTC2BTCLockNotice', config.HTLCWBTCInstAbi, hashx);
+        console.log("filterResult:", filterResult);
 		let info = {}; // storeman info
+	    let redeemLockTimeStamp = 0;
         // wallet send redeem. redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid)
-        let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, value, wdHash);
+        let walletRedeem = await ccUtil.redeem(x,hashx, redeemLockTimeStamp, storemanHash160Addr,alice, value, wdHash);
         console.log(walletRedeem);
         let rawTx = await client.getRawTransaction(walletRedeem);
         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);

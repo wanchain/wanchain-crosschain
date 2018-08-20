@@ -573,7 +573,7 @@ const Backend = {
 		let senderH160Addr = bitcoin.crypto.hash160(senderKp.publicKey).toString('hex');
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);
 		contract.x = x;
-
+		console.log("############### contract:", contract);
 		let target = {
 			address: contract['p2sh'],
 			value: value
@@ -581,9 +581,12 @@ const Backend = {
 		let senrResult;
 		if(wallet){
 			senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
+			console.log("############### btcTxBuildSendWallet senrResult:", senrResult);
+
 		}else {
-			senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
-			//senrResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
+			//senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
+			senrResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
+			console.log("############### btcTxBuildSendStoreman senrResult:", senrResult);
 		}
 		contract.txHash = senrResult.result;
 		console.log("btc result hash:", contract.txHash);
