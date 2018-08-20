@@ -1151,7 +1151,8 @@ const Backend = {
     }
 
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
-  }
+  },
+  
   redeemSriptCheck(sriptData){
     
     const XPOS = 2;
