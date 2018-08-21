@@ -1116,7 +1116,8 @@ const Backend = {
     const XPOS = 2;
 //    const FIXED_X = '0x974e5a289fa6771ee597a7b386d050b8f889c5eaa7d8e6a829bd7e82f52f8c27';
     const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
-    
+    const LOCK_SC_POS = 4;
+	
     const FIXED_HASH_X_POS = 2;
     const FIXED_LK_TIME = 100;
     const FIXED_LK_TIME_POS = 8;
