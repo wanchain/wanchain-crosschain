@@ -196,12 +196,12 @@ const btcUtil = {
     },
 	
 	generatePrivateKey(){
--        let randomBuf;
--        do{
--            randomBuf = crypto.randomBytes(32);
--        }while (!secp256k1.privateKeyVerify(randomBuf));
--        return '0x' + randomBuf.toString('hex');
--    }
+        let randomBuf;
+        do{
+            randomBuf = crypto.randomBytes(32);
+        }while (!secp256k1.privateKeyVerify(randomBuf));
+        return '0x' + randomBuf.toString('hex');
+    }
 }
  
 
