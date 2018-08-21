@@ -193,7 +193,8 @@ const btcUtil = {
                 return null
             }
         });
-    },
+    }
+}
  
 
 exports.btcUtil = btcUtil;
