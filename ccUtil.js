@@ -370,7 +370,7 @@ const Backend = {
 		return p;
 	},
 	async getP2SHXByHash(sender, hashx) {
-		let p = pu.promisefy(sender.sendMessage, ['getP2SHXByHash', minconf, maxconf, addresses], sender);
+		let p = pu.promisefy(sender.sendMessage, ['getP2SHXByHash',  hashx], sender);
 		return p;
 	},
 	async clientGetBtcUtxo(minconf, maxconf, addresses){
