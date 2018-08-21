@@ -1115,60 +1115,74 @@ const Backend = {
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
   },
   
-  redeemSriptCheck(sriptData){
-    
-    const XPOS = 2;
-//    const FIXED_X = '0x974e5a289fa6771ee597a7b386d050b8f889c5eaa7d8e6a829bd7e82f52f8c27';
-    const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
-    const LOCK_SC_POS = 4;
-	
-    const FIXED_HASH_X_POS = 2;
-    const FIXED_LK_TIME = 100;
-    const FIXED_LK_TIME_POS = 8;
-    const FIXED_DEST_HASH160 = '0x9a6b60f74a6bae176df05c3b0a118f85bab5c585';
-    const FIXED_DEST_HASH160_POS = 6;
-    const FIXED_REVOKER_HASH160 = '0x3533435f431a6a016ed0de73bd9645c8e2694416';
-    const FIXED_REVOKER_HASH160_POS = 13;
-  
-    let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME,FIXED_DEST_HASH160,FIXED_REVOKER_HASH160);
-    let fixedRedeemScript = '0x' + contract['redeemScript'];
-    console.log("fixed redeem script")
-    console.log(fixedRedeemScript.toString('hex'));
-    
-    //get the fixed script hash
-    let fixedRedeemScriptHash = this.getHashKey(fixedRedeemScript);
-    console.log('fixedRedeemScriptHash=' + fixedRedeemScriptHash.toString('hex'))
-    
-    let scInputs = bitcoin.script.compile(Buffer.from(sriptData,'hex'));
-  
-    let lockSc = bitcoin.script.toASM(scInputs).split(' ');
-    console.log(lockSc);
-    let XX = lockSc[XPOS];
-    
-    let scOutput = bitcoin.script.compile(Buffer.from(lockSc[LOCK_SC_POS],'hex'));
-    let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
-    console.log(gotRedeemScriptArray);
-    
-    let gotHASHX = gotRedeemScriptArray[FIXED_HASH_X_POS];
-    let gotLKTIME = gotRedeemScriptArray[FIXED_LK_TIME_POS];
-    let gotDESTHASH160 = gotRedeemScriptArray[FIXED_DEST_HASH160_POS];
-    let gotREVOKERHASH160 = gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS];
-    
-    gotRedeemScriptArray[FIXED_HASH_X_POS] = FIXED_HASHX;
-    gotRedeemScriptArray[FIXED_LK_TIME_POS] = FIXED_LK_TIME;
-    gotRedeemScriptArray[FIXED_DEST_HASH160_POS] = FIXED_DEST_HASH160;
-    gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS] = FIXED_REVOKER_HASH160;
-    
-    let changedRedeemScript = '0x' + gotRedeemScriptArray.join(' ');
-    let changedRedeemScriptHash = this.getHashKey(changedRedeemScript);
-    
-    
-    if (fixedRedeemScriptHash == changedRedeemScriptHash) {
-        return {'X':XX,'HASHX':gotHASHX,'LOCKTIME':gotLKTIME,'DESTHASH160':gotDESTHASH160,'REVOKERHASH160':gotREVOKERHASH160};
-    } else {
-        return;
-    }
-    
+   redeemSriptCheck(sriptData){
+		
+		try {
+			
+            const XPOS = 2;
+
+            const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
+            const LOCK_SC_POS = 4;
+
+            const FIXED_HASH_X_POS = 2;
+            const FIXED_LK_TIME = 100;
+            const FIXED_LK_TIME_POS = 8;
+            const FIXED_DEST_HASH160 = '0x9a6b60f74a6bae176df05c3b0a118f85bab5c585';
+            const FIXED_DEST_HASH160_POS = 6;
+            const FIXED_REVOKER_HASH160 = '0x3533435f431a6a016ed0de73bd9645c8e2694416';
+            const FIXED_REVOKER_HASH160_POS = 13;
+
+            let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
+            let fixedRedeemScript = contract['redeemScript'];
+            console.log("fixed redeem script")
+            console.log(fixedRedeemScript.toString('hex'));
+
+            //get the fixed script hash
+            let fixedRedeemScriptHash = this.getHashKey('0x'+fixedRedeemScript);
+            console.log('fixedRedeemScriptHash=' + fixedRedeemScriptHash.toString('hex'))
+
+            let scInputs = bitcoin.script.compile(Buffer.from(sriptData, 'hex'));
+
+            let lockSc = bitcoin.script.toASM(scInputs).split(' ');
+            console.log(lockSc);
+            let XX = lockSc[XPOS];
+
+            let scOutput = bitcoin.script.compile(Buffer.from(lockSc[LOCK_SC_POS], 'hex'));
+
+            let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
+            console.log(gotRedeemScriptArray);
+
+            let gotHASHX = gotRedeemScriptArray[FIXED_HASH_X_POS];
+            let gotLKTIME = gotRedeemScriptArray[FIXED_LK_TIME_POS];
+            let gotDESTHASH160 = gotRedeemScriptArray[FIXED_DEST_HASH160_POS];
+            let gotREVOKERHASH160 = gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS];
+
+            gotRedeemScriptArray[FIXED_HASH_X_POS] = FIXED_HASHX;
+            gotRedeemScriptArray[FIXED_LK_TIME_POS] = FIXED_LK_TIME;
+            gotRedeemScriptArray[FIXED_DEST_HASH160_POS] = FIXED_DEST_HASH160;
+            gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS] = FIXED_REVOKER_HASH160;
+
+            let changedRedeemScript = '0x' + gotRedeemScriptArray.join(' ');
+            let changedRedeemScriptHash = this.getHashKey(changedRedeemScript);
+
+
+            if (fixedRedeemScriptHash == changedRedeemScriptHash) {
+                return {
+                    'X': XX,
+                    'HASHX': gotHASHX,
+                    'LOCKTIME': gotLKTIME,
+                    'DESTHASH160': gotDESTHASH160,
+                    'REVOKERHASH160': gotREVOKERHASH160
+                };
+            } else {
+                return new Error("wrong script hash");
+            }
+
+        } catch (e) {
+
+			return e
+
+        }
   
    }
   
