@@ -215,7 +215,7 @@ const MonitorRecord = {
         if(record.status === "sentHashFailed") {
             return false;
         }
-        if(record.status == "waitingRevoke,"
+        if(record.status == "waitingRevoke"
             || record.status =="sentRevokePending"
             || record.status =="sentRevokeConfirming"){
             return true;

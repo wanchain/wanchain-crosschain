@@ -71,6 +71,14 @@ const network = bitcoin.networks.testnet
 var contractsMap = {}
 var XXMap = {}
 
+function keyPairArray2AddrArray(kps) {
+	let addrs = [];
+	for(let i=0; i<kps.length; i++){
+		addrs.push(getAddress(kps[i]));
+	}
+	return addrs;
+}
+
 const Backend = {
 	CreaterSockSenderByChain(ChainType) {
 		return new sendFromSocket(new socketServer(config.socketUrl, messageFactory), ChainType);
@@ -894,7 +902,7 @@ const Backend = {
 		let rawTx = getTxInfo(txHash)
 		return await this.revoke(rawTx, revokerKeyPair)
 	},
-	async btcBuildTransaction(keyPairArray, target, feeRate) {
+	async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
 		let addressArray = []
 		let addressKeyMap = {}
 
@@ -906,15 +914,6 @@ const Backend = {
 			addressKeyMap[address] = kp
 		}
 		console.log("addressArray:", addressArray);
-		let utxos;
-		try {
-			utxos = await this.getBtcUtxo(this.btcSender, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, [btcUtil.getAddressbyKeypair(keyPairArray[0])]);
-			//utxos = await this.getBtcUtxo(this.btcSender, 0, 1000000, [aliceAddr])
-		} catch (err) {
-			console.log("err:", err);
-			throw err;
-		}
-
 		let balance = this.getUTXOSBalance(utxos)
 		if (balance <= target.value) {
 			console.log(" balance <= target.value");
@@ -960,23 +959,44 @@ const Backend = {
 		return {rawTx: rawTx, fee: fee};
 	},
 	async btcTxBuildSendWallet(keyPairArray, target,  feeRate) {
-		const {rawTx, fee} = await this.btcBuildTransaction(keyPairArray, target, feeRate);
+		let utxos;
+		try {
+			let addArr = keyPairArray2AddrArray(keyPairArray);
+			console.log("############ addArr:", addArr);
+			utxos = await this.getBtcUtxo(this.btcSender,MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
+		} catch (err) {
+			console.log("#################err:", err);
+			throw err;
+		}
+		console.log("#################utxos:", utxos);
+		const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
 		if (!rawTx) {
 			throw("no enough utxo.");
 		}
-		console.log("rawTx: ", rawTx);
+		console.log("###############rawTx: ", rawTx);
 		let result = await this.sendRawTransaction(this.btcSender, rawTx);
 		console.log('result hash:', result);
 		return {result: result, fee: fee}
 	},
 	async btcTxBuildSendStoreman(keyPairArray, target,  feeRate) {
-		const {rawTx, fee} = await this.btcBuildTransaction(keyPairArray, target, feeRate);
+		let utxos;
+		try {
+			let addArr = keyPairArray2AddrArray(keyPairArray);
+			console.log("############ addArr:", addArr);
+			utxos = await client.listUnspent(MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
+		} catch (err) {
+			console.log("#################err:", err);
+			throw err;
+		}
+		console.log("#################utxos:", utxos);
+
+		const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
 		if (!rawTx) {
 			throw("no enough utxo.");
 		}
-		console.log("rawTx: ", rawTx);
+		console.log("#############rawTx: ", rawTx);
 		let result = await client.sendRawTransaction(rawTx);
-		console.log('result hash:', result);
+		console.log('#############result hash:', result);
 		return {result: result, fee: fee}
 	},
 	// async lock(contract, amount, keyPairArray, feeRate) {

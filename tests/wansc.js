@@ -100,17 +100,15 @@ describe('wan api test', ()=>{
         // wait wallet tx confirm
         await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
 
-        // // wait storeman lock notice.
+        // wait storeman lock notice.
         // await client.sendToAddress(storemanAddr, 2);
         // await client.generate(1);
-        // let withdrawValue = value;// TODO: how to get hte value.
-        // let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
-        // let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
-        // let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, withdrawValue, hashx);
-        // await client.generate(1);
-        // await client.generate(1);
-        // // stomen send notice.
-        // // wait confirm
+        let withdrawValue = value;// TODO: how to get hte value.
+        let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, withdrawValue, hashx);
+        await client.generate(1);
+        await client.generate(1);
+        // stomen send notice.
+        // wait confirm
 
         //wallet wait storeman event.
         let filterResult = await waitEventbyHashx('WBTC2BTCLockNotice', config.HTLCWBTCInstAbi, hashx);
@@ -143,8 +141,8 @@ describe('wan api test', ()=>{
     });
 
     it('TC001: lockBtcTest', async ()=>{
-        await client.sendToAddress(aliceAddr, 2);
-        await client.generate(1);
+        //await client.sendToAddress(aliceAddr, 2);
+        //await client.generate(1);
 
         let record;
         try{
