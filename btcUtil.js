@@ -5,6 +5,7 @@ const bitcoin  = require('bitcoinjs-lib');
 const wif = require('wif');
 const bip38 = require('bip38');
 const crypto = require('crypto');
+const cluster = require('cluster');
 const config = require('./config');
 const lokiDbCollection = require('./wanchaindb/lib/lokiDbCollection');
 const print4debug = console.log;
@@ -146,6 +147,49 @@ const btcUtil = {
         }
     },
 
+  clusterGetECPairs(passwd) {
+
+    return new Promise((resolve, reject) => {
+
+      lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
+        let encryptedKeyResult = await btcAddress.find();
+        await lokiDbCollection.btcDb.close();
+
+        let array = [];
+        try {
+
+          if (cluster.isMaster) {
+            for (let j = 0; j < encryptedKeyResult.length; j++) {
+              let worker = cluster.fork();
+              worker.on('message', function(m) {
+                array.push(m);
+              });
+            }
+
+            cluster.on('exit', function(worker, code, signal) {
+              if(!--encryptedKeyResult.length){
+                resolve(array);
+              }
+            });
+
+          } else {
+            let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[cluster.worker.id -1].encryptedKey, passwd);
+            let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork);
+            process.send(alice);
+            process.exit(0);
+          }
+        } catch (err) {
+          if (err.code === 'ERR_ASSERTION') {
+            console.log('password wrong!');
+          } else {
+            console.log('err: ', err);
+          }
+          reject(array);
+        }
+      });
+    })
+  },
+
     async getAddressList() {
         return await  lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
             let btcAddressList = await btcAddress.find();
@@ -203,6 +247,6 @@ const btcUtil = {
         return '0x' + randomBuf.toString('hex');
     }
 }
- 
+
 
 exports.btcUtil = btcUtil;
