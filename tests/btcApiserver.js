@@ -7,7 +7,7 @@ const config = require('../config.js');
 const pu = require('promisefy-util');
 const assert = require('chai').assert;
 
-const client = new Client(config.btcserver.regtest);
+let client;
 
 let wanchainCore;
 let ccUtil;
@@ -18,6 +18,7 @@ describe('btc api test', ()=>{
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
         await wanchainCore.init(config);
+	    client = ccUtil.client;
         console.log("start");
     });
     // it('TC001: send a transaction', async ()=>{

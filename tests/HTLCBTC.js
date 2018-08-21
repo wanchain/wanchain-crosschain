@@ -19,7 +19,7 @@ var alice
 
 
 
-const client = new Client(config.btcserver.regtest)
+let client;
 
 var wanchainCore
 var ccUtil
@@ -36,7 +36,8 @@ describe('btc api test', () => {
     btcUtil = wanchainCore.btcUtil
 
     await wanchainCore.init(config)
-    console.log('start')
+	  client = ccUtil.client;
+	  console.log('start')
 
     function rng () { return Buffer.from('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz') }
     alice = bitcoin.ECPair.makeRandom({ rng: rng, network: bitcoin.networks.testnet})

@@ -9,7 +9,8 @@ const pu = require('promisefy-util');
 const bitcoin  = require('bitcoinjs-lib');
 const Client = require('bitcoin-core');
 const config = require('../config.js');
-const client = new Client(config.btcServer.regtest);
+let client;
+
 let wanchainCore;
 let ccUtil;
 let btcUtil;
@@ -65,6 +66,7 @@ describe('wan api test', ()=>{
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
         await wanchainCore.init();
+        client = ccUtil.client;
         // let kps = btcUtil.getECPairs("xx");
         // let addr = btcUtil.getAddressbyKeypair(kps[0]);
         // console.log("##########addr:", addr);

@@ -32,8 +32,7 @@ function getAddress(keypair) {
 const aliceAddr = getAddress(alice);
 const storemanAddr = getAddress(storeman);
 
-
-const client = new Client(config.btcserver.regtest);
+let client;
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
@@ -98,6 +97,8 @@ const Backend = {
 	},
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : require('./config.js');
+		this.client = new Client(global.config.btcServer.regtest);
+		client = this.client;
 		this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
 			this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath),
 			this.ethSender = ethsender;

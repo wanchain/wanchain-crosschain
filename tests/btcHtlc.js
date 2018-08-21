@@ -10,8 +10,7 @@ const assert = require('chai').assert;
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
-const client = new Client(config.btcserver.regtest);
-
+let client;
 
 let wanchainCore;
 let ccUtil;
@@ -276,6 +275,7 @@ describe('btc api test', ()=> {
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
         await wanchainCore.init(config);
+	    client = ccUtil.client;
 
         console.log("send alice 1 BTC for test.")
         let txHash = await client.sendToAddress(aliceAddr, 2);
