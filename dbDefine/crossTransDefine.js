@@ -24,7 +24,7 @@ module.exports = {
                 to: '', // SC addr
                 storeman : '',
                 crossAdress : '', // another chain address.
-                value : '',  // the value in the input date
+                value : '',  // the value in the input data
                 txValue: '', // the value in the tx object, this is the native coin value;
                 x : '',
                 time : '',

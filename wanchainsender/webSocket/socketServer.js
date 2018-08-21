@@ -3,6 +3,7 @@
 const WebSocket = require('ws');
 const wsOptions = {
   'handshakeTimeout': 12000,
+  rejectUnauthorized: false        // add by Jacob for cerficate error!
 };
 let logDebug;
 
@@ -14,6 +15,7 @@ module.exports = class socketServer{
         logDebug = global.getLogger('socketServer');
         this.connection.onerror = function (error) {
             logDebug.error('[+webSocket onError+]', error.toString());
+            console.log("Error:",error);
         };
         this.connection.onmessage = function (message) {
             let value = JSON.parse(message.data);
@@ -22,6 +24,8 @@ module.exports = class socketServer{
         this.functionDict = {}
     }
     send(json){
+        console.log("send ....");
+        console.log("json = ",json);
         this.connection.send(JSON.stringify(json));
     }
     close(){
@@ -36,6 +40,7 @@ module.exports = class socketServer{
     }
     sendMessageFunc(message){
         this.functionDict[message.message.header.index] = message;
+        console.log("sendMessageFunc....");
         logDebug.debug(message.message);
         this.send(message.message);
     }

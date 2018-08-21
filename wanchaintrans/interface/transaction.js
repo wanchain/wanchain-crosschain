@@ -50,6 +50,7 @@ class ITrans {
     }
     setData(data)
     {
+        console.log("before setData :",data);
         this.data = data;
     }
     checkAddress(address)

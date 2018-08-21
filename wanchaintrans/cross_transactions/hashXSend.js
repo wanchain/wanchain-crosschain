@@ -20,8 +20,19 @@ module.exports = class hashXSend extends TokenSend
         this.trans.setValue(v);
     }
     setLockData(){
-        if(this.ChainType == 'ETH'){
-            this.trans.setData(this.Contract.getLockData());
+        console.log("setLockData this.ChainType :" ,this.ChainType);
+      console.log("setLockData this.trans.opt :" ,this.trans.opt);
+      console.log("setLockData this.opt :" ,this.opt);
+        if(this.ChainType === 'ETH'){
+            //this.trans.setData(this.Contract.getLockData());
+          // add by jacob begin
+          if(this.opt === 'APPROVE' || this.protocol === 'E20'){
+            console.log("setLockData this.app_value :" ,this.app_value);
+            this.Contract.app_value=this.Amount;
+            this.Contract.E20_from = this.trans.from;
+          }
+          this.trans.setData(this.Contract.getLockData());
+          // add by jacob end
         }
         else
         {

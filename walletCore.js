@@ -18,9 +18,13 @@ async function recordMonitor(config, ethSend,wanSend){
     if(montimer){
         clearInterval(montimer);
     }
-    montimer = setInterval(function(){
-        mr.monitorTask();
-    }, 6000);
+    // montimer = setInterval(function(){
+    //     mr.monitorTask();
+    // }, 6000);
+
+  montimer = setInterval(function(){
+    mr.monitorTask();
+  }, 600000); // change by Jacob only for ERC20 POC test.
 }
 class walletcore  {
     constructor(config){
@@ -87,9 +91,13 @@ class walletcore  {
             })
         });
     }
-    createSendTransaction(ChainType){
+    // protocol = E20, support E20 standard.
+    // opt = LOCK, APPROVE,...
+    createSendTransaction(ChainType, protocol="",opt=""){
+        console.log(__filename);
+        console.log("protocol:",protocol,"opt:",opt);
         let sendGroup = ChainType == 'ETH' ? this.ethSend : this.wanSend;
-        return new sendTransaction(sendGroup);
+        return new sendTransaction(sendGroup,protocol,opt);
     }
     getCollection(dbName,collectionName){
         return databaseGroup.getCollection(dbName,collectionName);

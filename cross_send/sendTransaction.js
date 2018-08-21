@@ -11,8 +11,10 @@ const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 let logDebug;
 module.exports = class sendTransaction{
-    constructor(sendServer){
+    constructor(sendServer,protocol,opt){
         this.sendServer = sendServer;
+        this.protocol = protocol;
+        this.opt = opt;
         logDebug = global.getLogger('sendTransaction');
     }
     createTransaction(from,tokenAddress,amountWan,storeman,wanAddress,gas,gasPriceGwei,crossType,nonce){
@@ -21,12 +23,18 @@ module.exports = class sendTransaction{
         let WanKeyStoreDir = global.WanKeyStoreDir;
         let EthKeyStoreDir = global.EthKeyStoreDir;
         if(this.sendServer.chainType == 'WAN'){
-            this.trans = new wanHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
+            //this.trans = new wanHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
+          console.log("new wanHashXSend OPT:",this.opt,"protocol:",this.protocol);
+            this.trans = new wanHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce,
+              this.protocol,this.opt);
             this.trans.setAccount(WanKeyStoreDir);
         }
         else
         {
-            this.trans = new ethHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
+            //this.trans = new ethHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
+          console.log("new ethHashXSend OPT:",this.opt,"protocol:",this.protocol);
+            this.trans = new ethHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce,
+              this.protocol,this.opt);
             this.trans.setAccount(EthKeyStoreDir);
         }
     }
@@ -78,9 +86,16 @@ module.exports = class sendTransaction{
     sendRefundTrans(password,callback){
         let self = this;
         this.trans.setRefundData();
-        self.getNonce(function () {
+        try{
+          self.getNonce(function () {
             self.sendTrans(self.trans,password,self.insertRefundData,callback);
-        })
+          })
+        }catch(error){
+            console.log("sendRefundTrans error:",error);
+        }
+        // self.getNonce(function () {
+        //     self.sendTrans(self.trans,password,self.insertRefundData,callback);
+        // })
     }
     sendRevokeTrans(password,callback){
         let self = this;
@@ -96,29 +111,39 @@ module.exports = class sendTransaction{
         })
     }
     getNonce(callback){
+        console.log("Entering getNonce!");
         let self = this;
         if(self.trans.trans.nonce || self.sendServer.web3){
+            console.log("self.trans.trans.nonce ",self.trans.trans.nonce);
             callback();
             return;
         }
 
         this.sendServer.sendMessage('getNonce',this.trans.trans.from,function (err,result) {
+            console.log("this.sendServer.sendMessage");
             if(!err){
+              console.log("nonce from API: ",result);
                 self.trans.trans.nonce = result;
+            }else{
+                console.log("Error getNonce: ",err);
             }
+
             callback();
         });
     }
     sendTrans(trans,password,insert,callback){
+      console.log("Entering sendTrans ");
         let chainType = this.sendServer.chainType;
         this.sendServer.send(trans,password,function (err,result) {
             logDebug.debug(err,result);
             if(!err){
                 logDebug.debug("sendRawTransaction: ",result);
+                console.log("sendRawTransaction: ",result);
                 insert(trans,result,chainType);
                 callback(err,result);
             }
             else{
+                console.log("sendTrans, Error: ", err);
                 callback(err,result);
             }
         })
