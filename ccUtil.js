@@ -369,6 +369,10 @@ const Backend = {
 		let p = pu.promisefy(sender.sendMessage, ['getUTXO', minconf, maxconf, addresses], sender);
 		return p;
 	},
+	async getP2SHXByHash(sender, hashx) {
+		let p = pu.promisefy(sender.sendMessage, ['getP2SHXByHash', minconf, maxconf, addresses], sender);
+		return p;
+	},
 	async clientGetBtcUtxo(minconf, maxconf, addresses){
 		let utxos = await client.listUnspent(minconf, maxconf, addresses);
 		utxos = utxos.map(function (item, index) {
@@ -672,7 +676,8 @@ const Backend = {
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
 			bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex'), senderH160Addr);
 		let redeemScript = contract['redeemScript'];
-		return this._redeem(redeemScript, txid, x, storeman, value);
+		console.log("redeem redeemScript:", redeemScript);
+		return this._redeem(redeemScript, txid, x, receiverKp, value);
 	},
 	async _redeem(redeemScript, txid, x, receiverKp, value) {
 		//const redeemScript = contract['redeemScript'];
@@ -680,7 +685,7 @@ const Backend = {
 		var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 		txb.setVersion(1);
 		txb.addInput(txid, 0);
-		txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - 9000000));
+		txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - FEE));
 
 		const tx = txb.buildIncomplete();
 		const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -971,7 +976,6 @@ const Backend = {
 			console.log("#################err:", err);
 			throw err;
 		}
-		console.log("#################utxos:", utxos);
 		const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
 		if (!rawTx) {
 			throw("no enough utxo.");

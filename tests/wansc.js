@@ -15,6 +15,7 @@ let wanchainCore;
 let ccUtil;
 let btcUtil;
 const value = 100000000;
+const wdValue = 2000000;
 const value2 = 200000000;
 const secret = 'LgsQ5Y89f3IVkyGJ6UeRnEPT4Aum7Hvz';
 const commitment = 'bf19f1b16bea379e6c3978920afabb506a6694179464355191d9a7f76ab79483';
@@ -52,7 +53,7 @@ async function waitEventbyHashx(eventName,abi, hashx) {
         console.log("topics:", filterValue.topics);
         let filter = web3.eth.filter(filterValue);
         let filterResult  = await pu.promisefy(filter.get,[],filter);
-        console.log(filterResult);
+        console.log("filterResult: ", filterResult);
         if(filterResult.length != 0){
 	        return filterResult;
         }
@@ -72,6 +73,7 @@ describe('wan api test', ()=>{
         // console.log("##########addr:", addr);
         console.log("storeman btc addr:", btcUtil.getAddressbyKeypair(storeman));
         console.log("alice btc addr:", btcUtil.getAddressbyKeypair(alice));
+        console.log("aliceHash160Addr: ", aliceHash160Addr);
 
         console.log("start");
     });
@@ -79,7 +81,35 @@ describe('wan api test', ()=>{
     // it('TC001: wan filter check', async ()=>{
     //     await waitEventbyHashx('BTC2WBTCRefund', config.HTLCWBTCInstAbi, '0x0xd629eb0d7a23530fabc8715bba8194b2f93d389d2efdd8c7af2a6d8707ba51d0');
     // });
-
+	it('TC001: redeemTestWbtc', async (	)=>{
+		// wait storeman lock notice.
+		// await client.sendToAddress(storemanAddr, 2);
+		// await client.generate(1);
+		let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+		let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+		let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, wdValue, hashx);
+		console.log("record.redeemScript:",record.redeemScript);
+		await client.generate(1);
+		await client.generate(1);
+		let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txHash);
+		console.log(walletRedeem);
+		let rawTx = await client.getRawTransaction(walletRedeem);
+		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+		console.log("lockWbtcTest redeem:",ctx);
+	});
+	it('TC001: redeemTestBtc', async (	)=>{
+		// wait storeman lock notice.
+		// await client.sendToAddress(storemanAddr, 2);
+		// await client.generate(1);
+		let record = await ccUtil.fund(alice, storemanHash160Addr, wdValue);
+		console.log("record.redeemScript:",record.redeemScript);
+		await client.generate(10);
+		let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txHash);
+		console.log(walletRedeem);
+		let rawTx = await client.getRawTransaction(walletRedeem);
+		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+		console.log("lockWbtcTest redeem:",ctx);
+	});
     it('TC001: lockWbtcTest', async ()=>{
         console.log("lockWbtcTest");
         let wdTx = {};
@@ -89,36 +119,59 @@ describe('wan api test', ()=>{
         wdTx.passwd='wanglu';
         wdTx.cross = '0x'+aliceHash160Addr;
         wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
-        wdTx.amount = '0x'+(20000000).toString(16);//0.2
+        wdTx.amount = '0x'+wdValue.toString(16);//0.2
         const txFeeRatio = 3;
         wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
         console.log("wdTx.value: ",wdTx.value);
         let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
         let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
         wdTx.x = x;
+        console.log("wdTx:", wdTx);
+        console.log("wdtx hashx:", hashx);
         let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
         console.log("wdHash: ",wdHash);
 
         // wait wallet tx confirm
         await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, '0x'+hashx);
 
-        // wait storeman lock notice.
-        // await client.sendToAddress(storemanAddr, 2);
+
+
+
+
+
+/*
+        // // wait storeman lock notice.
+        // // await client.sendToAddress(storemanAddr, 2);
+        // // await client.generate(1);
+        // let withdrawValue = wdValue;// TODO: how to get hte value.
+        // let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, wdValue, hashx);
         // await client.generate(1);
-        let withdrawValue = value;// TODO: how to get hte value.
-        let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, withdrawValue, hashx);
-        await client.generate(1);
-        await client.generate(1);
+        // await client.generate(1);
         // stomen send notice.
-        // wait confirm
+	    const tx = {};
+	    tx.storeman = storemanHash160Addr;
+	    tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+	    tx.hashx = '0x'+record.hashx;
+	    tx.txHash = '0x'+record.txHash;
+	    tx.lockedTimestamp = record.redeemLockTimeStamp;
+	    tx.gas = ('1000000').toString(16);
+	    tx.gasPrice = ('200000000000').toString(16); //200G;
+	    tx.passwd='wanglu';
+	    console.log("######## tx: ", tx);
+	    let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
+	    console.log("sendWanNotice txHash:", txHash);
+*/
+
 
         //wallet wait storeman event.
         let filterResult = await waitEventbyHashx('WBTC2BTCLockNotice', config.HTLCWBTCInstAbi, '0x'+hashx);
         console.log("filterResult:", filterResult);
 		let info = {}; // storeman info
-	    let redeemLockTimeStamp = 0;
-        // wallet send redeem. redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid)
-        let walletRedeem = await ccUtil.redeem(x,hashx, redeemLockTimeStamp, storemanHash160Addr,alice, value, wdHash);
+	    let redeemLockTimeStamp = Number('0x'+filterResult[0].data.slice(66));
+	    let txid = filterResult[0].data.slice(2,66);
+	    console.log("redeemLockTimeStamp: ", redeemLockTimeStamp);
+	    console.log("txid: ", txid);
+        let walletRedeem = await ccUtil.redeem(x,hashx, redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, txid);
         console.log(walletRedeem);
         let rawTx = await client.getRawTransaction(walletRedeem);
         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);

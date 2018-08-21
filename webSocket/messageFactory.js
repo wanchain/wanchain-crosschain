@@ -54,6 +54,9 @@ module.exports = {
     getUTXO(minconf, maxconf, addresses, chainType, callBack){
         return new socketmessage('getUTXO',{minconf:minconf, maxconf:maxconf, addresses:addresses},'UTXOs',chainType,callBack);
     },
+	getP2SHXByHash(hashx, chainType, callBack){
+		return new socketmessage('getP2SHXByHash',{hashx:hashx},'x',chainType,callBack);
+	},
     monitorLog(address,topics,chainType,callBack){
         return new socketmessage('monitorLog',{address:address,topics:topics},'logs',chainType,callBack);
     },
