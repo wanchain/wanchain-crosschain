@@ -94,13 +94,13 @@ describe('wan api test', ()=>{
         wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
         console.log("wdTx.value: ",wdTx.value);
         let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
-        let hashx = '0x'+bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
         wdTx.x = x;
         let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
         console.log("wdHash: ",wdHash);
 
         // wait wallet tx confirm
-        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, hashx);
+        await waitEventbyHashx('WBTC2BTCLock', config.HTLCWBTCInstAbi, '0x'+hashx);
 
         // wait storeman lock notice.
         // await client.sendToAddress(storemanAddr, 2);
@@ -113,7 +113,7 @@ describe('wan api test', ()=>{
         // wait confirm
 
         //wallet wait storeman event.
-        let filterResult = await waitEventbyHashx('WBTC2BTCLockNotice', config.HTLCWBTCInstAbi, hashx);
+        let filterResult = await waitEventbyHashx('WBTC2BTCLockNotice', config.HTLCWBTCInstAbi, '0x'+hashx);
         console.log("filterResult:", filterResult);
 		let info = {}; // storeman info
 	    let redeemLockTimeStamp = 0;

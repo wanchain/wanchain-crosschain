@@ -369,6 +369,16 @@ const Backend = {
 		let p = pu.promisefy(sender.sendMessage, ['getUTXO', minconf, maxconf, addresses], sender);
 		return p;
 	},
+	async clientGetBtcUtxo(minconf, maxconf, addresses){
+		let utxos = await client.listUnspent(minconf, maxconf, addresses);
+		utxos = utxos.map(function (item, index) {
+			let av = item.value ? item.value : item.amount;
+			item.value = av * 100000000;
+			item.amount = av * 100000000;
+			return item;
+		});
+		return utxos;
+	},
 	async getBtcUtxo(sender, minconf, maxconf, addresses) {
 		let utxos = await this._getBtcUtxo(sender, minconf, maxconf, addresses);
 		let len = utxos.length;
@@ -976,7 +986,7 @@ const Backend = {
 		try {
 			let addArr = keyPairArray2AddrArray(keyPairArray);
 			console.log("############ addArr:", addArr);
-			utxos = await client.listUnspent(MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
+			utxos = await this.clientGetBtcUtxo(MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
 		} catch (err) {
 			console.log("#################err:", err);
 			throw err;
