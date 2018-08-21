@@ -17,17 +17,9 @@ const ccu= require('../ccUtil.js')
 
 var alice
 
-const btcserver = {
-  regtest: {
-    network: 'regtest',
-    host: '18.237.186.227',
-    port: 18443,
-    username: 'USER',
-    password: 'PASS'
-  }
-}
 
-const client = new Client(btcserver.regtest)
+
+const client = new Client(config.btcserver.regtest)
 
 var wanchainCore
 var ccUtil

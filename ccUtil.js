@@ -13,15 +13,7 @@ const Client = require('bitcoin-core');
 const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
 const bs58check = require('bs58check');
-const btcserver = {
-	regtest: {
-		network: 'regtest',
-		host: "18.237.186.227",
-		port: 18443,
-		username: "USER",
-		password: "PASS"
-	}
-};
+
 var alice = bitcoin.ECPair.fromWIF(
 	'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
 );
@@ -41,7 +33,7 @@ const aliceAddr = getAddress(alice);
 const storemanAddr = getAddress(storeman);
 
 
-const client = new Client(btcserver.regtest);
+const client = new Client(config.btcserver.regtest);
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;

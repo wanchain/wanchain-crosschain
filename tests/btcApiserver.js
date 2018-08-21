@@ -7,17 +7,7 @@ const config = require('../config.js');
 const pu = require('promisefy-util');
 const assert = require('chai').assert;
 
-const btcserver={
-    regtest:{
-        network: 'regtest',
-        host: "18.237.186.227",
-        port: 18443,
-        username: "USER",
-        password: "PASS"
-    }
-};
-
-const client = new Client(btcserver.regtest);
+const client = new Client(config.btcserver.regtest);
 
 let wanchainCore;
 let ccUtil;
