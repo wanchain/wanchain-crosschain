@@ -1164,7 +1164,7 @@ const Backend = {
 
             let changedRedeemScript = '0x' + gotRedeemScriptArray.join(' ');
             let changedRedeemScriptHash = this.getHashKey(changedRedeemScript);
-            return new Error("wrong script hash");
+
 
             if (fixedRedeemScriptHash == changedRedeemScriptHash) {
                 return {
