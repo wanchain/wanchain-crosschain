@@ -97,6 +97,7 @@ const Backend = {
 	},
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : require('./config.js');
+		this.config = config;
 		this.client = new Client(global.config.btcServer.regtest);
 		client = this.client;
 		this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
@@ -580,7 +581,7 @@ const Backend = {
 		let x,wallet;
 		if(!hashx){
 			wallet = true;
-			x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
+			x = this.generatePrivateKey().slice(2); // hex string without 0x
 			hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
 		}
 		console.log("############### x:", x);
@@ -668,6 +669,44 @@ const Backend = {
 		return ctx.outs[0].value;
 	},
 
+    // when btc -- > wbtc, alice is revoker,  storeman is receiver.
+    // when wbtc --> btc,  alice is receiver,  storeman is revoker.
+    async revoke(hashx, redeemLockTimeStamp, receiverH160Addr, revokeKp, amount, txid, vout=0) {
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
+            receiverH160Addr, bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex'));
+        let redeemScript = contract['redeemScript'];
+        console.log("redeem redeemScript:", redeemScript);
+        return this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
+    },
+    // call this function to revoke locked btc
+    async _revoke(hashx, txid,vout,amount, redeemScript, redeemLockTimeStamp, revokerKeyPair) {
+        let txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        txb.setLockTime(redeemLockTimeStamp);
+        txb.setVersion(1);
+        txb.addInput(txid, vout, 0);
+        txb.addOutput(this.getAddress(revokerKeyPair), (amount - FEE));
+
+        let tx = txb.buildIncomplete();
+        let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+
+        let redeemScriptSig = bitcoin.payments.p2sh({
+            redeem: {
+                input: bitcoin.script.compile([
+                    bitcoin.script.signature.encode(revokerKeyPair.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
+                    revokerKeyPair.publicKey,
+                    bitcoin.opcodes.OP_FALSE
+                ]),
+                output: redeemScript
+            }
+        }).input;
+
+        tx.setInputScript(0, redeemScriptSig);
+
+        let rawTx = tx.toHex();
+        let result = await this.sendRawTransaction(this.btcSender, rawTx);
+        console.log('result hash:', result);
+        return result
+    },
 	// when wbtc->btc,  storeman --> wallet.
 	//storeman is sender.  wallet is receiverKp.
 	// when btc->wbtc,  wallet --> storeman;
@@ -1066,45 +1105,7 @@ const Backend = {
 		return {'result': result, 'error': null}
 	},
 
-	// call this function to revoke locked btc
-	async revoke(fundtx, revokerKeyPair) {
-		let contract = contractsMap[fundtx.vout.address]
-		if (contract == undefined) {
-			return null
-		}
 
-		let redeemScript = contract['redeemScript']
-
-		let txb = new bitcoin.TransactionBuilder(network)
-		txb.setLockTime(contract['redeemblocknum'])
-		txb.setVersion(1)
-		txb.addInput(fundtx.txid, fundtx.vout, 0)
-		txb.addOutput(this.getAddress(revokerKeyPair), (fundtx.amount - FEE) * 100000000)
-
-		let tx = txb.buildIncomplete()
-		let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL)
-
-		let redeemScriptSig = bitcoin.payments.p2sh({
-			redeem: {
-				input: bitcoin.script.compile([
-					bitcoin.script.signature.encode(revokerKeyPair.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-					revokerKeyPair.publicKey,
-					bitcoin.opcodes.OP_FALSE
-				]),
-				output: redeemScript
-			}
-		}).input
-
-		tx.setInputScript(0, redeemScriptSig)
-
-		let rawTx = tx.toHex()
-		print4debug('redeem raw tx: \n' + rawTx)
-		let result = await this.sendRawTransaction(this.btcSender, rawTx)
-		console.log('result hash:', result)
-
-		delete contractsMap[fundtx.vout.address]
-		return result
-	},
 
   async btcSendTransaction (keyPairArray, amount, destAddress, feeRate) {
     let target = {

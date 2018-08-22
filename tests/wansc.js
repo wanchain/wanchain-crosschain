@@ -110,6 +110,41 @@ describe('wan api test', ()=>{
 		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
 		console.log("lockWbtcTest redeem:",ctx);
 	});
+    it('TC001: revokeTestBtc', async (	)=>{
+        // wait storeman lock notice.
+        // await client.sendToAddress(storemanAddr, 2);
+        // await client.generate(1);
+        let lockTimeBak = ccUtil.config.lockTime;
+        ccUtil.config.lockTime = 10;
+        let record = await ccUtil.fund(alice, storemanHash160Addr, wdValue);
+        console.log("record.redeemScript:",record.redeemScript);
+        await client.generate(20);
+        let walletRevoke = await ccUtil.revoke(record.hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txHash);
+        console.log(walletRevoke);
+        ccUtil.config.lockTime = lockTimeBak;
+        let rawTx = await client.getRawTransaction(walletRevoke);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        console.log("lockWbtcTest redeem:",ctx);
+    });
+    it('TC001: revokeTestWbtc', async (	)=>{
+        // wait storeman lock notice.
+        // await client.sendToAddress(storemanAddr, 2);
+        // await client.generate(1);
+        let lockTimeBak = ccUtil.config.lockTime;
+        ccUtil.config.lockTime = 10;
+        let x = ccUtil.generatePrivateKey().slice(2); // hex string without 0x
+        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+        let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, wdValue, hashx);
+        console.log("record.redeemScript:",record.redeemScript);
+        await client.generate(20);
+        let walletRevoke = await ccUtil.revoke(hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txHash);
+        console.log(walletRevoke);
+        ccUtil.config.lockTime = lockTimeBak;
+        let rawTx = await client.getRawTransaction(walletRevoke);
+        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        console.log("lockWbtcTest redeem:",ctx);
+    });
+
     it('TC001: lockWbtcTest', async ()=>{
         console.log("lockWbtcTest");
         let wdTx = {};
