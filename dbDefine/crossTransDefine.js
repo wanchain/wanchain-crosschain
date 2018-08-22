@@ -15,6 +15,7 @@ module.exports = {
                 chain : ''
             }
         },
+
         {
             name : 'crossTransaction',
             UID: 'HashX',
@@ -43,7 +44,38 @@ module.exports = {
                 refundTxHash: '',
                 revokeTxHash : ''
             }
+        },
+
+        {
+            name : 'btcCrossTransaction',
+            UID: 'HashX',
+            ItemDefine : {
+                HashX : '',
+                from : '',          //wan:sender address,                       btc:senderH160Addr
+                to: '',             //wan:smart contract address                btc:script psh address
+                storeman : '',      //wan:storeman address                      btc:ReceiverHash160Addr
+                crossAdress : '',   //wan: sender btc chain senderH160Addr      btc:wan chain address
+                value : '',         //wan:the value for sc input para value     btc:the value for send to psh address
+                txValue: '',        //the native coin value
+                x : '',             //X value for refund
+                time : '',          //the transaction time
+                suspendTime:'',     //the time span from lock                   record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
+                HTLCtime : '',      //the time span from for htlc timeout       record.HTLCtime = (100000+2*1000*Number(global.lockedTime)+newtime).toString();
+                chain : '',         //wan:'WAN'                                  btc:'BTC'
+                status: '',         //sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
+                                    //suspending,waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
+                lockConfirmed:0,    //the confirmed block number for lock  transaction
+                refundConfirmed:0,  //the confrmed block number for refund transaction
+                revokeConfirmed:0,  //the confrmed block number for revoke transaction
+                crossConfirmed:0,   //the confirmed block number after loch hashC
+                crossLockHash:'',   //the lock hash for the cross chain
+                txhash : '',        //normanl transaction hash
+                lockTxHash: '',     //the lock txHash
+                refundTxHash: '',   //the refund txHash
+                revokeTxHash : ''   //the revoke txHash
+            }
         }
-    ]
+
+     ]
 
 }

@@ -38,6 +38,7 @@ keythereum.constants.quiet = true;
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
 let SendFromWeb3 = require("./wanchainsender/index.js").SendFromWeb3;
 let sendTransaction = require('./cross_send/sendTransaction.js');
+let btcWanTxSendRec = require('./cross_send/btcWanTxSendRec.js');
 
 let messageFactory = require('./webSocket/messageFactory.js');
 let socketServer = require("./wanchainsender/index.js").socketServer;
@@ -606,6 +607,11 @@ const Backend = {
 		}
 		contract.txHash = senrResult.result;
 		console.log("btc result hash:", contract.txHash);
+        contract.hashx = hashx;
+        contract.redeemLockTimeStamp = redeemLockTimeStamp;
+        contract.ReceiverHash160Addr = ReceiverHash160Addr;
+        contract.senderH160Addr = senderH160Addr
+        //this.btc2wbtcLockSave(this.btcsender,contract)
 		return contract;
 	},
 	async fund(senderKp, ReceiverHash160Addr, value) {
@@ -1185,7 +1191,30 @@ const Backend = {
 
         }
   
-   }
+   },
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    createBtcEthTrans(sender) {
+        return new btcWanTxSendRec(sender);
+    },
+
+    async btc2wbtcLockSave(sender,tx) {
+
+        let newTrans = this.createBtcEthTrans(sender);
+        newTrans.createBtcTransaction(tx.senderH160Addr,tx.pshAddr,tx.value,tx.recieverH160Addr,tx.senderWanAddr,tx.feeRate,tx.fee,"BTC2WAN",tx.redeemLockTimeStamp);
+
+        if (tx.x) {
+            newTrans.trans.setKey(tx.x);
+        }
+
+        let res = newTrans.insertLockData(newTrans,tx.result);
+        if(res != null){
+            console.log(res.toString());
+        }
+
+        return res;
+    },
+
   
 }
 
