@@ -82,7 +82,7 @@ describe('wan api test', ()=>{
 		console.log("record.redeemScript:",record.redeemScript);
 		await client.generate(1);
 		await client.generate(1);
-		let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txHash);
+		let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txhash);
 		console.log(walletRedeem);
 
     let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
@@ -96,10 +96,10 @@ describe('wan api test', ()=>{
 		// wait storeman lock notice.
 		// await client.sendToAddress(storemanAddr, 2);
 		// await client.generate(1);
-		let record = await ccUtil.fund(alice, storemanHash160Addr, wdValue);
+		let record = await ccUtil.fund([alice], storemanHash160Addr, wdValue);
 		console.log("record.redeemScript:",record.redeemScript);
 		await client.generate(10);
-		let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txHash);
+		let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txhash);
 		console.log(walletRedeem);
 
     let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
@@ -115,10 +115,10 @@ describe('wan api test', ()=>{
         // await client.generate(1);
         let lockTimeBak = ccUtil.config.lockTime;
         ccUtil.config.lockTime = 10;
-        let record = await ccUtil.fund(alice, storemanHash160Addr, wdValue);
+        let record = await ccUtil.fund([alice], storemanHash160Addr, wdValue);
         console.log("record.redeemScript:",record.redeemScript);
         await client.generate(20);
-        let walletRevoke = await ccUtil.revoke(record.hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txHash);
+        let walletRevoke = await ccUtil.revoke(record.hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txhash);
         console.log(walletRevoke);
         ccUtil.config.lockTime = lockTimeBak;
         let rawTx = await client.getRawTransaction(walletRevoke);
@@ -136,7 +136,7 @@ describe('wan api test', ()=>{
         let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, wdValue, hashx);
         console.log("record.redeemScript:",record.redeemScript);
         await client.generate(20);
-        let walletRevoke = await ccUtil.revoke(hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txHash);
+        let walletRevoke = await ccUtil.revoke(hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txhash);
         console.log(walletRevoke);
         ccUtil.config.lockTime = lockTimeBak;
         let rawTx = await client.getRawTransaction(walletRevoke);
@@ -253,7 +253,7 @@ describe('wan api test', ()=>{
         tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
         tx.userH160 = '0x'+bitcoin.crypto.hash160(alice.publicKey).toString('hex');
         tx.hashx = '0x'+record.hashx;
-        tx.txHash = '0x'+record.txHash;
+        tx.txHash = '0x'+record.txhash;
         tx.lockedTimestamp = record.redeemLockTimeStamp;
         tx.gas = ('1000000').toString(16);
         tx.gasPrice = ('200000000000').toString(16); //200G;
