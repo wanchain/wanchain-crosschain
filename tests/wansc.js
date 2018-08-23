@@ -3,7 +3,7 @@
 
 const Web3 = require("web3");
 const assert = require('chai').assert;
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+var web3 = new Web3(new Web3.providers.HttpProvider('http://18.237.186.227:8545'));
 const WanchainCore = require('../walletCore.js');
 const pu = require('promisefy-util');
 const bitcoin  = require('bitcoinjs-lib');
@@ -227,7 +227,7 @@ describe('wan api test', ()=>{
 
         let record;
         try{
-            record = await ccUtil.fund(alice, storemanHash160Addr, value);
+            record = await ccUtil.fund([alice], storemanHash160Addr, value);
         }catch(err){
             assert.equal(err.toString(), "");
             return;
@@ -267,7 +267,7 @@ describe('wan api test', ()=>{
 
         // sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce)
         console.log("x: ", record.x);
-        let redeemHash = await ccUtil.sendDepositX(ccUtil.wanSender, tx.userWanAddr,tx.gas,tx.gasPrice,'0x'+record.x, tx.passwd);
+        let redeemHash = await ccUtil.sendDepositX(ccUtil.wanSender, tx.from,tx.gas,tx.gasPrice,'0x'+record.x, tx.passwd);
         console.log("redeemHash: ", redeemHash);
 
         // filteer watch.

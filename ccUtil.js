@@ -589,7 +589,7 @@ const Backend = {
 		}
 		console.log("############### x:", x);
 		console.log("############### hashx:", hashx);
-		let senderH160Addr = bitcoin.crypto.hash160(senderKp.publicKey).toString('hex');
+		let senderH160Addr = bitcoin.crypto.hash160(senderKp[0].publicKey).toString('hex');
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);
 		contract.x = x;
 		console.log("############### contract:", contract);
@@ -599,17 +599,16 @@ const Backend = {
 		};
 		let sendResult;
 		if(wallet){
-            sendResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
+            sendResult = await this.btcTxBuildSendWallet(senderKp, target, global.config.feeRate);
 			console.log("############### btcTxBuildSendWallet sendResult:", sendResult);
 
 		}else {
-			//senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
-            sendResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
+			//senrResult = await this.btcTxBuildSendWallet(senderKp, target, global.config.feeRate);
+            sendResult = await this.btcTxBuildSendStoreman(senderKp, target, global.config.feeRate);
 			console.log("############### btcTxBuildSendStoreman sendResult:", sendResult);
 		}
 
 		contract.result = sendResult;
-		console.log("btc result hash:", contract.txHash);
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
@@ -619,16 +618,19 @@ const Backend = {
         contract.x = x;
         contract.value = value;
         contract.feeRate = feeRate;
+        console.log("btc result hash:", contract.txHash);
 
         this.btc2wbtcLockSave(this.btcsender,contract)
 
 		return contract;
 	},
 	async fund(senderKp, ReceiverHash160Addr, value) {
+	    // for wallet senderKp is array.
 		return this.btc2wbtcLock(senderKp, ReceiverHash160Addr, value,null);
 	},
 	async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
-		return this.btc2wbtcLock(senderKp, ReceiverHash160Addr, value, hashx);
+	    // change to array
+		return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
 	},
 	//
 	// async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
@@ -769,11 +771,13 @@ const Backend = {
 		console.log("alice.publicKey:", alice.publicKey.toString('hex'));
 		console.log("redeem tx: ", tx);
 		console.log("redeem raw tx: \n" + tx.toHex());
-		const btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex(),
-			function (err) {
-				console.log(err);
-			}
-		);
+		let btcHash;
+		try {
+            btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex());
+        }catch(err){
+		    console.log("###########err: ", err);
+        }
+
 		console.log("redeem tx id:" + btcHash);
 		return btcHash;
 	},
