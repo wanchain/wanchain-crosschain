@@ -615,6 +615,7 @@ const Backend = {
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
         contract.senderH160Addr = senderH160Addr
         contract.result = sendResult;
+        contract.txHash = sendResult.result;
         contract.x = x;
         contract.value = value;
         contract.feeRate = feeRate;
