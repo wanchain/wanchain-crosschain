@@ -36,6 +36,11 @@ module.exports = class hashXSend extends TokenSend
         }
         else
         {
+          if(this.opt === 'APPROVE' || this.protocol === 'E20'){
+            console.log("setLockData this.app_value WAN:" ,this.app_value);
+            this.Contract.app_value=this.Amount;
+            this.Contract.E20_from = this.trans.from;
+          }
             this.trans.setData(this.Contract.getLockData(this.Amount));
         }
     }
