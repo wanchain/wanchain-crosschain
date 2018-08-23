@@ -154,7 +154,7 @@ describe('wan api test', ()=>{
         wdTx.cross = '0x'+aliceHash160Addr;
         wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
         wdTx.amount = '0x'+wdValue.toString(16);//0.2
-        const txFeeRatio = 3;
+        const txFeeRatio = 10;
         wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
         console.log("wdTx.value: ",wdTx.value);
         let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x

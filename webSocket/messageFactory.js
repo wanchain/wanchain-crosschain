@@ -4,7 +4,7 @@ let socketmessage = require("../wanchainsender/index.js").socketmessage;
 module.exports = {
     chainType : ["WAN","ETH"],
     syncStoremanGroups(chainType,callBack) {
-        return new socketmessage('syncStoremanGroups',{crossChain:'ETH'},'storemanGroup',chainType,callBack);
+        return new socketmessage('syncStoremanGroups',{crossChain:'BTC'},'storemanGroup',chainType,callBack);
     },
     getBalance(address,chainType,callBack){
         return new socketmessage('getBalance',{address:address},'balance',chainType,callBack);

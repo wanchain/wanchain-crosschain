@@ -88,7 +88,7 @@ class IRawTransaction
         this.trans.setTo(to);
         this.trans.gasLimit = Number(gas);
         this.trans.gas = Number(gas);
-        this.trans.gasPrice = gasPrice;
+        this.trans.gasPrice = Number(gasPrice);
         this.trans.nonce = nonce;
         this.Account = null;
         this.ChainType = 'WAN';
