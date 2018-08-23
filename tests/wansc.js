@@ -84,7 +84,11 @@ describe('wan api test', ()=>{
 		await client.generate(1);
 		let walletRedeem = await ccUtil.redeem(x,hashx, record.redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, record.txHash);
 		console.log(walletRedeem);
-		let rawTx = await client.getRawTransaction(walletRedeem);
+
+    let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
+    console.log(checkres);
+
+    let rawTx = await client.getRawTransaction(walletRedeem);
 		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
 		console.log("lockWbtcTest redeem:",ctx);
 	});
@@ -97,6 +101,10 @@ describe('wan api test', ()=>{
 		await client.generate(10);
 		let walletRedeem = await ccUtil.redeem(record.x,record.hashx, record.redeemLockTimeStamp, aliceHash160Addr,storeman, wdValue, record.txHash);
 		console.log(walletRedeem);
+
+    let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
+    console.log(checkres);
+
 		let rawTx = await client.getRawTransaction(walletRedeem);
 		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
 		console.log("lockWbtcTest redeem:",ctx);
@@ -215,8 +223,11 @@ describe('wan api test', ()=>{
         //Storemanfund(senderKp, ReceiverHash160Addr, value, hashx )
         let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
         let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
-        let tx = await ccUtil.Storemanfund(storeman, aliceHash160Addr, '0.9', hashx );
-        let rawTx = await client.getRawTransaction(tx.txHash);
+        let tx = await ccUtil.Storemanfund(storeman, aliceHash160Addr, value, hashx );
+        let checkres = ccUtil.getBtcWanTxHistory({'HashX':tx.hashx})
+        console.log(checkres);
+
+        let rawTx = await client.getRawTransaction(tx.txhash);
         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
         console.log("Storemanfund:",ctx);
     });

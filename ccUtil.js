@@ -608,19 +608,17 @@ const Backend = {
 			console.log("############### btcTxBuildSendStoreman sendResult:", sendResult);
 		}
 
-		contract.result = sendResult;
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
         contract.senderH160Addr = senderH160Addr
-        contract.result = sendResult;
-        contract.txHash = sendResult.result;
+        contract.txhash = sendResult.result;
         contract.x = x;
         contract.value = value;
         contract.feeRate = feeRate;
-        console.log("btc result hash:", contract.txHash);
+        contract.fee = sendResult.fee;
 
-        this.btc2wbtcLockSave(this.btcsender,contract)
+        this.btcLockSave(contract)
 
 		return contract;
 	},
@@ -690,11 +688,26 @@ const Backend = {
     // when btc -- > wbtc, alice is revoker,  storeman is receiver.
     // when wbtc --> btc,  alice is receiver,  storeman is revoker.
     async revoke(hashx, redeemLockTimeStamp, receiverH160Addr, revokeKp, amount, txid, vout=0) {
-        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
-            receiverH160Addr, bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex'));
+	      let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverH160Addr,senderH160Addr);
         let redeemScript = contract['redeemScript'];
         console.log("redeem redeemScript:", redeemScript);
-        return this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
+
+        let res = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
+
+        contract.txhash = res;
+        contract.hashx = hashx;
+        contract.redeemLockTimeStamp = redeemLockTimeStamp;
+        contract.ReceiverHash160Addr = receiverH160Addr;
+        contract.senderH160Addr = senderH160Addr
+        contract.value = value;
+        contract.feeRate = feeRate;
+        contract.fee = FEE;
+
+        this.btcRevokeSave(contract);
+
+        return res;
+
     },
     // call this function to revoke locked btc
     async _revoke(hashx, txid,vout,amount, redeemScript, redeemLockTimeStamp, revokerKeyPair) {
@@ -730,11 +743,27 @@ const Backend = {
 	// when btc->wbtc,  wallet --> storeman;
 	// wallet is sender, storeman is receiver;
 	async redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid) {
-		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,
-			bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex'), senderH160Addr);
+
+    let receiverHash160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
+		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverHash160Addr, senderH160Addr);
 		let redeemScript = contract['redeemScript'];
 		console.log("redeem redeemScript:", redeemScript);
-		return this._redeem(redeemScript, txid, x, receiverKp, value);
+
+		let res = await this._redeem(redeemScript, txid, x, receiverKp, value);
+
+    contract.txhash = res;
+    contract.hashx = hashx;
+    contract.redeemLockTimeStamp = redeemLockTimeStamp;
+    contract.ReceiverHash160Addr = receiverHash160Addr;
+    contract.senderH160Addr = senderH160Addr
+    contract.x = x;
+    contract.value = value;
+    contract.feeRate = feeRate;
+    contract.fee = FEE;
+
+    this.btcRedeemSave(contract);
+
+		return res;
 	},
 	async _redeem(redeemScript, txid, x, receiverKp, value) {
 		//const redeemScript = contract['redeemScript'];
@@ -1209,9 +1238,9 @@ const Backend = {
     },
 
     getBtcWanCrossdbCollection() {
-	    let clctNm = config.btcWanCrossCollection;
+	    let clctNm = config.crossCollection;
         if(clctNm == undefined){
-	        clctNm = "btcCrossTransaction"
+	        clctNm = "crossTransaction"
         }
         return this.getCollection(config.crossDbname, clctNm);
     },
@@ -1227,29 +1256,52 @@ const Backend = {
         return his;
     },
 
-    async btc2wbtcLockSave(sender,tx) {
+    formatInput(tx) {
 
+	    try {
+            let ctx = {};
+            ctx.from = this.hexTrip0x(tx.senderH160Addr);
+            ctx.to = this.hexTrip0x(tx['p2sh']);
+            ctx.value = tx.value;
+            ctx.amount = tx.value;
+            ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr);
+            ctx.crossAddress = this.hexTrip0x(tx.senderH160Addr);
+
+            if (tx.x != undefined) {
+                ctx.x = this.hexTrip0x(tx.x);
+            } else {
+                ctx.x = '';
+            }
+
+            if (tx.hashx == undefined) {
+                return new Error('hashx can not be undefined')
+            } else {
+                ctx.hashx = this.hexTrip0x(tx.hashx);
+            }
+
+            ctx.feeRate = feeRate;
+            ctx.fee = tx.fee;
+            ctx.crossType = "BTC2WAN";
+            ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp;
+
+            if (tx.txhash != undefined) {
+                ctx.txhash = this.hexTrip0x(tx.txhash);
+            } else {
+                return new Error('txhashx can not be undefined')
+            }
+
+            console.log("ctx=")
+            console.log(ctx)
+            return ctx;
+
+        } catch (e) {
+            return new Error(e)
+        }
+    },
+
+    async btcLockSave(tx) {
         let newTrans = new btcWanTxSendRec();
-        let ctx = {}
-
-        ctx.from = this.hexTrip0x(tx.senderH160Addr);
-        ctx.to = this.hexTrip0x(tx['p2sh']);
-        ctx.value = tx.value;
-        ctx.amount = tx.value;
-        ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr);
-        ctx.crossAddress = this.hexTrip0x(tx.senderH160Addr);
-        ctx.x = this.hexTrip0x(tx.x);
-        ctx.hashx = tx.hashx
-        ctx.feeRate = feeRate;
-        ctx.fee = tx.result.fee;
-        ctx.crossType = "BTC2WAN";
-        ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp;
-        ctx.txhash = this.hexTrip0x(tx.result.result);
-
-        console.log("ctx=")
-        console.log(ctx)
-
-        let res = newTrans.insertLockData(ctx,ctx.crossType);
+        let res = newTrans.insertLockData(this.formatInput(tx));
 
         if(res != undefined){
                 console.log(res.toString());
@@ -1257,6 +1309,27 @@ const Backend = {
 
         return res;
     },
+
+    async btcRedeemSave(tx) {
+        let newTrans = new btcWanTxSendRec();
+        let res = newTrans.insertRefundData(this.formatInput(tx));
+
+        if(res != undefined){
+            console.log(res.toString());
+        }
+
+        return res;
+    },
+
+    async btcRevokeSave(tx) {
+        let newTrans = new btcWanTxSendRec();
+        let res = newTrans.insertRevokeData(this.formatInput(tx));
+        if(res != undefined){
+            console.log(res.toString());
+        }
+
+        return res;
+    }
 
   
 }
