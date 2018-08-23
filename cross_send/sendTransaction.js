@@ -31,11 +31,10 @@ module.exports = class sendTransaction{
         }
     }
 
-    createDepositNotice(storeman,userWanAddr,hashx,txhash, lockedTimestamp, gas, pasPrice){
-        //function btc2wbtcLockNotice(address storeman, address userWanAddr, bytes32 xHash, bytes32 txHash, uint lockedTimestamp)
-        let payload = this.wanIns.btc2wbtcLockNotice.getData(storeman,userWanAddr,hashx,txhash, lockedTimestamp);
+    createDepositNotice(from, storeman,userH160,hashx,txhash, lockedTimestamp, gas, pasPrice){
+        let payload = this.wanIns.btc2wbtcLockNotice.getData(storeman,userH160,hashx,txhash, lockedTimestamp);
         // TokenSend(from, to, gas, gasprice nonce);
-        this.trans = new TokenSend(userWanAddr, config.wanchainHtlcAddr, gas, pasPrice);
+        this.trans = new TokenSend(from, config.wanchainHtlcAddr, gas, pasPrice);
         this.trans.setAccount(WanKeyStoreDir);
         this.trans.trans.data = payload;
         console.log(this.trans);

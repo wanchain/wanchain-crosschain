@@ -107,7 +107,7 @@ config.WBTCToken = "0x4efdada5fb2c5926cb9f6b07c14fd05af78e3238";
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
 
 //btc
-config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,address,uint256)';
+    config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,address,uint256)';
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
 config.withdrawBtcRedeemNoticeEvent = 'WBTC2BTCLockNotice(address,address,bytes32,bytes32,uint256)';
 
