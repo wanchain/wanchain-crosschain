@@ -61,6 +61,6 @@ typings/
 .next
 
 .idea/
-.yarn.lock
+yarn.lock
 package-lock.json
 
