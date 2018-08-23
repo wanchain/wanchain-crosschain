@@ -14,11 +14,8 @@ let client;
 let wanchainCore;
 let ccUtil;
 let btcUtil;
-const value = 100000000;
+const value   = 10000000;
 const wdValue = 2000000;
-const value2 = 200000000;
-const secret = 'LgsQ5Y89f3IVkyGJ6UeRnEPT4Aum7Hvz';
-const commitment = 'bf19f1b16bea379e6c3978920afabb506a6694179464355191d9a7f76ab79483';
 const storemanHash160 = Buffer.from('d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'hex');
 const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
 const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
@@ -30,13 +27,7 @@ var alice = bitcoin.ECPair.fromWIF(
     'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
 );
 const userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
-let aliceAddr = getAddress(alice);
-let storemanAddr = getAddress(storeman);
 
-function getAddress(keypair){
-    const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
-    return pkh.address;
-}
 const aliceHash160Addr = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
 console.log("aliceHash160Addr:", aliceHash160Addr);
 async function waitEventbyHashx(eventName,abi, hashx) {
@@ -248,7 +239,8 @@ describe('wan api test', ()=>{
         // notice wan.
         const tx = {};
         tx.storeman = storemanHash160Addr;
-        tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.userH160 = '0x'+bitcoin.crypto.hash160(alice.publicKey).toString('hex');
         tx.hashx = '0x'+record.hashx;
         tx.txHash = '0x'+record.txHash;
         tx.lockedTimestamp = record.redeemLockTimeStamp;

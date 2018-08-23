@@ -278,7 +278,7 @@ const Backend = {
 	},
 	async sendWanNotice(sender, tx) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createDepositNotice(tx.storeman, tx.userWanAddr, tx.hashx, tx.txHash, tx.lockedTimestamp,
+		newTrans.createDepositNotice(tx.from, tx.storeman, tx.userH160, tx.hashx, tx.txHash, tx.lockedTimestamp,
 			tx.gas, tx.gasPrice.toString(16));
 		let txhash = await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
 		return txhash;
