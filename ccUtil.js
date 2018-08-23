@@ -577,8 +577,10 @@ const Backend = {
 	// user call this to lock btc
 	async btc2wbtcLock(senderKp,  ReceiverHash160Addr, value, hashx) {
 		// generate script and p2sh address
-		let blocknum = await this.getBlockNumber(this.btcSender);
-		let redeemLockTimeStamp = blocknum + global.config.lockTime;
+		//let blocknum = await this.getBlockNumber(this.btcSender);
+		//let redeemLockTimeStamp = blocknum + global.config.lockTime;
+        let cur = Math.floor(Date.now()/1000);
+        let redeemLockTimeStamp = cur + Number(global.lockedTime);
 		let x,wallet;
 		if(!hashx){
 			wallet = true;
