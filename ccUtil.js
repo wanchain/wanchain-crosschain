@@ -597,23 +597,30 @@ const Backend = {
 			address: contract['p2sh'],
 			value: value
 		};
-		let senrResult;
+		let sendResult;
 		if(wallet){
-			senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
-			console.log("############### btcTxBuildSendWallet senrResult:", senrResult);
+            sendResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
+			console.log("############### btcTxBuildSendWallet sendResult:", sendResult);
 
 		}else {
 			//senrResult = await this.btcTxBuildSendWallet([senderKp], target, global.config.feeRate);
-			senrResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
-			console.log("############### btcTxBuildSendStoreman senrResult:", senrResult);
+            sendResult = await this.btcTxBuildSendStoreman([senderKp], target, global.config.feeRate);
+			console.log("############### btcTxBuildSendStoreman sendResult:", sendResult);
 		}
-		contract.txHash = senrResult.result;
+
+		contract.result = sendResult;
 		console.log("btc result hash:", contract.txHash);
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
         contract.senderH160Addr = senderH160Addr
-        //this.btc2wbtcLockSave(this.btcsender,contract)
+        contract.result = sendResult;
+        contract.x = x;
+        contract.value = value;
+        contract.feeRate = feeRate;
+
+        this.btc2wbtcLockSave(this.btcsender,contract)
+
 		return contract;
 	},
 	async fund(senderKp, ReceiverHash160Addr, value) {
@@ -881,36 +888,7 @@ const Backend = {
 		return {inputs, outputs, fee}
 	},
 
-	getAddress(keypair) {
-		let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet})
-		return pkh.address
-	},
 
-	setKey(key) {
-		this.key = key
-		this.hashKey = this.getHashKey(this.key)
-	},
-
-	getHashKey(key) {
-		// return BigNumber.random().toString(16);
-
-		let kBuf = new Buffer(key.slice(2), 'hex')
-		//        let hashKey = '0x' + util.sha256(kBuf);
-		let h = createKeccakHash('keccak256')
-		h.update(kBuf)
-		let hashKey = '0x' + h.digest('hex')
-		console.log('input key:', key)
-		console.log('input hash key:', hashKey)
-		return hashKey
-	},
-
-	generatePrivateKey() {
-		let randomBuf
-		do {
-			randomBuf = crypto.randomBytes(32)
-		} while (!secp256k1.privateKeyVerify(randomBuf))
-		return '0x' + randomBuf.toString('hex')
-	},
 
 
 
@@ -1196,23 +1174,81 @@ const Backend = {
    },
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    createBtcEthTrans(sender) {
-        return new btcWanTxSendRec(sender);
+    getAddress(keypair) {
+        let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet})
+        return pkh.address
+    },
+
+
+    hexTrip0x(hexs){
+        if(0 == hexs.indexOf('0x')){
+            return hexs.slice(2);
+        }
+        return hexs;
+    },
+
+    getHashKey(key1){
+        //return BigNumber.random().toString(16);
+        let key = hexTrip0x(key1);
+        let hashKey = '0x'+bitcoin.crypto.sha256(Buffer.from(key, 'hex')).toString('hex');
+        return hashKey;
+
+    },
+
+    generatePrivateKey(){
+        let randomBuf;
+        do{
+            randomBuf = crypto.randomBytes(32);
+        }while (!secp256k1.privateKeyVerify(randomBuf));
+        return '0x' + randomBuf.toString('hex');
+    },
+
+    getBtcWanCrossdbCollection() {
+	    let clctNm = config.btcWanCrossCollection;
+        if(clctNm == undefined){
+	        clctNm = "btcCrossTransaction"
+        }
+        return this.getCollection(config.crossDbname, clctNm);
+    },
+
+    getBtcWanTxHistory(option) {
+        this.collection = this.getBtcWanCrossdbCollection();
+        let Data = this.collection.find(option);
+        let his = [];
+        for (var i = 0; i < Data.length; ++i) {
+            let Item = Data[i];
+            his.push(Item);
+        }
+        return his;
     },
 
     async btc2wbtcLockSave(sender,tx) {
 
-        let newTrans = this.createBtcEthTrans(sender);
-        newTrans.createBtcTransaction(tx.senderH160Addr,tx.pshAddr,tx.value,tx.recieverH160Addr,tx.senderWanAddr,tx.feeRate,tx.fee,"BTC2WAN",tx.redeemLockTimeStamp);
+        let newTrans = new btcWanTxSendRec();
+        let ctx = {}
 
-        if (tx.x) {
-            newTrans.trans.setKey(tx.x);
-        }
+        ctx.from = this.hexTrip0x(tx.senderH160Addr);
+        ctx.to = this.hexTrip0x(tx['p2sh']);
+        ctx.value = tx.value;
+        ctx.amount = tx.value;
+        ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr);
+        ctx.crossAddress = this.hexTrip0x(tx.senderH160Addr);
+        ctx.x = this.hexTrip0x(tx.x);
+        ctx.hashx = tx.hashx
+        ctx.feeRate = feeRate;
+        ctx.fee = tx.result.fee;
+        ctx.crossType = "BTC2WAN";
+        ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp;
+        ctx.txhash = this.hexTrip0x(tx.result.result);
 
-        let res = newTrans.insertLockData(newTrans,tx.result);
-        if(res != null){
-            console.log(res.toString());
-        }
+        console.log("ctx=")
+        console.log(ctx)
+
+        let res = newTrans.insertLockData(ctx,ctx.crossType);
+
+        if(res != undefined){
+                console.log(res.toString());
+         }
 
         return res;
     },

@@ -13,8 +13,7 @@ let logDebug;
 
 module.exports = class btcWanTxSendRec{
 
-    constructor(sendServer){
-        this.sendServer = sendServer;
+    constructor(){
         logDebug = global.getLogger('sendTransaction');
         let wanSc = web3.eth.contract(global.config.HTLCWBTCInstAbi);
         this.wanIns = wanSc.at(global.config.wanchainHtlcAddr);
@@ -149,10 +148,12 @@ module.exports = class btcWanTxSendRec{
     }
 */
 
-    insertLockData(trans,crossType){
+
+   insertLockData(ctx,crossType){
+        let trans = ctx;
         if(crossType == 'WAN2BTC') {
             global.getCollectionCb(dbname, 'btcCrossTransaction', function (collection) {
-                trans = trans.trans
+
                 let cur = Date.now();
                 collection.insert(
                     {
@@ -171,49 +172,49 @@ module.exports = class btcWanTxSendRec{
                         lockConfirmed: 0,
                         refundConfirmed: 0,
                         revokeConfirmed: 0,
-                        lockTxHash: result,
+                        lockTxHash: trans.txHash,
                         refundTxHash: '',
                         revokeTxHash: '',
 
                     });
             })
-
-            return null
         } else if (crossType == 'BTC2WAN') {
-            trans = trans.btcTrans;
             global.getCollectionCb(dbname, 'btcCrossTransaction', function (collection) {
                 let cur = Date.now();
-                collection.insert(
-                    {
-                        HashX: trans.hashKey,
-                        from: trans.from,
-                        to: trans.to,
-                        storeman: trans.storeman,
-                        crossAdress: trans.crossAddress,
-                        value: trans.amount,
-                        txValue: trans.value,
-                        x: trans.key,
-                        time: cur.toString(),
-                        HTLCtime: (100000 + 2 * 1000 * Number(global.lockedTime) + cur).toString(),
-                        chain: "BTC",
-                        status: 'sentHashPending',
-                        lockConfirmed: 0,
-                        refundConfirmed: 0,
-                        revokeConfirmed: 0,
-                        lockTxHash: result,
-                        refundTxHash: '',
-                        revokeTxHash: '',
+                let obj = {
+                    HashX: trans.hashx,
+                    from: trans.from,
+                    to: trans.to,
+                    storeman: trans.storeman,
+                    crossAdress: trans.crossAddress,
+                    value: trans.amount,
+                    txValue: trans.value,
+                    x: trans.x,
+                    time: cur.toString(),
+                    HTLCtime: (100000 + 2 * 1000 * Number(global.lockedTime) + cur).toString(),
+                    chain: "BTC",
+                    status: 'sentHashPending',
+                    lockConfirmed: 0,
+                    refundConfirmed: 0,
+                    revokeConfirmed: 0,
+                    lockTxHash: trans.txhash,
+                    refundTxHash: '',
+                    revokeTxHash: '',
 
-                    });
+                }
+               let res = collection.insert( obj);
+                console.log("insert obj = ");
+                console.log(res)
+
             });
-            return null
+
         } else {
             return new Error('Not supported cross chain type');
         }
 
     }
 
-    insertNormalData(trans,result){
+    insertNormalData(trans,crossType){
         global.getCollectionCb(dbname,'btcCrossTransaction', function(collection){
             if(trans.crossType == 'WAN2BTC') {
                 collection.insert(
@@ -236,7 +237,7 @@ module.exports = class btcWanTxSendRec{
                         to: trans.to,
                         value: trans.value.toString(10),
                         time: Date.now().toString(),
-                        txhash: result,
+                        txhash: trans.txHash,
                         chain: "BTC",
 
                     });
@@ -247,7 +248,7 @@ module.exports = class btcWanTxSendRec{
         });
     }
 
-    insertRefundData(trans,result){
+    insertRefundData(trans,crossType){
 
         global.getCollectionCb(dbname,'btcCrossTransaction', function(collection){
             let value = null;
@@ -261,7 +262,7 @@ module.exports = class btcWanTxSendRec{
             }
 
             if(value != null){
-                value.refundTxHash = result;
+                value.refundTxHash = trans.txHash;
                 collection.update(value);
             } else {
                 return  new Error('Not find updating item');

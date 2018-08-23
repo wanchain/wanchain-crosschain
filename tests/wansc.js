@@ -233,6 +233,8 @@ describe('wan api test', ()=>{
             return;
         }
 
+        let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
+        console.log(checkres);
 
         // notice wan.
         const tx = {};
