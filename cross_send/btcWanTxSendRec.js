@@ -40,9 +40,13 @@ module.exports = class btcWanTxSendRec {
             lockConfirmed: 0,
             refundConfirmed: 0,
             revokeConfirmed: 0,
-            lockTxHash: trans.lockTxHash,
+            lockTxHash: '',
             refundTxHash: '',
             revokeTxHash: '',
+            btcNoticeTxhash : '',
+            btcLockTxHash: trans.lockTxHash,
+            btcRefundTxHash: '',
+            btcRevokeTxHash : ''
           }
 
           let res = collection.insert(obj)
@@ -74,7 +78,6 @@ module.exports = class btcWanTxSendRec {
               time: Date.now().toString(),
               txhash: trans.txHash,
               chain: 'BTC',
-
             })
           return null
         } else {
@@ -100,7 +103,7 @@ module.exports = class btcWanTxSendRec {
 
         if (value != null) {
 
-          value.refundTxHash = trans.refundTxHash;
+          value.btcRefundTxHash = trans.refundTxHash;
           let res = collection.update(value);
           console.log("refund item=");
           console.log(res);
@@ -128,7 +131,7 @@ module.exports = class btcWanTxSendRec {
         }
 
         if (value != null) {
-          value.revokeTxHash = trans.revokeTxHash;
+          value.btcRevokeTxHash = trans.revokeTxHash;
           let res = collection.update(value)
           console.log("revoke item=");
           console.log(res);
@@ -157,7 +160,7 @@ module.exports = class btcWanTxSendRec {
 
         if (value != null) {
           value.crossAdress = trans.crossAddress;
-          value.txhash = trans.txhash;
+          value.btcNoticeTxhash = trans.btcNoticeTxhash;
 
           let res = collection.update(value)
           console.log("wan notice item=");
