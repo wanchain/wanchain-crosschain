@@ -281,9 +281,11 @@ const Backend = {
 		newTrans.createDepositNotice(tx.from, tx.storeman, tx.userH160, tx.hashx, tx.txHash, tx.lockedTimestamp,
 			tx.gas, tx.gasPrice.toString(16));
 		let txhash = await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
+
     //to save to db
     tx.txhash = txhash
     this.btcWanNoticeSave(tx)
+
 		return txhash;
 	},
 	async sendDepositX(sender, from, gas, gasPrice, x, passwd, nonce) {
@@ -1309,7 +1311,7 @@ const Backend = {
       return
     }
 
-    let res = newTrans.insertLockData()
+    let res = newTrans.insertLockData(ctx)
 
     if (res != undefined) {
       console.log(res.toString())
@@ -1332,7 +1334,7 @@ const Backend = {
       return
     }
 
-    let res = newTrans.insertRefundData()
+    let res = newTrans.insertRefundData(ctx)
 
     if (res != undefined) {
       console.log(res.toString())
@@ -1371,9 +1373,10 @@ const Backend = {
     }
 
     let ctx = {}
-    ctx.crossAddress = tx.sender
-    ctx.txhash = tx.txhash
-
+    ctx.hashx = this.hexTrip0x(tx.hashx);
+    ctx.crossAddress = this.hexTrip0x(tx.from)
+    ctx.txhash = this.hexTrip0x(tx.txhash)
+    ctx.crossType = "BTC2WAN";
     let res = newTrans.insertWanNoticeData(ctx)
     if (res != undefined) {
       console.log(res.toString())
