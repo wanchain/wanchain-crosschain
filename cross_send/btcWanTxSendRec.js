@@ -29,7 +29,7 @@ module.exports = class btcWanTxSendRec {
             from: trans.from,
             to: trans.to,
             storeman: trans.storeman,
-            crossAdress: trans.crossAddress,
+            crossAdress: '',
             value: trans.amount,
             txValue: trans.value,
             x: trans.x,
@@ -40,7 +40,7 @@ module.exports = class btcWanTxSendRec {
             lockConfirmed: 0,
             refundConfirmed: 0,
             revokeConfirmed: 0,
-            lockTxHash: trans.txhash,
+            lockTxHash: trans.lockTxHash,
             refundTxHash: '',
             revokeTxHash: '',
           }
@@ -100,7 +100,7 @@ module.exports = class btcWanTxSendRec {
 
         if (value != null) {
 
-          value.refundTxHash = trans.txhash;
+          value.refundTxHash = trans.refundTxHash;
           let res = collection.update(value);
           console.log("refund item=");
           console.log(res);
@@ -128,9 +128,39 @@ module.exports = class btcWanTxSendRec {
         }
 
         if (value != null) {
-          value.revokeTxHash = trans.txhash
+          value.revokeTxHash = trans.revokeTxHash;
           let res = collection.update(value)
           console.log("revoke item=");
+          console.log(res);
+        } else {
+          return {error: new Error('Value not find in db')}
+        }
+
+      })
+    } catch (e) {
+      return {error: e}
+    }
+
+  }
+
+  insertWanNoticeData (trans) {
+
+    try {
+      global.getCollectionCb(dbname, 'crossTransaction', function (collection) {
+
+        let value = null
+        if (trans.crossType == 'BTC2WAN') {
+          value = collection.findOne({HashX: trans.hashx})
+        } else {
+          return {error: new Error('Not supported cross chain type')}
+        }
+
+        if (value != null) {
+          value.crossAdress = trans.crossAddress;
+          value.txhash = trans.txhash;
+
+          let res = collection.update(value)
+          console.log("wan notice item=");
           console.log(res);
         } else {
           return {error: new Error('Value not find in db')}

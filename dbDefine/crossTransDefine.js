@@ -69,7 +69,7 @@ module.exports = {
                 revokeConfirmed:0,  //the confrmed block number for revoke transaction
                 crossConfirmed:0,   //the confirmed block number after loch hashC
                 crossLockHash:'',   //the lock hash for the cross chain
-                txhash : '',        //normanl transaction hash
+                txhash : '',        //normanl transaction hash                     btc:the notice txHash to wan
                 lockTxHash: '',     //the lock txHash
                 refundTxHash: '',   //the refund txHash
                 revokeTxHash : ''   //the revoke txHash

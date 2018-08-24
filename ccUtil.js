@@ -281,6 +281,9 @@ const Backend = {
 		newTrans.createDepositNotice(tx.from, tx.storeman, tx.userH160, tx.hashx, tx.txHash, tx.lockedTimestamp,
 			tx.gas, tx.gasPrice.toString(16));
 		let txhash = await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
+    //to save to db
+    tx.txhash = txhash
+    this.btcWanNoticeSave(tx)
 		return txhash;
 	},
 	async sendDepositX(sender, from, gas, gasPrice, x, passwd, nonce) {
@@ -1256,82 +1259,129 @@ const Backend = {
         return his;
     },
 
-    formatInput(tx) {
+  formatInput (tx) {
 
-	    try {
-            let ctx = {};
-            ctx.from = this.hexTrip0x(tx.senderH160Addr);
-            ctx.to = this.hexTrip0x(tx['p2sh']);
-            ctx.value = tx.value;
-            ctx.amount = tx.value;
-            ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr);
-            ctx.crossAddress = this.hexTrip0x(tx.senderH160Addr);
+    try {
+      let ctx = {}
+      ctx.from = this.hexTrip0x(tx.senderH160Addr)
+      ctx.to = this.hexTrip0x(tx['p2sh'])
+      ctx.value = tx.value
+      ctx.amount = tx.value
+      ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr)
 
-            if (tx.x != undefined) {
-                ctx.x = this.hexTrip0x(tx.x);
-            } else {
-                ctx.x = '';
-            }
+      if (tx.x != undefined) {
+        ctx.x = this.hexTrip0x(tx.x)
+      } else {
+        ctx.x = ''
+      }
 
-            if (tx.hashx == undefined) {
-                return new Error('hashx can not be undefined')
-            } else {
-                ctx.hashx = this.hexTrip0x(tx.hashx);
-            }
+      if (tx.hashx == undefined) {
+        return {'error': new Error('hashx can not be undefined')}
+      } else {
+        ctx.hashx = this.hexTrip0x(tx.hashx)
+      }
 
-            ctx.feeRate = feeRate;
-            ctx.fee = tx.fee;
-            ctx.crossType = "BTC2WAN";
-            ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp;
+      ctx.feeRate = feeRate
+      ctx.fee = tx.fee
+      ctx.crossType = 'BTC2WAN'
+      ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp
 
-            if (tx.txhash != undefined) {
-                ctx.txhash = this.hexTrip0x(tx.txhash);
-            } else {
-                return new Error('txhashx can not be undefined')
-            }
+      console.log('ctx=')
+      console.log(ctx)
+      return ctx
 
-            console.log("ctx=")
-            console.log(ctx)
-            return ctx;
+    } catch (e) {
+      return {'error': new Error(e)}
+    }
+  },
 
-        } catch (e) {
-            return new Error(e)
-        }
-    },
+  async btcLockSave (tx) {
+    let newTrans = new btcWanTxSendRec()
+    let ctx = this.formatInput(tx)
 
-    async btcLockSave(tx) {
-        let newTrans = new btcWanTxSendRec();
-        let res = newTrans.insertLockData(this.formatInput(tx));
-
-        if(res != undefined){
-                console.log(res.toString());
-         }
-
-        return res;
-    },
-
-    async btcRedeemSave(tx) {
-        let newTrans = new btcWanTxSendRec();
-        let res = newTrans.insertRefundData(this.formatInput(tx));
-
-        if(res != undefined){
-            console.log(res.toString());
-        }
-
-        return res;
-    },
-
-    async btcRevokeSave(tx) {
-        let newTrans = new btcWanTxSendRec();
-        let res = newTrans.insertRevokeData(this.formatInput(tx));
-        if(res != undefined){
-            console.log(res.toString());
-        }
-
-        return res;
+    if (ctx.error) {
+      return
     }
 
-  
+    if (tx.txhash != undefined) {
+      ctx.lockTxHash = this.hexTrip0x(tx.txhash)
+    } else {
+      return
+    }
+
+    let res = newTrans.insertLockData()
+
+    if (res != undefined) {
+      console.log(res.toString())
+    }
+
+    return res
+  },
+
+  async btcRedeemSave (tx) {
+    let newTrans = new btcWanTxSendRec()
+    let ctx = this.formatInput(tx)
+
+    if (ctx.error) {
+      return
+    }
+
+    if (tx.txhash != undefined) {
+      ctx.refundTxHash = this.hexTrip0x(tx.txhash)
+    } else {
+      return
+    }
+
+    let res = newTrans.insertRefundData()
+
+    if (res != undefined) {
+      console.log(res.toString())
+    }
+
+    return res
+  },
+
+  async btcRevokeSave (tx) {
+    let newTrans = new btcWanTxSendRec()
+    let ctx = this.formatInput(tx)
+
+    if (ctx.error) {
+      return
+    }
+
+    if (tx.txhash != undefined) {
+      ctx.revokeTxHash = this.hexTrip0x(tx.txhash)
+    } else {
+      return
+    }
+
+    let res = newTrans.insertRevokeData(ctx)
+    if (res != undefined) {
+      console.log(res.toString())
+    }
+
+    return res
+  },
+
+  async btcWanNoticeSave (tx) {
+    let newTrans = new btcWanTxSendRec()
+
+    if (!tx.txhash) {
+      return
+    }
+
+    let ctx = {}
+    ctx.crossAddress = tx.sender
+    ctx.txhash = tx.txhash
+
+    let res = newTrans.insertWanNoticeData(ctx)
+    if (res != undefined) {
+      console.log(res.toString())
+    }
+
+    return res
+  }
+
 }
 
 exports.Backend = Backend;
