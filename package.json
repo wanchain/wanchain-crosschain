@@ -49,7 +49,8 @@
     "binstring": "*",
     "bs58": "*",
     "sha256":"*",
-    "crypto-hashing":"*"
+    "crypto-hashing":"*",
+	"btc-address": "^0.4.0",
   },
   "author": "zhanglihua-wanglu",
   "license": "MIT"

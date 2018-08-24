@@ -1,6 +1,6 @@
 'use strict';
 
-var Address = require('./address.js');
+var Address = require('btc-address');
 var binConv = require('binstring');
 const pu = require('promisefy-util');
 const bitcoin  = require('bitcoinjs-lib');
