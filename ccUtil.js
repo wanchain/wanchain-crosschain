@@ -897,7 +897,7 @@ const Backend = {
 
 		for (let i = 0; i < utxos.length; i++) {
 			const utxo = utxos[i]
-			if (utxo.confirmations >= 3) {
+			if (utxo.confirmations >= MIN_CONFIRM_BLKS) {
 				availableSat += Math.round(utxo.value)
 				ninputs++
 				inputs.push(utxo)
