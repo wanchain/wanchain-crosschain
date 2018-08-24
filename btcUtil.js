@@ -1,5 +1,7 @@
 'use strict';
 
+var Address = require('./address.js');
+var binConv = require('binstring');
 const pu = require('promisefy-util');
 const bitcoin  = require('bitcoinjs-lib');
 const wif = require('wif');
@@ -248,7 +250,19 @@ const btcUtil = {
             randomBuf = crypto.randomBytes(32);
         }while (!secp256k1.privateKeyVerify(randomBuf));
         return '0x' + randomBuf.toString('hex');
-    }
+    },
+
+
+  hash160ToAddress(hash160,addressType,network){
+    var address = new Address(binConv(hexTrip0x(hash160), { in : 'hex', out: 'bytes'}),addressType,network);
+    return address.toString();
+  },
+
+  addressToHash160(address,addressType,network){
+    var address = new Address(address,addressType,network);
+    return binConv(address.hash,{ in : 'bytes', out: 'hex'});
+  },
+
 }
 
 

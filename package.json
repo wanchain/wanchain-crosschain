@@ -45,7 +45,11 @@
     "web3": "^0.20.6",
     "wif": "^2.0.6",
     "winston": "^3.0.0",
-    "ws": "^5.1.0"
+    "ws": "^5.1.0",
+    "binstring": "*",
+    "bs58": "*",
+    "sha256":"*",
+    "crypto-hashing":"*"
   },
   "author": "zhanglihua-wanglu",
   "license": "MIT"

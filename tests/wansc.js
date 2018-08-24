@@ -289,4 +289,30 @@ describe('wan api test', ()=>{
         wanchainCore.close();
     });
 
+  it('TC001: hash160ToAddress', async ()=> {
+
+    let userH160 = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
+
+    let addr = btcUtil.hash160ToAddress(userH160,'pubkeyhash','testnet');
+
+    console.log("the address from hash160 =" + addr);
+
+    let expectedAddr = btcUtil.getAddressbyKeypair(alice)
+    assert.equal(addr,expectedAddr,"the address not match")
+  });
+
+  it('TC001: address2hash160', async ()=> {
+
+    let addr = btcUtil.getAddressbyKeypair(alice)
+    let hash160 = btcUtil.addressToHash160(addr,'pubkeyhash','testnet');
+
+    console.log("the hash160 from address =" + hash160)
+    let expectedH160 = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
+
+    console.log("the expected hash160 from address =" + expectedH160.toString('hex'))
+
+    assert.equal(hash160,expectedH160,"the address not match")
+  });
+
+
 });
