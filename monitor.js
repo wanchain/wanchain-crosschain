@@ -12,18 +12,19 @@ let handlingList = {};
 
 
 const MonitorRecord = {
-    async init(cfg, ethSender, wanSender){
+    async init(cfg, ethSender, wanSender,btcSender){
         config = cfg? cfg:require('./config.js');
         logger = config.getLogger("monitorRecord");
         backendConfig.ethGroupAddr = config.originalChainHtlc;
         backendConfig.wethGroupAddr = config.wanchainHtlcAddr;
         this.ethSender = ethSender;
         this.wanSender = wanSender;
+        this.btcSender = btcSender;
         handlingList = {};
     },
 
     getSenderbyChain(chainType){
-        return chainType == "ETH"? this.ethSender : this.wanSender;
+        return chainType == "BTC"? this.btcSender : this.wanSender;
     },
 
     getTxReceipt(sender,txhash){
@@ -37,7 +38,7 @@ const MonitorRecord = {
     },
 
     monitorTask(){
-        let collection = be.getCrossdbCollection();
+        let collection = be.getBtcWanCrossdbCollection();
         let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;
@@ -64,12 +65,12 @@ const MonitorRecord = {
         try {
             let sender;
             let receipt;
-            if(record.chain == "ETH"){
-                sender = this.getSenderbyChain("ETH");
-                receipt = await be.getDepositOrigenLockEvent(sender,record.HashX);
+            if(record.chain == "BTC"){
+                sender = this.getSenderbyChain("WAN");
+                receipt = await be.getDepositWanNoticeEvent(sender,'0x'+record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getWithdrawOrigenLockEvent(sender,record.HashX);
+                receipt = await be.getWithdrawOrigenLockEvent(sender,'0x'+record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -84,11 +85,12 @@ const MonitorRecord = {
         try {
             let sender;
             let receipt;
-            if(record.chain == "ETH"){
+            if(record.chain == "BTC"){
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getDepositOriginRefundEvent(sender,record.HashX);
             } else {
-                sender = this.getSenderbyChain("ETH");
+                sender = this.getSenderbyChain("BTC");
+                // TODO: BTC X confirmation.
                 receipt = await be.getWithdrawOriginRefundEvent(sender,record.HashX);
             }
 
@@ -104,8 +106,9 @@ const MonitorRecord = {
         try {
             let sender;
             let receipt;
-            if(record.chain == "ETH"){
-                sender = this.getSenderbyChain("ETH");
+            if(record.chain == "BTC"){
+                sender = this.getSenderbyChain("BTC");
+                // TODO: BTC revoke.
                 receipt = await be.getDepositRevokeEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
@@ -161,7 +164,7 @@ const MonitorRecord = {
     },
     async checkXConfirm(record, waitBlocks){
         try {
-            let chain = record.chain=='ETH'?"WAN":"ETH";
+            let chain = record.chain=='BTC'?"WAN":"BTC";
             let sender = this.getSenderbyChain(chain);
             let receipt = await this.monitorTxConfirm(sender, record.refundTxHash, waitBlocks);
 
@@ -194,7 +197,7 @@ const MonitorRecord = {
     },
     async checkCrossHashConfirm(record, waitBlocks){
         try {
-            let chain = record.chain=='ETH'?"WAN":"ETH";
+            let chain = record.chain=='BTC'?"WAN":'BTC';
             let sender = this.getSenderbyChain(chain);
             let receipt = await this.monitorTxConfirm(sender, record.crossLockHash, waitBlocks);
 
@@ -241,12 +244,13 @@ const MonitorRecord = {
         try {
             let receipt;
             let sender
-            if(record.chain=="ETH"){
+            if(record.chain=="BTC"){
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getDepositCrossLockEvent(sender,record.HashX);
             }else {
-                sender = this.getSenderbyChain("ETH");
+                sender = this.getSenderbyChain("BTC");
                 receipt = await be.getWithdrawCrossLockEvent(sender,record.HashX);
+                //TODO: should we check btc, make sure value, trans is right, confirmed.
             }
 
             if(receipt && receipt.length>0){

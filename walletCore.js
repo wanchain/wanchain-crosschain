@@ -16,8 +16,8 @@ const btcUtil =  require('./btcUtil.js').btcUtil;
 const _ = require('underscore');
 let config = require('./config');
 let montimer;
-async function recordMonitor(config, ethSend,wanSend){
-    await mr.init(config, ethSend,wanSend);
+async function recordMonitor(config, ethSend,wanSend,btcSend){
+    await mr.init(config, ethSend,wanSend,btcSend);
     if(montimer){
         clearInterval(montimer);
     }
@@ -63,8 +63,8 @@ class walletcore  {
                 fail(err);
             });
             newWebSocket.connection.on('open', function _cb(){
-                //recordMonitor(config,self.ethSend, self.wanSend);
-                be.init(config, self.ethSend, self.wanSend,function(){
+                recordMonitor(config,self.ethSend, self.wanSend, self.btcSend);
+                be.init(config, self.ethSend, self.wanSend,self.btcSend,function(){
                     resolve();
                 });
             })
@@ -91,7 +91,7 @@ class walletcore  {
                 fail(err);
             });
             newWebSocket.connection.on('open', function _cb(){
-                recordMonitor(config,self.ethSend, self.wanSend);
+                recordMonitor(config,self.ethSend, self.wanSend, self.btcSend);
                 be.init(config, self.ethSend, self.wanSend,self.btcSend,function(){
                     resolve();
                 });
@@ -99,7 +99,7 @@ class walletcore  {
         });
     }
     createSendTransaction(ChainType){
-        let sendGroup = ChainType == 'ETH' ? this.ethSend : this.wanSend;
+        let sendGroup = ChainType == 'BTC' ? this.btcSend : this.wanSend;
         return new sendTransaction(sendGroup);
     }
     getCollection(dbName,collectionName){

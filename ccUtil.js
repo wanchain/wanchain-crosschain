@@ -143,6 +143,14 @@ const Backend = {
 			}
 			return sender;
 		}
+        else if (chainType == 'BTC') {
+            sender = this.ethSender;
+            if (sender.socket.connection.readyState != WebSocket.OPEN) {
+                sender = await  this.createrSocketSender("BTC");
+                this.btcSender = sender;
+            }
+            return sender;
+        }
 		else if (chainType == 'WAN') {
 			sender = this.wanSender;
 			if (sender.socket.connection.readyState != WebSocket.OPEN) {
@@ -271,15 +279,15 @@ const Backend = {
 	},
 	async sendEthHash(sender, tx) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(tx.from, config.originalChainHtlc, tx.amount.toString(16), tx.storemanGroup, tx.cross,
-			tx.gas, tx.gasPrice.toString(16), 'ETH2WETH', tx.nonce);
+		newTrans.createTransaction(tx.from, config.originalChainHtlc, tx.amount, tx.storemanGroup, tx.cross,
+			tx.gas, tx.gasPrice, 'BTC2WBTC', tx.nonce);
 		let txhash = await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
 		return txhash;
 	},
 	async sendWanNotice(sender, tx) {
 		let newTrans = this.createTrans(sender);
 		newTrans.createDepositNotice(tx.from, tx.storeman, tx.userH160, tx.hashx, tx.txHash, tx.lockedTimestamp,
-			tx.gas, tx.gasPrice.toString(16));
+			tx.gas, tx.gasPrice);
 		let txhash = await pu.promisefy(newTrans.sendNoticeTrans, [tx.passwd], newTrans);
 
     //to save to db
@@ -290,20 +298,25 @@ const Backend = {
 	},
 	async sendDepositX(sender, from, gas, gasPrice, x, passwd, nonce) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'ETH2WETH', nonce);
+		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'BTC2WBTC', nonce);
 		newTrans.trans.setKey(x);
 		let txhash = await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
 		return txhash;
 	},
 	async sendEthCancel(sender, from, gas, gasPrice, x, passwd, nonce) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(from, config.originalChainHtlc, null, null, null, gas, gasPrice, 'ETH2WETH', nonce);
+		newTrans.createTransaction(from, config.originalChainHtlc, null, null, null, gas, gasPrice, 'BTC2WBTC', nonce);
 		newTrans.trans.setKey(x);
 		let txhash = await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
 		return txhash;
 	},
 	getDepositOrigenLockEvent(sender, hashX) {
 		let topics = ['0x' + wanUtil.sha3(config.depositOriginLockEvent).toString('hex'), null, null, hashX];
+		let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
+		return b;
+	},
+	getDepositWanNoticeEvent(sender, hashX) {
+		let topics = ['0x' + wanUtil.sha3(config.depositBtcLockNoticeEvent).toString('hex'), null, null, hashX];
 		let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
 		return b;
 	},
@@ -349,19 +362,15 @@ const Backend = {
 		return p;
 	},
 	getDepositHTLCLeftLockedTime(sender, hashX) {
-		let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.originalChainHtlc, 'getHTLCLeftLockedTime', [hashX], config.HTLCETHInstAbi], sender);
+		let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.wanchainHtlcAddr, 'getHTLCLeftLockedTime', [hashX], config.HTLCWBTCInstAbi], sender);
 		return p;
 	},
 	getWithdrawHTLCLeftLockedTime(sender, hashX) {
-		let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.wanchainHtlcAddr, 'getHTLCLeftLockedTime', [hashX], config.HTLCWETHInstAbi], sender);
+		let p = pu.promisefy(sender.sendMessage, ['callScFunc', config.wanchainHtlcAddr, 'getHTLCLeftLockedTime', [hashX], config.HTLCWBTCInstAbi], sender);
 		return p;
 	},
 	monitorTxConfirm(sender, txhash, waitBlocks) {
 		let p = pu.promisefy(sender.sendMessage, ['getTransactionConfirm', txhash, waitBlocks], sender);
-		return p;
-	},
-	getEthLockTime(sender) {
-		let p = pu.promisefy(sender.sendMessage, ['getScVar', config.originalChainHtlc, 'lockedTime', config.HTLCETHInstAbi], sender);
 		return p;
 	},
 	getWanLockTime(sender) {
@@ -518,8 +527,8 @@ const Backend = {
 	},
 	async sendWanHash(sender, tx) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount.toString(16), tx.storemanGroup, tx.cross,
-			tx.gas, tx.gasPrice.toString(16), 'WETH2ETH', tx.nonce);
+		newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount, tx.storemanGroup, tx.cross,
+			tx.gas, tx.gasPrice, 'WBTC2BTC', tx.nonce);
 		if (tx.x) newTrans.trans.setKey(tx.x);
 		newTrans.trans.setValue(tx.value);
 		let txhash = await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
@@ -527,14 +536,14 @@ const Backend = {
 	},
 	async sendWanX(sender, from, gas, gasPrice, x, passwd, nonce) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(from, config.originalChainHtlc, null, null, null, gas, gasPrice, 'WETH2ETH', nonce);
+		newTrans.createTransaction(from, config.originalChainHtlc, null, null, null, gas, gasPrice, 'WBTC2BTC', nonce);
 		newTrans.trans.setKey(x);
 		let txhash = await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
 		return txhash;
 	},
 	async sendWanCancel(sender, from, gas, gasPrice, x, passwd, nonce) {
 		let newTrans = this.createTrans(sender);
-		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'WETH2ETH', nonce);
+		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'WBTC2BTC', nonce);
 		newTrans.trans.setKey(x);
 		let txhash = await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
 		return txhash;

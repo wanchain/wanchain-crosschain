@@ -6,7 +6,7 @@ module.exports = class wanHashXSend extends hashXSend
 {
     constructor(from,tokenAddress,amount,storeman,EthAddress,gas,gasPrice,crossType,nonce)
     {
-        let Contract = new hashContract(tokenAddress,storeman,EthAddress,crossType,'WAN');
+        let Contract = new hashContract(tokenAddress,storeman,EthAddress,crossType);
         super(from,tokenAddress,amount,Contract,gas,gasPrice,nonce);
     }
 }

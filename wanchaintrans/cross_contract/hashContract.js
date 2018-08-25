@@ -8,8 +8,8 @@ const createKeccakHash = require('keccak');
 const bitcoin  = require('bitcoinjs-lib');
 
 
-let ETH2WETHfunc = ['','btc2wbtcRefund','','BTC2WBTCLock'];
-let WETH2ETHfunc = ['wbtc2btcLock','','wbtc2btcRevoke','WBTC2BTCLock'];
+let BTC2WBTCfunc = ['','btc2wbtcRefund','','BTC2WBTCLock'];
+let WBTC2BTCfunc = ['wbtc2btcLock','','wbtc2btcRevoke','WBTC2BTCLock'];
 let logDebug;
 function hexTrip0x(hexs){
     if(0 == hexs.indexOf('0x')){
@@ -19,13 +19,13 @@ function hexTrip0x(hexs){
 }
 module.exports = class hashContract extends IContract
 {
-    constructor(tokenAddress,storeman,crossAddress,crossType,ChainType)
+    constructor(tokenAddress,storeman,crossAddress,crossType)
     {
         let abi =  global.config.HTLCWBTCInstAbi;
-        if(crossType == 'ETH2WETH')
-            super(abi,ETH2WETHfunc,tokenAddress);
+        if(crossType == 'BTC2WBTC')
+            super(abi,BTC2WBTCfunc,tokenAddress);
         else
-            super(abi,WETH2ETHfunc,tokenAddress);
+            super(abi,WBTC2BTCfunc,tokenAddress);
         logDebug = global.getLogger('wanchainTrans');
         this.storeman = storeman;
         this.crossAddress = crossAddress;

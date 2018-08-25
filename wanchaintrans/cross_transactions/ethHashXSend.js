@@ -7,7 +7,7 @@ module.exports = class ethHashXSend extends hashXSend
 {
     constructor(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce)
     {
-        let Contract = new hashContract(tokenAddress,storeman,wanAddress,crossType,'ETH');
+        let Contract = new hashContract(tokenAddress,storeman,wanAddress,crossType);
         super(from,tokenAddress,amount,Contract,gas,gasPrice,nonce);
         if(amount){
             this.trans.setValue(amount);

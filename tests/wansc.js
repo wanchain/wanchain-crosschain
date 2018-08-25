@@ -205,11 +205,11 @@ describe('wan api test', ()=>{
 	    let txid = filterResult[0].data.slice(2,66);
 	    console.log("redeemLockTimeStamp: ", redeemLockTimeStamp);
 	    console.log("txid: ", txid);
-        let walletRedeem = await ccUtil.redeem(x,hashx, redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, txid);
-        console.log(walletRedeem);
-        let rawTx = await client.getRawTransaction(walletRedeem);
-        let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
-        console.log("lockWbtcTest redeem:",ctx);
+        // let walletRedeem = await ccUtil.redeem(x,hashx, redeemLockTimeStamp, storemanHash160Addr,alice, wdValue, txid);
+        // console.log(walletRedeem);
+        // let rawTx = await client.getRawTransaction(walletRedeem);
+        // let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+        // console.log("lockWbtcTest redeem:",ctx);
 
     });
     it('TC001: scanBlock', async ()=>{
@@ -278,11 +278,11 @@ describe('wan api test', ()=>{
 
         // sendDepositX(sender, from,gas,gasPrice,x, passwd, nonce)
         console.log("x: ", record.x);
-        let redeemHash = await ccUtil.sendDepositX(ccUtil.wanSender, tx.from,tx.gas,tx.gasPrice,'0x'+record.x, tx.passwd);
-        console.log("redeemHash: ", redeemHash);
+        // let redeemHash = await ccUtil.sendDepositX(ccUtil.wanSender, tx.from,tx.gas,tx.gasPrice,'0x'+record.x, tx.passwd);
+        // console.log("redeemHash: ", redeemHash);
 
-        // filteer watch.
-        await waitEventbyHashx('BTC2WBTCRefund', config.HTLCWBTCInstAbi, '0x'+record.hashx);
+        // // filteer watch.
+        // await waitEventbyHashx('BTC2WBTCRefund', config.HTLCWBTCInstAbi, '0x'+record.hashx);
 
     });
     after('end', async ()=>{
