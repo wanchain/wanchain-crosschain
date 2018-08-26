@@ -43,7 +43,7 @@ module.exports = class btcWanTxSendRec {
             lockTxHash: '',
             refundTxHash: '',
             revokeTxHash: '',
-            btcRedeemLockTimeStamp: trans.redeemLockTimeStamp,
+            btcRedeemLockTimeStamp: 1000*trans.redeemLockTimeStamp,
             btcNoticeTxhash : '',
             btcLockTxHash: trans.lockTxHash,
             btcRefundTxHash: '',
