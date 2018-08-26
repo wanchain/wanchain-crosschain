@@ -120,7 +120,7 @@ const MonitorRecord = {
                 this.updateRecord(record );
             }
         }catch(err){
-            console.log("checkRevokeOnline:", err);
+            //console.log("checkRevokeOnline:", err);
         }
     },
     async checkHashConfirm(record, waitBlocks){
@@ -224,7 +224,7 @@ const MonitorRecord = {
             return true;
         }
         try {
-            let HTLCtime = Number(record.HTLCtime);
+            let HTLCtime = Number(record.btcRedeemLockTimeStamp);
             let suspendTime = Number(record.suspendTime);
             if(HTLCtime <= Date.now()){
                 record.status = 'waitingRevoke';

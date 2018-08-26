@@ -606,6 +606,7 @@ const Backend = {
 			wallet = true;
 			x = this.generatePrivateKey().slice(2); // hex string without 0x
 			hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
+			redeemLockTimeStamp = cur + 2*Number(global.lockedTime);// wallet need double.
 		}
 		console.log("############### x:", x);
 		console.log("############### hashx:", hashx);
