@@ -23,7 +23,7 @@ module.exports = class hashXSend extends TokenSend
         this.trans.setValue(v);
     }
     setLockData(){
-        if(this.ChainType == 'ETH'){
+        if(this.ChainType == 'BTC'){
             this.trans.setData(this.Contract.getLockData());
         }
         else

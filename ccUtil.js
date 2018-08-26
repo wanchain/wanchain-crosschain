@@ -342,7 +342,6 @@ const Backend = {
 	},
 	getDepositCrossLockEvent(sender, hashX) {
 		let topics = ['0x' + wanUtil.sha3(config.depositBtcCrossLockEvent).toString('hex'), null, null, hashX];
-		console.log("# topics:", topics);
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},

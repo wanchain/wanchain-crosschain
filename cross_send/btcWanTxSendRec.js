@@ -164,7 +164,7 @@ module.exports = class btcWanTxSendRec {
         if (value != null) {
           value.crossAdress = trans.crossAddress;
           value.btcNoticeTxhash = trans.btcNoticeTxhash;
-          value.status = "waitingCross";
+          value.status = "sentHashPending";
 
           let res = collection.update(value)
           console.log("wan notice item=");

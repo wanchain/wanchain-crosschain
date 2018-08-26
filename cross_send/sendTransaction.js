@@ -9,6 +9,13 @@ let TokenSend = require("../wanchaintrans/interface/transaction.js").TokenSend;
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 let logDebug;
+function hexTrip0x(hexs){
+	if(0 == hexs.indexOf('0x')){
+		return hexs.slice(2);
+	}
+	return hexs;
+}
+
 module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
@@ -142,7 +149,7 @@ module.exports = class sendTransaction{
             let cur = Date.now();
             collection.insert(
                 {
-                    HashX : trans.Contract.hashKey,
+                    HashX : hexTrip0x(trans.Contract.hashKey),
                     from : trans.trans.from,
                     to : trans.trans.to,
                     storeman:trans.Contract.storeman,
@@ -157,7 +164,7 @@ module.exports = class sendTransaction{
                     lockConfirmed:0,
                     refundConfirmed:0,
                     revokeConfirmed:0,
-                    lockTxHash: result,
+                    lockTxHash: hexTrip0x(result),
                     refundTxHash : '',
                     revokeTxHash : '',
 
@@ -182,18 +189,18 @@ module.exports = class sendTransaction{
 
     insertRefundData(trans,result){
         global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let value = collection.findOne({HashX:trans.Contract.hashKey});
+            let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
             if(value){
-                value.refundTxHash = result;
+                value.refundTxHash = hexTrip0x(result);
                 collection.update(value);
             }
         });
     }
     insertRevokeData(trans,result){
         global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let value = collection.findOne({HashX:trans.Contract.hashKey});
+            let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
             if(value){
-                value.revokeTxHash = result;
+                value.revokeTxHash = hexTrip0x(result);
                 collection.update(value);
             }
         });
