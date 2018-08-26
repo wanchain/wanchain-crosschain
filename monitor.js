@@ -112,7 +112,7 @@ const MonitorRecord = {
                 receipt = await be.getDepositRevokeEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getWithdrawCrossLockEvent(sender,record.HashX);
+                receipt = await be.getWithdrawRevokeEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
