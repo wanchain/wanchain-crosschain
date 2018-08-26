@@ -151,7 +151,34 @@ const btcUtil = {
             return ECPairArray;
         }
     },
+	async getECPairsbyAddr(passwd, addr) {
+		let encryptedKeyResult = await  lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
+			let encryptedKeyResult = btcAddress.find({address: addr});
+			lokiDbCollection.btcDb.close();
+			console.log("encryptedKeyResult:",encryptedKeyResult);
+			return encryptedKeyResult;
+		});
+		// print4debug('encryptedKeyResult: ', encryptedKeyResult);
 
+		let ECPairArray = [];
+		try {
+			for(let i=0; i<encryptedKeyResult.length; i++){
+				let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[i].encryptedKey, passwd);
+				let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork);
+				ECPairArray.push(alice);
+			}
+
+			return ECPairArray[0];
+		} catch (err) {
+			if (err.code === 'ERR_ASSERTION') {
+				print4debug('password wrong!');
+			} else {
+				print4debug('err: ', err);
+			}
+
+			return ECPairArray;
+		}
+	},
   clusterGetECPairs(passwd) {
 
     return new Promise((resolve, reject) => {

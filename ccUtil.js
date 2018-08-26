@@ -1332,7 +1332,7 @@ const Backend = {
 
     try {
       let ctx = {}
-      ctx.from = this.hexTrip0x(tx.senderH160Addr)
+      ctx.from = this.hexTrip0x( btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash','testnet'));
       ctx.to = this.hexTrip0x(tx['p2sh'])
       ctx.value = tx.value
       ctx.amount = tx.value
