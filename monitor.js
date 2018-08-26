@@ -112,7 +112,7 @@ const MonitorRecord = {
                 receipt = await be.getDepositRevokeEvent(sender,record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getWithdrawRevokeEvent(sender,record.HashX);
+                receipt = await be.getWithdrawRevowaitingCrosskeEvent(sender,record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -248,8 +248,9 @@ const MonitorRecord = {
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getDepositCrossLockEvent(sender,record.HashX);
             }else {
-                sender = this.getSenderbyChain("BTC");
-                receipt = await be.getWithdrawCrossLockEvent(sender,record.HashX);
+                sender = this.getSenderbyChain("WAN");
+                receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,record.HashX);
+                console.log("checkCrossHashOnline WAN:", receipt);
                 //TODO: should we check btc, make sure value, trans is right, confirmed.
             }
 

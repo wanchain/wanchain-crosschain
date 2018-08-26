@@ -36,7 +36,10 @@ module.exports = class hashContract extends IContract
         this.key = key;
         this.hashKey = this.getHashKey(this.key);
     }
-    getHashKey(key1){
+	setHashkey(hashKey){
+		this.hashKey = hashKey;
+	}
+	getHashKey(key1){
         //return BigNumber.random().toString(16);
         let key = hexTrip0x(key1);
         let hashKey = '0x'+bitcoin.crypto.sha256(Buffer.from(key, 'hex')).toString('hex');

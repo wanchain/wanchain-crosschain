@@ -326,13 +326,18 @@ const Backend = {
 		return b;
 	},
 	getWithdrawRevokeEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawOriginRevokeEvent).toString('hex'), null, hashX];
+		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcRevokeEvent).toString('hex'), null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
 	getWithdrawCrossLockEvent(sender, hashX) {
 		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
+		return p;
+	},
+	getBtcWithdrawStoremanNoticeEvent(sender, hashX) {
+		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
+		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
 	getDepositCrossLockEvent(sender, hashX) {
@@ -541,10 +546,11 @@ const Backend = {
 		let txhash = await pu.promisefy(newTrans.sendRefundTrans, [passwd], newTrans);
 		return txhash;
 	},
-	async sendWanCancel(sender, from, gas, gasPrice, x, passwd, nonce) {
+	async sendWanCancel(sender, from, gas, gasPrice, hashx, passwd, nonce) {
 		let newTrans = this.createTrans(sender);
 		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'WBTC2BTC', nonce);
-		newTrans.trans.setKey(x);
+		newTrans.trans.setHashkey(hashx);
+		console.log("newTrans.trans:", newTrans.trans);
 		let txhash = await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
 		return txhash;
 	},

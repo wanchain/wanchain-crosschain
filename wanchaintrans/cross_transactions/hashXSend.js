@@ -10,9 +10,12 @@ module.exports = class hashXSend extends TokenSend
         this.amount = amount;
     }
     setKey(key){
-        this.Contract.setKey(key);
+        return this.Contract.setKey(key);
     }
-    setTokenAddress(tokenAddress){
+	setHashkey(hashKey){
+		return this.Contract.setHashkey(hashKey);
+	}
+	setTokenAddress(tokenAddress){
         this.to = tokenAddress;
         this.Contract.setTokenAddress(tokenAddress);
     }
