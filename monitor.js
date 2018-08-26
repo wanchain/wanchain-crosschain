@@ -252,7 +252,12 @@ const MonitorRecord = {
             return true;
         }
         try {
-            let HTLCtime = Number(record.btcRedeemLockTimeStamp);
+            let HTLCtime;
+            if(record.chain == 'BTC'){
+	            HTLCtime = Number(record.btcRedeemLockTimeStamp);
+            }else {
+	            HTLCtime = Number(record.HTLCtime);
+            }
             let suspendTime = Number(record.suspendTime);
             if(HTLCtime <= Date.now()){
                 record.status = 'waitingRevoke';

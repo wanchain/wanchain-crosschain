@@ -744,8 +744,8 @@ const Backend = {
 
       let res = this.getBtcWanTxHistory({'HashX':hashx});
 
-      let redeemLockTimeStamp = res[0].btcRedeemLockTimeStamp;
-      let receiverH160Addr = '0x' + res[0].storeman;
+	    let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
+      let receiverH160Addr =  res[0].storeman;
       let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
 
       let amount = res[0].txValue;

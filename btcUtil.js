@@ -155,7 +155,6 @@ const btcUtil = {
 		let encryptedKeyResult = await  lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
 			let encryptedKeyResult = btcAddress.find({address: addr});
 			lokiDbCollection.btcDb.close();
-			console.log("encryptedKeyResult:",encryptedKeyResult);
 			return encryptedKeyResult;
 		});
 		// print4debug('encryptedKeyResult: ', encryptedKeyResult);
