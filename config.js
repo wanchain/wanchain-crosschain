@@ -102,6 +102,7 @@ config.wanchainHtlcAddr = "0x56c257841bae219623540090fccaa93276beae0b";
 config.WBTCToken = "0xa3fac092bfb0fb65c0295656f641fd435156bd5c";
 
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock(address,address,bytes32,uint256)';
+config.depositRedeemEvent = 'BTC2WBTCRefund(address,address,bytes32,bytes32)';
 config.withdrawBtcRevokeEvent = 'WBTC2BTCRevoke(address,bytes32)';
 //btc
     config.depositBtcLockNoticeEvent = 'BTC2WBTCLockNotice(address,address,bytes32,bytes32,address,uint256)';

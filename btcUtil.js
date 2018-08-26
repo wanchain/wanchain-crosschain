@@ -57,9 +57,6 @@ const btcUtil = {
         const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
         return pkh.address;
     },
-	btcAddrToH160(btcAddr){ // TODO:
-		return bitcoin.crypto.hash160(alice.publicKey).toString('hex');
-	},
 
     hashtimelockcontract(hashx, redeemLockTimeStamp,destHash160Addr, revokerHash160Addr){
         let redeemScript = bitcoin.script.compile([

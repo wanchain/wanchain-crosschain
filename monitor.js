@@ -87,7 +87,7 @@ const MonitorRecord = {
             let receipt;
             if(record.chain == "BTC"){
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getDepositOriginRefundEvent(sender,'0x'+record.HashX);
+                receipt = await be.getDepositRedeemEvent(sender,'0x'+record.HashX);
             } else {
                 sender = this.getSenderbyChain("BTC");
                 // TODO: BTC X confirmation.
@@ -112,7 +112,7 @@ const MonitorRecord = {
                 receipt = await be.getDepositRevokeEvent(sender,'0x'+record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getWithdrawRevokeEvent(sender,'0x'+record.HashX);
+                receipt = await be.sentRevokeConfirming(sender,'0x'+record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -199,7 +199,7 @@ const MonitorRecord = {
     async checkRevokeConfirm(chain, record, waitBlocks){
         try {
             let sender = this.getSenderbyChain(chain);
-            let receipt = await this.monitorTxConfirm(sender, record.revokeTxHash, waitBlocks);
+            let receipt = await this.monitorTxConfirm(sender, '0x'+record.revokeTxHash, waitBlocks);
 
             if(receipt){
                 record.revokeConfirmed += 1;
@@ -225,7 +225,7 @@ const MonitorRecord = {
 	        }else {
 		        sender = this.getSenderbyChain("WAN");
 		        receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX);
-		        console.log("checkCrossHashOnline WAN:", receipt);
+		        //console.log("checkCrossHashOnline WAN:", receipt);
 		        //TODO: should we check btc, make sure value, trans is right, confirmed.
 	        }
 
@@ -289,7 +289,11 @@ const MonitorRecord = {
 
             if(receipt && receipt.length>0){
                 record.crossConfirmed = 1;
-                record.crossLockHash = receipt[0].transactionHash;
+                record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
+	            let redeemLockTimeStamp = Number('0x'+receipt[0].data.slice(66));
+	            let txid = receipt[0].data.slice(2,66);
+                record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
+                record.btcTxid = txid;
                 record.status = 'waitingCrossConfirming';
                 this.updateRecord(record);
                 // console.log("######waitingCross done ");

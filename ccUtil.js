@@ -330,6 +330,7 @@ const Backend = {
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
+
 	getWithdrawCrossLockEvent(sender, hashX) {
 		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
@@ -345,8 +346,8 @@ const Backend = {
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
-	getDepositOriginRefundEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositOriginRefundEvent).toString('hex'), null, null, hashX];
+	getDepositRedeemEvent(sender, hashX) {
+		let topics = ['0x' + wanUtil.sha3(config.depositRedeemEvent).toString('hex'), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
@@ -743,8 +744,7 @@ const Backend = {
     async revokeWithHashX(hashx,revokeKp) {
 
       let res = this.getBtcWanTxHistory({'HashX':hashx});
-
-	    let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
+      let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
       let receiverH160Addr =  res[0].storeman;
       let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
 
@@ -814,26 +814,38 @@ const Backend = {
 	//storeman is sender.  wallet is receiverKp.
 	// when btc->wbtc,  wallet --> storeman;
 	// wallet is sender, storeman is receiver;
+	async redeemWithHashX(hashx,receiverKp) {
+		let res = this.getBtcWanTxHistory({'HashX':hashx});
+		let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
+		//let receiverH160Addr =  res[0].crossAdress;
+		let receiverH160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
+		let senderH160Addr =  storemanHash160Addr
+		let amount = res[0].value;
+		let txid = res[0].btcTxid;
+		let vout=0
+		console.log("redeemWithHashX:",res);
+		return this.redeem(res[0].x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, amount, txid);
+	},
 	async redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid) {
 
-    let receiverHash160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
+        let receiverHash160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverHash160Addr, senderH160Addr);
 		let redeemScript = contract['redeemScript'];
 		console.log("redeem redeemScript:", redeemScript);
 
 		let res = await this._redeem(redeemScript, txid, x, receiverKp, value);
 
-    contract.txhash = res;
-    contract.hashx = hashx;
-    contract.redeemLockTimeStamp = redeemLockTimeStamp;
-    contract.ReceiverHash160Addr = receiverHash160Addr;
-    contract.senderH160Addr = senderH160Addr
-    contract.x = x;
-    contract.value = value;
-    contract.feeRate = feeRate;
-    contract.fee = FEE;
+	    contract.txhash = res;
+	    contract.hashx = hashx;
+	    contract.redeemLockTimeStamp = redeemLockTimeStamp;
+	    contract.ReceiverHash160Addr = receiverHash160Addr;
+	    contract.senderH160Addr = senderH160Addr
+	    contract.x = x;
+	    contract.value = value;
+	    contract.feeRate = feeRate;
+	    contract.fee = FEE;
 
-    this.btcRedeemSave(contract);
+	    this.btcRedeemSave(contract);
 
 		return res;
 	},
