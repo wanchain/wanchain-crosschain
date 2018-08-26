@@ -702,10 +702,18 @@ const Backend = {
     // when btc -- > wbtc, alice is revoker,  storeman is receiver.
     // when wbtc --> btc,  alice is receiver,  storeman is revoker.
     async revoke(hashx, redeemLockTimeStamp, receiverH160Addr, revokeKp, amount, txid, vout=0) {
+
 	      let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverH160Addr,senderH160Addr);
         let redeemScript = contract['redeemScript'];
+
         console.log("redeem redeemScript:", redeemScript);
+        console.log("hashx="+hashx);
+        console.log("redeemLockTimeStamp=" + redeemLockTimeStamp);
+        console.log("receiverH160Addr=" + receiverH160Addr);
+        console.log("amount=" + amount);
+        console.log("txid=" + txid);
+        console.log("vout=" + vout);
 
         let res = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
 
@@ -714,13 +722,57 @@ const Backend = {
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = receiverH160Addr;
         contract.senderH160Addr = senderH160Addr
-        contract.value = value;
+        contract.value = amount;
         contract.feeRate = feeRate;
         contract.fee = FEE;
 
         this.btcRevokeSave(contract);
 
         return res;
+
+    },
+
+    // when btc -- > wbtc, alice is revoker,  storeman is receiver.
+    // when wbtc --> btc,  alice is receiver,  storeman is revoker.
+    async revokeWithHashX(hashx,revokeKp) {
+
+      let res = this.getBtcWanTxHistory({'HashX':hashx});
+
+      let redeemLockTimeStamp = res[0].btcRedeemLockTimeStamp;
+      let receiverH160Addr = '0x' + res[0].storeman;
+      let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
+
+      let amount = res[0].txValue;
+      let txid = res[0].btcLockTxHash;
+      let vout=0
+
+
+      let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverH160Addr,senderH160Addr);
+      let redeemScript = contract['redeemScript'];
+      console.log("redeem redeemScript:", redeemScript);
+
+      console.log("redeem redeemScript:", redeemScript);
+      console.log("hashx="+hashx);
+      console.log("redeemLockTimeStamp=" + redeemLockTimeStamp);
+      console.log("receiverH160Addr=" + receiverH160Addr);
+      console.log("amount=" + amount);
+      console.log("txid=" + txid);
+      console.log("vout=" + vout);
+
+      let txres = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
+
+      contract.txhash = txres;
+      contract.hashx = hashx;
+      contract.redeemLockTimeStamp = redeemLockTimeStamp;
+      contract.ReceiverHash160Addr = receiverH160Addr;
+      contract.senderH160Addr = senderH160Addr
+      contract.value = amount;
+      contract.feeRate = feeRate;
+      contract.fee = FEE;
+
+      this.btcRevokeSave(contract);
+
+      return txres;
 
     },
     // call this function to revoke locked btc

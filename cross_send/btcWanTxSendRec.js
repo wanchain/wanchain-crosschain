@@ -34,7 +34,7 @@ module.exports = class btcWanTxSendRec {
             txValue: trans.value,
             x: trans.x,
             time: cur.toString(),
-            HTLCtime: (100000 + 2 * 1000 * Number(global.lockedTime) + cur).toString(),
+            HTLCtime: '',
             chain: 'BTC',
             status: 'sentHashPending',
             lockConfirmed: 0,
@@ -43,6 +43,7 @@ module.exports = class btcWanTxSendRec {
             lockTxHash: '',
             refundTxHash: '',
             revokeTxHash: '',
+            btcRedeemLockTimeStamp: trans.redeemLockTimeStamp,
             btcNoticeTxhash : '',
             btcLockTxHash: trans.lockTxHash,
             btcRefundTxHash: '',
@@ -104,6 +105,7 @@ module.exports = class btcWanTxSendRec {
         if (value != null) {
 
           value.btcRefundTxHash = trans.refundTxHash;
+          value.status = 'refundFinished';
           let res = collection.update(value);
           console.log("refund item=");
           console.log(res);
@@ -132,6 +134,7 @@ module.exports = class btcWanTxSendRec {
 
         if (value != null) {
           value.btcRevokeTxHash = trans.revokeTxHash;
+          value.status = 'revokeFinished'
           let res = collection.update(value)
           console.log("revoke item=");
           console.log(res);
@@ -161,6 +164,7 @@ module.exports = class btcWanTxSendRec {
         if (value != null) {
           value.crossAdress = trans.crossAddress;
           value.btcNoticeTxhash = trans.btcNoticeTxhash;
+          value.status = "waitingCross";
 
           let res = collection.update(value)
           console.log("wan notice item=");

@@ -43,6 +43,8 @@ module.exports = {
                 lockTxHash: '',
                 refundTxHash: '',
                 revokeTxHash : '',
+
+                btcRedeemLockTimeStamp:'',//btc script timeout time
                 btcNoticeTxhash : '',
                 btcLockTxHash: '',
                 btcRefundTxHash: '',
@@ -50,7 +52,7 @@ module.exports = {
             }
         },
 
-        {
+/*        {
             name : 'btcCrossTransaction',
             UID: 'HashX',
             ItemDefine : {
@@ -77,12 +79,14 @@ module.exports = {
                 lockTxHash: '',     //the lock txHash
                 refundTxHash: '',   //the refund txHash
                 revokeTxHash : '',   //the revoke txHash
+                btcRedeemLockTimeStamp:''//btc script timeout time
                 btcNoticeTxhash : '',
                 btcLockTxHash: '',
                 btcRefundTxHash: '',
                 btcRevokeTxHash : ''
             }
         }
+*/
 
      ]
 
