@@ -112,7 +112,7 @@ const MonitorRecord = {
                 receipt = await be.getDepositRevokeEvent(sender,'0x'+record.HashX);
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.sentRevokeConfirming(sender,'0x'+record.HashX);
+                receipt = await be.getWithdrawRevokeEvent(sender,'0x'+record.HashX);
             }
 
             if(receipt && receipt.length>0){
@@ -139,7 +139,7 @@ const MonitorRecord = {
                 record.lockConfirmed += 1;
                 if(record.lockConfirmed >= config.confirmBlocks){
                     record.status = 'waitingCross';
-                    console.log("##########checkHashConfirm change to waitingCross");
+                    //console.log("##########checkHashConfirm change to waitingCross");
                 }
                 this.updateRecord(record);
             }
@@ -283,7 +283,7 @@ const MonitorRecord = {
             }else {
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX);
-                console.log("checkCrossHashOnline WAN:", receipt);
+                //console.log("checkCrossHashOnline WAN:", receipt);
                 //TODO: should we check btc, make sure value, trans is right, confirmed.
             }
 
