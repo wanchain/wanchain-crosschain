@@ -54,6 +54,9 @@ module.exports = {
     getUTXO(minconf, maxconf, addresses, chainType, callBack){
         return new socketmessage('getUTXO',{minconf:minconf, maxconf:maxconf, addresses:addresses},'UTXOs',chainType,callBack);
     },
+    btcImportAddress( address, chainType, callBack){
+        return new socketmessage('btcImportAddress',{address:address},'',chainType,callBack);
+    },
 	getP2SHXByHash(hashx, chainType, callBack){
 		return new socketmessage('getP2SHXByHash',{hashx:hashx},'x',chainType,callBack);
 	},
