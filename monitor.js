@@ -88,16 +88,23 @@ const MonitorRecord = {
             if(record.chain == "BTC"){
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getDepositRedeemEvent(sender,'0x'+record.HashX);
+                if(receipt && receipt.length>0){
+                    record.status = 'sentXConfirming';
+                    this.updateRecord(record );
+                }
             } else {
-                sender = this.getSenderbyChain("BTC");
+                // sender = this.getSenderbyChain("BTC");
                 // TODO: BTC X confirmation.
-                receipt = await be.getWithdrawOriginRefundEvent(sender,'0x'+record.HashX);
+                // receipt = await be.getWithdrawOriginRefundEvent(sender,'0x'+record.HashX);
+                let txid = record.btcTxid;
+                let btcTx = ccUtil.getBtcTransaction(ccUtil.btcSender, txid);
+                console.log("checkXOnline: ", btcTx);
+                if(btcTx && btcTx.confirmations && btcTx.confirmations>0){
+                    record.status = 'sentXConfirming';
+                    this.updateRecord(record );
+                }
             }
 
-            if(receipt && receipt.length>0){
-                record.status = 'sentXConfirming';
-                this.updateRecord(record );
-            }
         }catch(err){
             console.log("checkTxOnline:", err);
         }
@@ -181,21 +188,35 @@ const MonitorRecord = {
     },
     async checkXConfirm(record, waitBlocks){
         try {
-            let chain = record.chain=='BTC'?"WAN":"BTC";
-            let sender = this.getSenderbyChain(chain);
-            let receipt = await this.monitorTxConfirm(sender, '0x'+record.refundTxHash, waitBlocks);
-
-            if(receipt){
-                record.refundConfirmed += 1;
-                if(record.refundConfirmed >= config.confirmBlocks){
-                    record.status = 'refundFinished';
+            let sender;
+            let receipt;
+            if(record.chain == "BTC"){
+                let sender = this.getSenderbyChain('WAN');
+                let receipt = await this.monitorTxConfirm(sender, '0x'+record.refundTxHash, waitBlocks);
+                if(receipt){
+                    record.refundConfirmed += 1;
+                    if(record.refundConfirmed >= config.confirmBlocks){
+                        record.status = 'refundFinished';
+                    }
+                    this.updateRecord(record);
                 }
-                this.updateRecord(record);
+
+            }else{
+                let txid = record.btcTxid;
+                let btcTx = ccUtil.getBtcTransaction(ccUtil.btcSender, txid);
+                console.log("checkXOnline: ", btcTx);
+                if(btcTx && btcTx.confirmations && btcTx.confirmations>config.btcConfirmBlocks){
+                    record.status = 'refundFinished';
+                    this.updateRecord(record );
+                }
             }
+
         }catch(err){
             console.log("checkXConfirm:", err);
         }
     },
+
+
     async checkRevokeConfirm(chain, record, waitBlocks){
         try {
             let sender = this.getSenderbyChain(chain);

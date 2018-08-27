@@ -27,6 +27,9 @@ module.exports = {
     getTxInfo(txHash,chainType,callBack){
         return new socketmessage('getTxInfo',{txHash:txHash},'txInfo',chainType,callBack);
     },
+    getBtcTransaction(txHash,chainType,callBack){
+        return new socketmessage('getBtcTransaction',{txHash:txHash},'txInfo',chainType,callBack);
+    },
     getNonce(address,chainType,callBack){
         return new socketmessage('getNonceIncludePending',{address:address},'nonce',chainType,callBack);
     },

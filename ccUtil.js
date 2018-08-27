@@ -226,6 +226,10 @@ const Backend = {
 		let bs = pu.promisefy(sender.sendMessage, ['getTxInfo', txhash], sender);
 		return bs;
 	},
+    getBtcTransaction(sender, txhash) {
+        let bs = pu.promisefy(sender.sendMessage, ['getBtcTransaction', txhash], sender);
+        return bs;
+    },
 	getRawTransaction(sender, txhash) {
 		return getTxInfo(sender, txhash);
 	},

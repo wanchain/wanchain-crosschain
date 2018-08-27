@@ -105,7 +105,7 @@ module.exports = class btcWanTxSendRec {
         if (value != null) {
 
           value.btcRefundTxHash = trans.refundTxHash;
-          value.status = 'refundFinished';
+          //value.status = 'refundFinished';
           let res = collection.update(value);
           console.log("refund item=");
           console.log(res);
