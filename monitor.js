@@ -280,11 +280,28 @@ const MonitorRecord = {
             if(record.chain=="BTC"){
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getDepositCrossLockEvent(sender,'0x'+record.HashX);
+                if(receipt && receipt.length>0){
+                    record.crossConfirmed = 1;
+                    record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
+                    console.log("checkCrossHashOnline record:", record);
+                    this.updateRecord(record);
+                }
             }else {
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX);
                 //console.log("checkCrossHashOnline WAN:", receipt);
                 //TODO: should we check btc, make sure value, trans is right, confirmed.
+                if(receipt && receipt.length>0){
+                    record.crossConfirmed = 1;
+                    record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
+                    let redeemLockTimeStamp = Number('0x'+receipt[0].data.slice(66));
+                    let txid = receipt[0].data.slice(2,66);
+                    record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
+                    record.btcTxid = txid;
+                    record.status = 'waitingCrossConfirming';
+                    console.log("checkCrossHashOnline record:", record);
+                    this.updateRecord(record);
+                }
             }
 
             if(receipt && receipt.length>0){
@@ -295,6 +312,7 @@ const MonitorRecord = {
                 record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
                 record.btcTxid = txid;
                 record.status = 'waitingCrossConfirming';
+                console.log("checkCrossHashOnline record:", record);
                 this.updateRecord(record);
                 // console.log("######waitingCross done ");
             }
