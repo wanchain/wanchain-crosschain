@@ -127,7 +127,7 @@ config.btcServer={
     regtest:{
         network: 'regtest',
         host: "18.237.186.227",
-        port: 18442,
+        port: 18332,
         username: "USER",
         password: "PASS"
     }
