@@ -402,8 +402,8 @@ const Backend = {
 		let utxos = await client.listUnspent(minconf, maxconf, addresses);
 		utxos = utxos.map(function (item, index) {
 			let av = item.value ? item.value : item.amount;
-			item.value = av * 100000000;
-			item.amount = av * 100000000;
+            item.value = Number(web3.toBigNumber(av).mul(100000000));
+            item.amount = item.value;
 			return item;
 		});
 		return utxos;
@@ -411,13 +411,13 @@ const Backend = {
 	async getBtcUtxo(sender, minconf, maxconf, addresses) {
 		let utxos = await this._getBtcUtxo(sender, minconf, maxconf, addresses);
 		let len = utxos.length;
-		utxos = utxos.map(function (item, index) {
+		let utxos2 = utxos.map(function (item, index) {
 			let av = item.value ? item.value : item.amount;
-			item.value = av * 100000000;
-			item.amount = av * 100000000;
+			item.value = Number(web3.toBigNumber(av).mul(100000000));
+			item.amount = item.value;
 			return item;
 		});
-		return utxos;
+		return utxos2;
 	},
 	generateP2shScript(p2shAddr) {
 		let b1 = Buffer.from('a9', 'hex');
