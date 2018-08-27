@@ -96,8 +96,8 @@ const MonitorRecord = {
                 // sender = this.getSenderbyChain("BTC");
                 // TODO: BTC X confirmation.
                 // receipt = await be.getWithdrawOriginRefundEvent(sender,'0x'+record.HashX);
-                let txid = record.btcTxid;
-                let btcTx = ccUtil.getBtcTransaction(ccUtil.btcSender, txid);
+                let redeemTxHash = record.btcRefundTxHash;
+                let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
                 console.log("checkXOnline: ", btcTx);
                 if(btcTx && btcTx.confirmations && btcTx.confirmations>0){
                     record.status = 'sentXConfirming';
@@ -176,7 +176,7 @@ const MonitorRecord = {
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
                     record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
-                    record.HTLCtime = (100000+2*1000*Number(global.lockedTime)+newtime).toString();
+                    record.HTLCtime = (600000+2*1000*Number(global.lockedTime)+newtime).toString();
                 }else{
                     record.status = 'sentHashFailed';
                 }
@@ -202,10 +202,10 @@ const MonitorRecord = {
                 }
 
             }else{
-                let txid = record.btcTxid;
-                let btcTx = ccUtil.getBtcTransaction(ccUtil.btcSender, txid);
+                let redeemTxHash = record.btcRefundTxHash;
+                let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
                 console.log("checkXOnline: ", btcTx);
-                if(btcTx && btcTx.confirmations && btcTx.confirmations>config.btcConfirmBlocks){
+                if(btcTx && btcTx.confirmations && btcTx.confirmations>=config.btcConfirmBlocks){
                     record.status = 'refundFinished';
                     this.updateRecord(record );
                 }
@@ -366,9 +366,16 @@ const MonitorRecord = {
                 await this.checkCrossHashConfirm( record, config.confirmBlocks);
                 break;
             case 'waitingX':
-                if(record.refundTxHash){
-                    record.status = 'sentXPending';
-                    this.updateRecord(record);
+                if(record.chain == "BTC"){
+                    if(record.refundTxHash){
+                        record.status = 'sentXPending';
+                        this.updateRecord(record);
+                    }
+                }else {
+                    if(record.btcRefundTxHash){
+                        record.status = 'sentXPending';
+                        this.updateRecord(record);
+                    }
                 }
                 break;
             case 'suspending':
