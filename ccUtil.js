@@ -960,8 +960,6 @@ const Backend = {
 		for (i = 0; i < utxos.length; i++) {
 			sum += utxos[i].value
 		}
-		console.log('utxo balance=' + sum)
-
 		return sum
 	},
 

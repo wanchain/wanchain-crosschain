@@ -170,7 +170,7 @@ const MonitorRecord = {
             if(receipt){
                 if(receipt.status === '0x1'){
                     record.status = 'sentHashConfirming';
-                    console.log(" change to sentHashConfirming");
+                    // console.log(" change to sentHashConfirming");
                     // update the time to block time.
                     let block = await be.getBlockByNumber(sender, receipt.blockNumber)
                     let newtime = Number(block.timestamp)*1000;
