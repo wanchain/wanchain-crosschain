@@ -7,6 +7,7 @@ const config = {};
 // config.socketUrl = 'ws://192.168.1.77:8080/';
 config.socketUrl = 'wss://18.237.186.227';
 var wanchainNet = 'testnet';
+var ethereumNet = 'testnet';
 //config.lockTime = 1000;
 config.feeRate = 3000;
 config.feeHard = 1000000;
@@ -52,7 +53,20 @@ if (process.platform === 'freebsd' ||
 if (process.platform === 'win32') {
     config.keyStorePath = process.env.APPDATA + '\\wanchain\\'+wanchainNet+'keystore\\';
 }
+config.ethkeyStorePath = process.env.HOME;
+if (process.platform === 'darwin') {
+    config.ethkeyStorePath += '/Library/ethereum/'+ethereumNet+'keystore/';
+}
 
+if (process.platform === 'freebsd' ||
+    process.platform === 'linux' ||
+    process.platform === 'sunos') {
+    config.ethkeyStorePath += '/.ethereum/'+ethereumNet+'keystore/';
+}
+
+if (process.platform === 'win32') {
+    config.ethkeyStorePath = process.env.APPDATA + '\\ethereum\\'+ethereumNet+'keystore\\';
+}
 
 config.port = 8545;
 config.useLocalNode = false;
