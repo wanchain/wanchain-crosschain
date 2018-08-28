@@ -1,36 +1,23 @@
 'use strict'
 
-const coinSelect = require('coinselect')
-const feeRate = 55 // satoshis per byte
-
 var crypto = require('crypto')
 var secp256k1 = require('secp256k1')
-var createKeccakHash = require('keccak')
 const pu = require('promisefy-util');
-const BigNumber = require('bignumber.js');
 const wanUtil = require("wanchain-util");
 const Client = require('bitcoin-core');
 const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
 const bs58check = require('bs58check');
 
-var alice = bitcoin.ECPair.fromWIF(
-	'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
-);
-const aliceHash160Addr = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
-const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
+
 const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
-var storeman = bitcoin.ECPair.fromWIF(
-	storemanWif, bitcoin.networks.testnet
-);
+
 
 function getAddress(keypair) {
 	const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
 	return pkh.address;
 }
 
-// const aliceAddr = getAddress(alice);
-// const storemanAddr = getAddress(storeman);
 
 let client;
 const keythereum = require("keythereum");
@@ -51,16 +38,9 @@ const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const MAX_CONFIRM_BLKS = 10000000
 const MIN_CONFIRM_BLKS = 0
-// const LOCK_BLK_NUMBER = 10
-//
-// const TX_EMPTY_SIZE = 4 + 1 + 1 + 4
-// const TX_INPUT_BASE = 32 + 4 + 1 + 4
-// const TX_INPUT_PUBKEYHASH = 107
-// const TX_OUTPUT_BASE = 8 + 1
-// const TX_OUTPUT_PUBKEYHASH = 25
+
 const network = bitcoin.networks.testnet
-var contractsMap = {}
-var XXMap = {}
+
 
 function keyPairArray2AddrArray(kps) {
 	let addrs = [];
@@ -80,21 +60,6 @@ const Backend = {
 		return sender;
 	},
 
-	// toGweiString(swei) {
-	// 	let exp = new BigNumber(10);
-	// 	let wei = new BigNumber(swei);
-	// 	let gwei = wei.dividedBy(exp.pow(9));
-	// 	return gwei.toString(10);
-	// },
-	// toGwei(swei) {
-	// 	let exp = new BigNumber(10);
-	// 	let wei = new BigNumber(swei);
-	// 	let gwei = wei.dividedBy(exp.pow(9));
-	// 	return gwei;
-	// },
-	// getConfig() {
-	// 	return config;
-	// },
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : require('./config.js');
 		this.config = config;
@@ -112,9 +77,9 @@ const Backend = {
 		this.ethAddrs = Object.keys(this.EthKeyStoreDir.getAccounts());
 		this.wanAddrs = Object.keys(this.WanKeyStoreDir.getAccounts());
 		global.lockedTime = await this.getWanLockTime(this.wanSender);
-		console.log("global.lockedTime: ", global.lockedTime);
+        logger.debug("global.lockedTime: ", global.lockedTime);
 		this.c2wRatio = await this.getBtcC2wRatio(this.wanSender);
-		console.log("this.c2wRatio:", this.c2wRatio);
+        logger.debug("this.c2wRatio:", this.c2wRatio);
 		if (cb) cb();
 	},
 
@@ -440,29 +405,6 @@ const Backend = {
 				return ctx.outs[0].value;
 			}
 			return 0;
-			//TODO: add user.
-			// let contract = btcUtil.hashtimelockcontract(hashx, lockedTimestamp,storemanAddr, );
-			// let p2sh = contract['p2sh'];
-			// let outs = ctx.outs;
-			// let i;
-			// for(i=0; i<outs.length; i++) {
-			//     let out = outs[i];
-			//     let outScAsm = bitcoin.script.toASM(out.script);
-			//     let outScHex = out.script.toString('hex');
-			//     console.log("outScAsm", outScAsm);
-			//     console.log("outScHex", outScHex);
-			//     const payload = bs58check.decode(p2sh).toString('hex');
-			//     let p2shSc = this.generateP2shScript(payload).toString('hex');
-			//     if(outScHex == p2shSc){
-			//         break;
-			//     }
-			// }
-			// if(i == outs.length){
-			//     console.log("TODO: p2sh, hash160");
-			//     console.log(outs[0]);
-			//     return outs[0].value;
-			// }
-			// return outs[i].amount;
 		} catch (err) {
 			console.log("verifyBtcUtxo: ", err);
 			return 0;
@@ -638,7 +580,7 @@ const Backend = {
         contract.txhash = sendResult.result;
         contract.x = x;
         contract.value = value;
-        contract.feeRate = feeRate;
+        contract.feeRate = global.config.feeRate;
         contract.fee = sendResult.fee;
 
         this.btcLockSave(contract)
@@ -732,7 +674,7 @@ const Backend = {
         contract.ReceiverHash160Addr = receiverH160Addr;
         contract.senderH160Addr = senderH160Addr
         contract.value = amount;
-        contract.feeRate = feeRate;
+        contract.feeRate = global.config.feeRate;
         contract.fee = config.feeHard;
 
         this.btcRevokeSave(contract);
@@ -775,7 +717,7 @@ const Backend = {
       contract.ReceiverHash160Addr = receiverH160Addr;
       contract.senderH160Addr = senderH160Addr
       contract.value = amount;
-      contract.feeRate = feeRate;
+      contract.feeRate = global.config.feeRate;
       contract.fee = config.feeHard;
 
       this.btcRevokeSave(contract);
@@ -844,7 +786,7 @@ const Backend = {
 	    contract.senderH160Addr = senderH160Addr
 	    contract.x = x;
 	    contract.value = value;
-	    contract.feeRate = feeRate;
+	    contract.feeRate = global.config.feeRate;
 	    contract.fee = config.feeHard;
 
 	    this.btcRedeemSave(contract);
@@ -1346,7 +1288,7 @@ const Backend = {
         ctx.hashx = this.hexTrip0x(tx.hashx)
       }
 
-      ctx.feeRate = feeRate
+      ctx.feeRate = global.config.feeRate
       ctx.fee = tx.fee
       ctx.crossType = 'BTC2WAN'
       ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp
