@@ -499,7 +499,6 @@ const Backend = {
 		let newTrans = this.createTrans(sender);
 		newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'WBTC2BTC', nonce);
 		newTrans.trans.setHashkey(hashx);
-		console.log("newTrans.trans:", newTrans.trans);
 		let txhash = await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
 		return txhash;
 	},
@@ -531,7 +530,6 @@ const Backend = {
 					command = command + item.inputs[j].type;
 				}
 				command = command + ')';
-				console.log("commmand: ", command);
 				return command;
 			}
 		}
@@ -595,48 +593,7 @@ const Backend = {
 	    // change to array
 		return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
 	},
-	//
-	// async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
-	// 	// generate script and p2sh address
-	// 	let blocknum = await this.getBlockNumber(this.btcSender);
-	// 	const lockTime = 1000;
-	// 	let redeemLockTimeStamp = blocknum + lockTime;
-	//
-	// 	// let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
-	// 	// let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
-	// 	// console.log("############### x:",x);
-	// 	console.log("############### hashx:", hashx);
-	// 	let senderH160Addr = bitcoin.crypto.hash160(senderKp.publicKey).toString('hex');
-	// 	let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);
-	// 	contract.hashx = hashx;
-	//
-	// 	let utxos = await client.listUnspent(0, 10000000, [btcUtil.getAddressbyKeypair(senderKp)]);
-	// 	utxos.map(function (item, index) {
-	// 		let av = item.value ? item.value : item.amount;
-	// 		item.value = av * 100000000;
-	// 		item.amount = av * 100000000;
-	// 	});
-	//
-	// 	let utxo = btcUtil.selectUtxoTest(utxos, value - config.feeHard);
-	// 	if (!utxo) {
-	// 		console.log("############## no utxo");
-	// 		throw("no utox.");
-	// 	}
-	// 	console.log("utxo: ", utxo);
-	// 	const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
-	// 	txb.setVersion(1);
-	// 	txb.addInput(utxo.txid, utxo.vout);
-	// 	txb.addOutput(contract['p2sh'], (value - config.feeHard)); // fee is 1
-	// 	txb.sign(0, senderKp);
-	//
-	// 	const rawTx = txb.build().toHex();
-	// 	console.log("rawTx: ", rawTx);
-	//
-	// 	let btcHash = await client.sendRawTransaction(rawTx, true);
-	// 	console.log("btc result hash:", btcHash);
-	// 	contract.txHash = btcHash;
-	// 	return contract;
-	// },
+
 	// wallet api, use api server.
 	async getUtxoValueByIdWallet(txid) {
 		let rawTx = await this.getRawTransaction(this.btcSender, txid);
@@ -654,17 +611,9 @@ const Backend = {
     // when wbtc --> btc,  alice is receiver,  storeman is revoker.
     async revoke(hashx, redeemLockTimeStamp, receiverH160Addr, revokeKp, amount, txid, vout=0) {
 
-	      let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
+		let senderH160Addr = bitcoin.crypto.hash160(revokeKp.publicKey).toString('hex');
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverH160Addr,senderH160Addr);
         let redeemScript = contract['redeemScript'];
-
-        console.log("redeem redeemScript:", redeemScript);
-        console.log("hashx="+hashx);
-        console.log("redeemLockTimeStamp=" + redeemLockTimeStamp);
-        console.log("receiverH160Addr=" + receiverH160Addr);
-        console.log("amount=" + amount);
-        console.log("txid=" + txid);
-        console.log("vout=" + vout);
 
         let res = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
 
@@ -699,15 +648,14 @@ const Backend = {
 
       let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverH160Addr,senderH160Addr);
       let redeemScript = contract['redeemScript'];
-      console.log("redeem redeemScript:", redeemScript);
-
-      console.log("redeem redeemScript:", redeemScript);
-      console.log("hashx="+hashx);
-      console.log("redeemLockTimeStamp=" + redeemLockTimeStamp);
-      console.log("receiverH160Addr=" + receiverH160Addr);
-      console.log("amount=" + amount);
-      console.log("txid=" + txid);
-      console.log("vout=" + vout);
+      logger.debug("redeem redeemScript:", redeemScript);
+      logger.debug("redeem redeemScript:", redeemScript);
+      logger.debug("hashx="+hashx);
+      logger.debug("redeemLockTimeStamp=" + redeemLockTimeStamp);
+      logger.debug("receiverH160Addr=" + receiverH160Addr);
+      logger.debug("amount=" + amount);
+      logger.debug("txid=" + txid);
+      logger.debug("vout=" + vout);
 
       let txres = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
 
@@ -751,7 +699,7 @@ const Backend = {
 
         let rawTx = tx.toHex();
         let result = await this.sendRawTransaction(this.btcSender, rawTx);
-        console.log('result hash:', result);
+        logger.debug('_revoke result hash:', result);
         return result
     },
 	// when wbtc->btc,  storeman --> wallet.
@@ -767,7 +715,7 @@ const Backend = {
 		let amount = res[0].value;
 		let txid = res[0].btcTxid;
 		let vout=0
-		console.log("redeemWithHashX:",res);
+		logger.debug("redeemWithHashX:",res);
 		return this.redeem(res[0].x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, amount, txid);
 	},
 	async redeem(x, hashx, redeemLockTimeStamp, senderH160Addr, receiverKp, value, txid) {
@@ -775,7 +723,7 @@ const Backend = {
         let receiverHash160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp,receiverHash160Addr, senderH160Addr);
 		let redeemScript = contract['redeemScript'];
-		console.log("redeem redeemScript:", redeemScript);
+		logger.debug("redeem redeemScript:", redeemScript);
 
 		let res = await this._redeem(redeemScript, txid, x, receiverKp, value);
 
@@ -825,63 +773,12 @@ const Backend = {
 		try {
             btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex());
         }catch(err){
-		    console.log("redeem error: ", err);
+		    logger.error("redeem error: ", err);
         }
 
-		console.log("redeem tx id:" + btcHash);
+		logger.debug("redeem tx id:" + btcHash);
 		return btcHash;
 	},
-
-	/// /////////////////////////////////////////////////btc functions///////////////////////////////////////////////////////
-    //
-	// hashtimelockcontract(storemanHash160, redeemblocknum, destHash160, revokerHash160) {
-	// 	let x = redeemblocknum.toString(16)
-	// 	let hashx = bitcoin.crypto.sha256(x).toString('hex')
-	// 	let redeemScript = bitcoin.script.compile([
-	// 		/* MAIN IF BRANCH */
-	// 		bitcoin.opcodes.OP_IF,
-	// 		bitcoin.opcodes.OP_SHA256,
-	// 		Buffer.from(hashx, 'hex'),
-	// 		bitcoin.opcodes.OP_EQUALVERIFY,
-	// 		bitcoin.opcodes.OP_DUP,
-	// 		bitcoin.opcodes.OP_HASH160,
-    //
-	// 		Buffer.from(destHash160, 'hex'), // wallet don't know storeman pubkey. //bitcoin.crypto.hash160(storeman.publicKey),//storeman.getPublicKeyBuffer(),// redeemer address
-	// 		// bitcoin.crypto.hash160(storeman.publicKey),
-	// 		bitcoin.opcodes.OP_ELSE,
-	// 		bitcoin.script.number.encode(redeemblocknum),
-	// 		bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
-	// 		bitcoin.opcodes.OP_DROP,
-	// 		bitcoin.opcodes.OP_DUP,
-	// 		bitcoin.opcodes.OP_HASH160,
-    //
-	// 		Buffer.from(revokerHash160, 'hex'),
-	// 		// bitcoin.crypto.hash160(alice.publicKey),//alice.getPublicKeyBuffer(), // funder addr
-	// 		/* ALMOST THE END. */
-	// 		bitcoin.opcodes.OP_ENDIF,
-    //
-	// 		// Complete the signature check.
-	// 		bitcoin.opcodes.OP_EQUALVERIFY,
-	// 		bitcoin.opcodes.OP_CHECKSIG
-	// 	])
-	// 	console.log(redeemScript.toString('hex'))
-	// 	// var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
-	// 	// var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
-    //
-	// 	let addressPay = bitcoin.payments.p2sh({
-	// 		redeem: {output: redeemScript, network: bitcoin.networks.testnet},
-	// 		network: bitcoin.networks.testnet
-	// 	})
-	// 	let address = addressPay.address
-    //
-	// 	return {
-	// 		'p2sh': address,
-	// 		'x': x,
-	// 		'hashx': hashx,
-	// 		'redeemblocknum': redeemblocknum,
-	// 		'redeemScript': redeemScript
-	// 	}
-	// },
 
 	getUTXOSBalance(utxos) {
 		let sum = 0
@@ -999,10 +896,9 @@ const Backend = {
 			addressArray.push(address)
 			addressKeyMap[address] = kp
 		}
-		console.log("addressArray:", addressArray);
 		let balance = this.getUTXOSBalance(utxos)
 		if (balance <= target.value) {
-			console.log(" balance <= target.value");
+			logger.error(" balance <= target.value");
 			return null;
 		}
 
@@ -1013,7 +909,7 @@ const Backend = {
 			return {'result': null, 'error': new Error('utxo balance is not enough')}
 		}
 
-		console.log('fee', fee)
+		logger.debug('fee', fee)
 
 		let txb = new bitcoin.TransactionBuilder(network)
 
@@ -1040,7 +936,7 @@ const Backend = {
 		}
 
 		const rawTx = txb.build().toHex()
-		console.log('rawTx: ', rawTx)
+		logger.debug('rawTx: ', rawTx)
 
 		return {rawTx: rawTx, fee: fee};
 	},
@@ -1075,67 +971,6 @@ const Backend = {
 		let result = await client.sendRawTransaction(rawTx);
 		return {result: result, fee: fee}
 	},
-	// async lock(contract, amount, keyPairArray, feeRate) {
-	// 	// define target utxo
-	// 	let targets = [
-	// 		{
-	// 			address: contract['p2sh'],
-	// 			value: amount * 100000000
-	// 		}
-	// 	]
-	//
-	// 	return await this.btcTxBuildSend(keyPairArray, amount, targets, feeRate).result
-	// },
-
-	// // call this function to refund locked btc
-	// async refund(fundtx, XX, refunderKeyPair) {
-	// 	// get the contract from buffer
-	// 	let contract = contractsMap[fundtx.vout.address]
-	// 	if (contract == undefined) {
-	// 		return null
-	// 	}
-    //
-	// 	let redeemScript = contract['redeemScript']
-    //
-	// 	let txb = new bitcoin.TransactionBuilder(network)
-	// 	txb.setVersion(1)
-    //
-	// 	print4debug('----W----A----N----C----H----A----I----N----')
-	// 	print4debug(JSON.stringify(fundtx))
-	// 	print4debug('----W----A----N----C----H----A----I----N----')
-    //
-	// 	txb.addInput(fundtx.txid, fundtx.vout)
-	// 	txb.addOutput(this.getAddress(refunderKeyPair), (fundtx.amount - config.feeHard) * 100000000)
-    //
-	// 	let tx = txb.buildIncomplete()
-	// 	let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL)
-    //
-	// 	let redeemScriptSig = bitcoin.payments.p2sh({
-	// 		redeem: {
-	// 			input: bitcoin.script.compile([
-	// 				bitcoin.script.signature.encode(refunderKeyPair.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-	// 				refunderKeyPair.pubkey,
-	// 				Buffer.from(XX, 'utf-8'),
-	// 				bitcoin.opcodes.OP_TRUE
-	// 			]),
-	// 			output: redeemScript
-	// 		},
-	// 		network: network
-	// 	}).input
-    //
-	// 	tx.setInputScript(0, redeemScriptSig)
-    //
-	// 	let rawTx = tx.toHex()
-	// 	print4debug('redeem raw tx: \n' + rawTx)
-	// 	let result = await this.sendRawTransaction(this.btcSender, rawTx)
-	// 	console.log('result hash:', result)
-    //
-	// 	delete contractsMap[fundtx.vout.address]
-    //
-	// 	return {'result': result, 'error': null}
-	// },
-    //
-
 
   async btcSendTransaction (keyPairArray, amount, destAddress, feeRate) {
     let target = {
@@ -1147,14 +982,10 @@ const Backend = {
   },
   
    redeemSriptCheck(sriptData){
-		
 		try {
-			
             const XPOS = 2;
-
             const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
             const LOCK_SC_POS = 4;
-
             const FIXED_HASH_X_POS = 2;
             const FIXED_LK_TIME = 100;
             const FIXED_LK_TIME_POS = 8;
@@ -1195,7 +1026,6 @@ const Backend = {
 
             let changedRedeemScript = '0x' + gotRedeemScriptArray.join(' ');
             let changedRedeemScriptHash = this.getHashKey(changedRedeemScript);
-
 
             if (fixedRedeemScriptHash == changedRedeemScriptHash) {
                 return {
@@ -1293,8 +1123,6 @@ const Backend = {
       ctx.crossType = 'BTC2WAN'
       ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp
 
-      console.log('ctx=')
-      console.log(ctx)
       return ctx
 
     } catch (e) {
@@ -1319,7 +1147,7 @@ const Backend = {
     let res = newTrans.insertLockData(ctx)
 
     if (res != undefined) {
-      console.log(res.toString())
+      logger.debug(res.toString())
     }
 
     return res
@@ -1342,7 +1170,7 @@ const Backend = {
     let res = newTrans.insertRefundData(ctx)
 
     if (res != undefined) {
-      console.log(res.toString())
+      logger.debug(res.toString())
     }
 
     return res
@@ -1364,7 +1192,7 @@ const Backend = {
 
     let res = newTrans.insertRevokeData(ctx)
     if (res != undefined) {
-      console.log(res.toString())
+      logger.debug(res.toString())
     }
 
     return res
@@ -1384,7 +1212,7 @@ const Backend = {
     ctx.crossType = "BTC2WAN";
     let res = newTrans.insertWanNoticeData(ctx)
     if (res != undefined) {
-      console.log(res.toString())
+      logger.debug(res.toString())
     }
 
     return res
