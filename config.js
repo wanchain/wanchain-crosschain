@@ -9,7 +9,7 @@ config.socketUrl = 'wss://18.237.186.227';
 var wanchainNet = 'testnet';
 var ethereumNet = '';
 config.lockTime = 1000;
-config.feeRate = 55;
+config.feeRate = 300;
 config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
 
