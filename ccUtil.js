@@ -49,7 +49,7 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-const FEE = 100000
+const FEE = config.feeHard
 const MAX_CONFIRM_BLKS = 10000000
 const MIN_CONFIRM_BLKS = 0
 // const LOCK_BLK_NUMBER = 10
