@@ -1,11 +1,9 @@
 'use strict'
 
-
 const pu = require('promisefy-util');
 let config;
 const be = require('./ccUtil.js').Backend;
 
-//let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let backendConfig = {};
 let logger;
 let handlingList = {};
@@ -98,15 +96,14 @@ const MonitorRecord = {
                 // receipt = await be.getWithdrawOriginRefundEvent(sender,'0x'+record.HashX);
                 let redeemTxHash = record.btcRefundTxHash;
                 let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
-                console.log("checkXOnline: ", btcTx);
+                logger.debug("checkXOnline: ", btcTx);
                 if(btcTx && btcTx.confirmations && btcTx.confirmations>0){
                     record.status = 'sentXConfirming';
                     this.updateRecord(record );
                 }
             }
-
         }catch(err){
-            console.log("checkTxOnline:", err);
+            logger.error("checkTxOnline:", err);
         }
     },
     async checkRevokeOnline(chain, record){
@@ -146,7 +143,6 @@ const MonitorRecord = {
                 record.lockConfirmed += 1;
                 if(record.lockConfirmed >= config.confirmBlocks){
                     record.status = 'waitingCross';
-                    //console.log("##########checkHashConfirm change to waitingCross");
                 }
                 this.updateRecord(record);
             }
@@ -164,13 +160,11 @@ const MonitorRecord = {
             } else {
 	            txhash = '0x'+record.lockTxHash;
             }
-            //console.log("checkHashReceiptOnline txhash:", txhash);
             let receipt = await this.monitorTxConfirm(sender, txhash, 0);
 
             if(receipt){
                 if(receipt.status === '0x1'){
                     record.status = 'sentHashConfirming';
-                    // console.log(" change to sentHashConfirming");
                     // update the time to block time.
                     let block = await be.getBlockByNumber(sender, receipt.blockNumber)
                     let newtime = Number(block.timestamp)*1000;
@@ -204,7 +198,7 @@ const MonitorRecord = {
             }else{
                 let redeemTxHash = record.btcRefundTxHash;
                 let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
-                console.log("checkXOnline: ", btcTx);
+                logger.debug("checkXOnline: ", btcTx);
                 if(btcTx && btcTx.confirmations && btcTx.confirmations>=config.btcConfirmBlocks){
                     record.status = 'refundFinished';
                     this.updateRecord(record );
@@ -212,7 +206,7 @@ const MonitorRecord = {
             }
 
         }catch(err){
-            console.log("checkXConfirm:", err);
+            logger.error("checkXConfirm:", err);
         }
     },
 
@@ -230,14 +224,11 @@ const MonitorRecord = {
                 this.updateRecord(record);
             }
         }catch(err){
-            console.log("checkRevokeConfirm:", err);
+            logger.error("checkRevokeConfirm:", err);
         }
     },
     async checkCrossHashConfirm(record, waitBlocks){
         try {
-            // let chain = record.chain=='BTC'?"WAN":'BTC';
-            // let sender = this.getSenderbyChain(chain);
-            // let receipt = await this.monitorTxConfirm(sender, record.crossLockHash, waitBlocks);
             let sender;
             let receipt;
 	        if(record.chain=="BTC"){
@@ -259,7 +250,7 @@ const MonitorRecord = {
                 }
             }
         }catch(err){
-            console.log("checkCrossHashConfirm:", err);
+            logger.error("checkCrossHashConfirm:", err);
         }
     },
 
@@ -290,7 +281,7 @@ const MonitorRecord = {
                 return true;
             }
         }catch(err){
-            console.log("checkHashTimeout:", err);
+            logger.error("checkHashTimeout:", err);
         }
         return false;
     },
@@ -305,15 +296,15 @@ const MonitorRecord = {
                     record.crossConfirmed = 1;
                     record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
                     record.status = 'waitingCrossConfirming';
-                    console.log("checkCrossHashOnline record:", record);
+                    logger.debug("checkCrossHashOnline record:", record);
                     this.updateRecord(record);
                 }
 
             }else {
                 sender = this.getSenderbyChain("WAN");
                 receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX);
-                //console.log("checkCrossHashOnline WAN:", receipt);
-                //TODO: should we check btc, make sure value, trans is right, confirmed.
+                logger.debug("checkCrossHashOnline WAN:", receipt);
+                //TODO: we need check btc, make sure value, trans is right, confirmed.
                 if(receipt && receipt.length>0){
                     record.crossConfirmed = 1;
                     record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
@@ -322,13 +313,13 @@ const MonitorRecord = {
                     record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
                     record.btcTxid = txid;
                     record.status = 'waitingCrossConfirming';
-                    console.log("checkCrossHashOnline record:", record);
+                    logger.debug("checkCrossHashOnline record:", record);
                     this.updateRecord(record);
                 }
             }
 
         }catch(err){
-            console.log("checkCrossHashOnline:", err);
+            logger.error("checkCrossHashOnline:", err);
         }
     },
     updateRecord(record){
@@ -342,7 +333,7 @@ const MonitorRecord = {
         let waitBlock = config.confirmBlocks;
         let chain = record.chain;
         if(this.checkHashTimeout(record) == true){
-            console.log("tx timeout: ", record);
+            logger.debug("tx timeout: ", record);
         }
         //logger.debug("record status is ", record.status);
         switch(record.status) {
