@@ -49,7 +49,6 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-const FEE = config.feeHard
 const MAX_CONFIRM_BLKS = 10000000
 const MIN_CONFIRM_BLKS = 0
 // const LOCK_BLK_NUMBER = 10
@@ -676,7 +675,7 @@ const Backend = {
 	// 		item.amount = av * 100000000;
 	// 	});
 	//
-	// 	let utxo = btcUtil.selectUtxoTest(utxos, value - FEE);
+	// 	let utxo = btcUtil.selectUtxoTest(utxos, value - config.feeHard);
 	// 	if (!utxo) {
 	// 		console.log("############## no utxo");
 	// 		throw("no utox.");
@@ -685,7 +684,7 @@ const Backend = {
 	// 	const txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 	// 	txb.setVersion(1);
 	// 	txb.addInput(utxo.txid, utxo.vout);
-	// 	txb.addOutput(contract['p2sh'], (value - FEE)); // fee is 1
+	// 	txb.addOutput(contract['p2sh'], (value - config.feeHard)); // fee is 1
 	// 	txb.sign(0, senderKp);
 	//
 	// 	const rawTx = txb.build().toHex();
@@ -734,7 +733,7 @@ const Backend = {
         contract.senderH160Addr = senderH160Addr
         contract.value = amount;
         contract.feeRate = feeRate;
-        contract.fee = FEE;
+        contract.fee = config.feeHard;
 
         this.btcRevokeSave(contract);
 
@@ -777,7 +776,7 @@ const Backend = {
       contract.senderH160Addr = senderH160Addr
       contract.value = amount;
       contract.feeRate = feeRate;
-      contract.fee = FEE;
+      contract.fee = config.feeHard;
 
       this.btcRevokeSave(contract);
 
@@ -790,7 +789,7 @@ const Backend = {
         txb.setLockTime(redeemLockTimeStamp);
         txb.setVersion(1);
         txb.addInput(txid, vout, 0);
-        txb.addOutput(this.getAddress(revokerKeyPair), (amount - FEE));
+        txb.addOutput(this.getAddress(revokerKeyPair), (amount - config.feeHard));
 
         let tx = txb.buildIncomplete();
         let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -846,7 +845,7 @@ const Backend = {
 	    contract.x = x;
 	    contract.value = value;
 	    contract.feeRate = feeRate;
-	    contract.fee = FEE;
+	    contract.fee = config.feeHard;
 
 	    this.btcRedeemSave(contract);
 
@@ -858,7 +857,7 @@ const Backend = {
 		var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 		txb.setVersion(1);
 		txb.addInput(txid, 0);
-		txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - FEE));
+		txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - config.feeHard));
 
 		const tx = txb.buildIncomplete();
 		const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
@@ -1164,7 +1163,7 @@ const Backend = {
 	// 	print4debug('----W----A----N----C----H----A----I----N----')
     //
 	// 	txb.addInput(fundtx.txid, fundtx.vout)
-	// 	txb.addOutput(this.getAddress(refunderKeyPair), (fundtx.amount - FEE) * 100000000)
+	// 	txb.addOutput(this.getAddress(refunderKeyPair), (fundtx.amount - config.feeHard) * 100000000)
     //
 	// 	let tx = txb.buildIncomplete()
 	// 	let sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL)
