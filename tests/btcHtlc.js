@@ -187,7 +187,7 @@ async function redeem(contract, fundtx, secret){
             ]),
             output: redeemScript,
         },
-        network: bitcoin.networks.regtest
+        network: bitcoin.networks.testnet
     }).input
     tx.setInputScript(0, redeemScriptSig);
     console.log("===redeemScriptSig: ", bitcoin.script.toASM(redeemScriptSig));

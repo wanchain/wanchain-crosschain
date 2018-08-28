@@ -7,8 +7,7 @@ const config = {};
 // config.socketUrl = 'ws://192.168.1.77:8080/';
 config.socketUrl = 'wss://18.237.186.227';
 var wanchainNet = 'testnet';
-var ethereumNet = '';
-config.lockTime = 1000;
+//config.lockTime = 1000;
 config.feeRate = 300;
 config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
@@ -127,6 +126,13 @@ config.HTLCWBTCInstAbi=[{"constant":true,"inputs":[{"name":"","type":"bytes32"}]
 config.btcServer={
     regtest:{
         network: 'regtest',
+        host: "18.237.186.227",
+        port: 18443,
+        username: "USER",
+        password: "PASS"
+    },
+    testnet:{
+        network: 'testnet',
         host: "18.237.186.227",
         port: 18332,
         username: "USER",

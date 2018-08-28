@@ -2,34 +2,15 @@
 
 var Address = require('btc-address');
 var binConv = require('binstring');
-const pu = require('promisefy-util');
 const bitcoin  = require('bitcoinjs-lib');
 const wif = require('wif');
 const bip38 = require('bip38');
 const crypto = require('crypto');
-const cluster = require('cluster');
+//const cluster = require('cluster');
 const config = require('./config');
 const lokiDbCollection = require('./wanchaindb/lib/lokiDbCollection');
 const print4debug = console.log;
-var alice = bitcoin.ECPair.fromWIF(
-    'cPbcvQW16faWQyAJD5sJ67acMtniFyodhvCZ4bqUnKyjataXKLd5', bitcoin.networks.testnet
-);
 const secp256k1 = require("secp256k1");
-const Web3 = require("web3");
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-var contractsMap = {};
-var XXMap = {};
-
-const FEE = 0.001
-const MAX_CONFIRM_BLKS = 10000000;
-const MIN_CONFIRM_BLKS = 0;
-const LOCK_BLK_NUMBER = 10;
-
-const network = bitcoin.networks.testnet;
-
-const feeOptions = { minChange: 100, fee: 100 };
-const feeRate = 55;
-
 
 let bitcoinNetwork = config.bitcoinNetwork;
 let version = config.bitcoinVersion;
@@ -41,20 +22,8 @@ function hexTrip0x(hexs){
 }
 
 const btcUtil = {
-    createBtcAddr(){
-        let Pair = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
-        let WIF = Pair.toWIF();
-        let {address} = bitcoin.payments.p2pkh({pubkey: Pair.publicKey, network: bitcoin.networks.testnet});
-        console.log("address: ", address);
-        console.log("publicKey:", Pair.publicKey);
-        console.log("hash160 PK:", bitcoin.crypto.hash160(Pair.publicKey).toString('hex'));
-        console.log("WIF: ", WIF);
-        return Pair;
-        // todo save address to where?
-    },
-
     getAddressbyKeypair(keypair) {
-        const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
+        const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoinNetwork});
         return pkh.address;
     },
 
@@ -90,7 +59,7 @@ const btcUtil = {
         //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
         //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
 
-        let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: bitcoin.networks.testnet }, network: bitcoin.networks.testnet });
+        let addressPay = bitcoin.payments.p2sh({ redeem: { output: redeemScript, network: bitcoinNetwork }, network: bitcoinNetwork });
         let address = addressPay.address;
 
         return {
@@ -175,48 +144,48 @@ const btcUtil = {
 			return ECPairArray;
 		}
 	},
-  clusterGetECPairs(passwd) {
-
-    return new Promise((resolve, reject) => {
-
-      lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
-        let encryptedKeyResult = await btcAddress.find();
-        await lokiDbCollection.btcDb.close();
-
-        let array = [];
-        try {
-
-          if (cluster.isMaster) {
-            for (let j = 0; j < encryptedKeyResult.length; j++) {
-              let worker = cluster.fork();
-              worker.on('message', function(m) {
-                array.push(m);
-              });
-            }
-
-            cluster.on('exit', function(worker, code, signal) {
-              if(!--encryptedKeyResult.length){
-                resolve(array);
-              }
-            });
-
-          } else {
-            let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[cluster.worker.id -1].encryptedKey, passwd);
-            let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork);
-            process.send(alice);
-            process.exit(0);
-          }
-        } catch (err) {
-          if (err.code === 'ERR_ASSERTION') {
-            console.log('password wrong!');
-          } else {
-            console.log('err: ', err);
-          }
-          reject(array);
-        }
-      });
-    })
-  },
+  // clusterGetECPairs(passwd) {
+  //
+  //   return new Promise((resolve, reject) => {
+  //
+  //     lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{
+  //       let encryptedKeyResult = await btcAddress.find();
+  //       await lokiDbCollection.btcDb.close();
+  //
+  //       let array = [];
+  //       try {
+  //
+  //         if (cluster.isMaster) {
+  //           for (let j = 0; j < encryptedKeyResult.length; j++) {
+  //             let worker = cluster.fork();
+  //             worker.on('message', function(m) {
+  //               array.push(m);
+  //             });
+  //           }
+  //
+  //           cluster.on('exit', function(worker, code, signal) {
+  //             if(!--encryptedKeyResult.length){
+  //               resolve(array);
+  //             }
+  //           });
+  //
+  //         } else {
+  //           let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[cluster.worker.id -1].encryptedKey, passwd);
+  //           let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork);
+  //           process.send(alice);
+  //           process.exit(0);
+  //         }
+  //       } catch (err) {
+  //         if (err.code === 'ERR_ASSERTION') {
+  //           console.log('password wrong!');
+  //         } else {
+  //           console.log('err: ', err);
+  //         }
+  //         reject(array);
+  //       }
+  //     });
+  //   })
+  // },
 
     async getAddressList() {
         return await  lokiDbCollection.loadCollection('btcAddress').then(async btcAddress =>{

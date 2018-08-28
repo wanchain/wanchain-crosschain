@@ -99,7 +99,7 @@ const Backend = {
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : require('./config.js');
 		this.config = config;
-		this.client = new Client(global.config.btcServer.regtest);
+		this.client = new Client(global.config.btcServer.testnet);
 		client = this.client;
 		this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
 			this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath),
