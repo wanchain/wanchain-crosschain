@@ -170,7 +170,7 @@ const MonitorRecord = {
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
                     record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
-                    record.HTLCtime = (600000+2*1000*Number(global.lockedTime)+newtime).toString();
+                    record.HTLCtime = (1200000+2*1000*Number(global.lockedTime)+newtime).toString();
                 }else{
                     record.status = 'sentHashFailed';
                 }
@@ -264,12 +264,12 @@ const MonitorRecord = {
             return true;
         }
         try {
-            let HTLCtime;
-            if(record.chain == 'BTC'){
-	            HTLCtime = Number(record.btcRedeemLockTimeStamp);
-            }else {
-	            HTLCtime = Number(record.HTLCtime);
-            }
+            let HTLCtime = Number(record.HTLCtime);
+            // if(record.chain == 'BTC'){
+	         //    HTLCtime = Number(record.btcRedeemLockTimeStamp);
+            // }else {
+	         //    HTLCtime = Number(record.HTLCtime);
+            // }
             let suspendTime = Number(record.suspendTime);
             if(HTLCtime <= Date.now()){
                 record.status = 'waitingRevoke';
