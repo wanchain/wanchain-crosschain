@@ -128,7 +128,7 @@ config.HTLCWBTCInstAbi=[{"constant":true,"inputs":[{"name":"","type":"bytes32"}]
 config.btcServer={
     regtest:{
         network: 'regtest',
-        host: "18.237.186.227",
+        host: "118.190.33.66",
         port: 18443,
         username: "USER",
         password: "PASS"

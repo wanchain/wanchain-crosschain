@@ -676,7 +676,7 @@ const Backend = {
     // call this function to revoke locked btc
     async _revoke(hashx, txid,vout,amount, redeemScript, redeemLockTimeStamp, revokerKeyPair) {
         let txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
-        txb.setLockTime(redeemLockTimeStamp);
+        txb.setLockTime(redeemLockTimeStamp - Number(global.lockedTime));
         txb.setVersion(1);
         txb.addInput(txid, vout, 0);
         txb.addOutput(this.getAddress(revokerKeyPair), (amount - config.feeHard));
