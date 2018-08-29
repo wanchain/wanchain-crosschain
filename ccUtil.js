@@ -981,7 +981,8 @@ const Backend = {
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
   },
   
-   redeemSriptCheck(sriptData){
+  
+  redeemSriptCheck(sriptData){
 		try {
             const WHOLE_ITEM_LENGTH = 5;
             const REDEEM_SCRIPT_ITEM_LENGTH = 17;
@@ -989,14 +990,14 @@ const Backend = {
             const XPOS = 2;
             const OP_TRUE_POS = 3;
 
-            const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
+            const FIXED_HASHX = '7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
             const LOCK_SC_POS = 4;
             const FIXED_HASH_X_POS = 2;
             const FIXED_LK_TIME = 100;
             const FIXED_LK_TIME_POS = 8;
-            const FIXED_DEST_HASH160 = '0x9a6b60f74a6bae176df05c3b0a118f85bab5c585';
+            const FIXED_DEST_HASH160 = '9a6b60f74a6bae176df05c3b0a118f85bab5c585';
             const FIXED_DEST_HASH160_POS = 6;
-            const FIXED_REVOKER_HASH160 = '0x3533435f431a6a016ed0de73bd9645c8e2694416';
+            const FIXED_REVOKER_HASH160 = '3533435f431a6a016ed0de73bd9645c8e2694416';
             const FIXED_REVOKER_HASH160_POS = 13;
 
             let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
@@ -1004,8 +1005,8 @@ const Backend = {
             console.log("fixed redeem script")
 
             //get the fixed script hash
-            let fixedRedeemScriptHash = this.getHashKey('0x'+fixedRedeemScript);
-            console.log('fixedRedeemScriptHash=' + fixedRedeemScriptHash.toString('hex'))
+            let fixedCmdData = bitcoin.script.compile(Buffer.from(fixedRedeemScript, 'hex'));
+            let fixedCmd = bitcoin.script.toASM(fixedCmdData);
 
             let scInputs = bitcoin.script.compile(Buffer.from(sriptData, 'hex'));
 
@@ -1023,7 +1024,7 @@ const Backend = {
 
             let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
             if(gotRedeemScriptArray.length != REDEEM_SCRIPT_ITEM_LENGTH){
-              return new Error("wrong redeem script item number");
+               return new Error("wrong redeem script item number");
             }
 
             console.log(gotRedeemScriptArray);
@@ -1034,14 +1035,13 @@ const Backend = {
             let gotREVOKERHASH160 = gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS];
 
             gotRedeemScriptArray[FIXED_HASH_X_POS] = FIXED_HASHX;
-            gotRedeemScriptArray[FIXED_LK_TIME_POS] = FIXED_LK_TIME;
+            gotRedeemScriptArray[FIXED_LK_TIME_POS] = FIXED_LK_TIME.toString(16);
             gotRedeemScriptArray[FIXED_DEST_HASH160_POS] = FIXED_DEST_HASH160;
             gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS] = FIXED_REVOKER_HASH160;
 
-            let changedRedeemScript = '0x' + gotRedeemScriptArray.join(' ');
-            let changedRedeemScriptHash = this.getHashKey(changedRedeemScript);
+            let changedRedeemScript = gotRedeemScriptArray.join(' ');
 
-            if (fixedRedeemScriptHash == changedRedeemScriptHash) {
+            if (fixedCmd == changedRedeemScript) {
                 return {
                     'X': XX,
                     'HASHX': gotHASHX,
