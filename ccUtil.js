@@ -981,14 +981,11 @@ const Backend = {
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
   },
   
-    redeemSriptCheck(sriptData){
+   redeemSriptCheck(sriptData){
 		try {
-            const REDEEM_SCRIPT_LENGTH = 234;
+            const WHOLE_ITEM_LENGTH = 5;
+            const REDEEM_SCRIPT_ITEM_LENGTH = 17;
 
-            if(Buffer.from(sriptData, 'hex').length != REDEEM_SCRIPT_LENGTH){
-              return new Error("wrong script data length");
-            }
-			
             const XPOS = 2;
             const OP_TRUE_POS = 3;
 
@@ -1013,17 +1010,22 @@ const Backend = {
             let scInputs = bitcoin.script.compile(Buffer.from(sriptData, 'hex'));
 
             let lockSc = bitcoin.script.toASM(scInputs).split(' ');
+
             console.log(lockSc);
+
             let XX = lockSc[XPOS];
-			
-            if(XX.length != 64 || lockSc[OP_TRUE_POS] !== 'OP_1'){
-              return new Error("wrong X length or OP code");
+            if(lockSc.length != WHOLE_ITEM_LENGTH || XX.length != 64 || lockSc[OP_TRUE_POS] !== 'OP_1'){
+              return new Error("wrong script or X length or OP code");
             }
 
             let scOutput = bitcoin.script.compile(Buffer.from(lockSc[LOCK_SC_POS], 'hex'));
 
 
             let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
+            if(gotRedeemScriptArray.length != REDEEM_SCRIPT_ITEM_LENGTH){
+              return new Error("wrong redeem script item number");
+            }
+
             console.log(gotRedeemScriptArray);
 
             let gotHASHX = gotRedeemScriptArray[FIXED_HASH_X_POS];
