@@ -170,7 +170,7 @@ const MonitorRecord = {
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
                     record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
-                    record.HTLCtime = (120000+2*1000*Number(global.lockedTime)+newtime).toString();
+                    record.HTLCtime = (3000000+2*1000*Number(global.lockedTime)+newtime).toString();
                 }else{
                     record.status = 'sentHashFailed';
                 }
