@@ -44,7 +44,7 @@ module.exports = class sendTransaction{
         this.trans = new TokenSend(from, config.wanchainHtlcAddr, gas, pasPrice);
         this.trans.setAccount(WanKeyStoreDir);
         this.trans.trans.data = payload;
-        console.log(this.trans);
+        // console.log(this.trans);
     }
     sendNoticeTrans(password,callback){
         let self = this;
