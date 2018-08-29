@@ -981,9 +981,17 @@ const Backend = {
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
   },
   
-   redeemSriptCheck(sriptData){
+    redeemSriptCheck(sriptData){
 		try {
+            const REDEEM_SCRIPT_LENGTH = 234;
+
+            if(Buffer.from(sriptData, 'hex').length != REDEEM_SCRIPT_LENGTH){
+              return new Error("wrong script data length");
+            }
+			
             const XPOS = 2;
+            const OP_TRUE_POS = 3;
+
             const FIXED_HASHX = '0x7eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf510';
             const LOCK_SC_POS = 4;
             const FIXED_HASH_X_POS = 2;
@@ -997,7 +1005,6 @@ const Backend = {
             let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
             let fixedRedeemScript = contract['redeemScript'];
             console.log("fixed redeem script")
-            console.log(fixedRedeemScript.toString('hex'));
 
             //get the fixed script hash
             let fixedRedeemScriptHash = this.getHashKey('0x'+fixedRedeemScript);
@@ -1008,8 +1015,13 @@ const Backend = {
             let lockSc = bitcoin.script.toASM(scInputs).split(' ');
             console.log(lockSc);
             let XX = lockSc[XPOS];
+			
+            if(XX.length != 64 || lockSc[OP_TRUE_POS] !== 'OP_1'){
+              return new Error("wrong X length or OP code");
+            }
 
             let scOutput = bitcoin.script.compile(Buffer.from(lockSc[LOCK_SC_POS], 'hex'));
+
 
             let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
             console.log(gotRedeemScriptArray);
@@ -1047,6 +1059,7 @@ const Backend = {
   
    },
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     getAddress(keypair) {
         let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet})
@@ -1063,7 +1076,7 @@ const Backend = {
 
     getHashKey(key1){
         //return BigNumber.random().toString(16);
-        let key = hexTrip0x(key1);
+        let key = this.hexTrip0x(key1);
         let hashKey = '0x'+bitcoin.crypto.sha256(Buffer.from(key, 'hex')).toString('hex');
         return hashKey;
 
