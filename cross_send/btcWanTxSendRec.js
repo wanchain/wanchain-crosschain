@@ -34,7 +34,7 @@ module.exports = class btcWanTxSendRec {
             txValue: trans.value,
             x: trans.x,
             time: cur.toString(),
-            HTLCtime: (3000000+2*1000*Number(global.lockedTime)+newtime).toString(),
+            HTLCtime: (3000000+2*1000*Number(global.lockedTime)+cur).toString(),
             chain: 'BTC',
             status: 'sentHashPending',
             lockConfirmed: 0,
