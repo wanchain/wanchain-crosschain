@@ -821,12 +821,12 @@ const Backend = {
 			}
 		}
 
-		if (availableSat < target.value) {
-			return new Error('You do not have enough in your wallet')
-		}
-
 		fee = this.getTxSize(ninputs, 2) * feeRate
 		let change = availableSat - target.value - fee
+		
+		if (change < 0){
+		  return new Error('balance can not offord fee and target tranfer value');
+		}		
 
 		if (fee > target.value) {
 			return new Error('target value must be larger than the fee')
