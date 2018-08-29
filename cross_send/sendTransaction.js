@@ -158,7 +158,7 @@ module.exports = class sendTransaction{
                     txValue: trans.trans.value,
                     x : trans.Contract.key,
                     time : cur.toString(),
-                    HTLCtime: (100000+2*1000*Number(global.lockedTime)+cur).toString(),
+                    HTLCtime: (3000000+2*1000*Number(global.lockedTime)+newtime).toString(),
                     chain : chainType,
                     status : 'sentHashPending',
                     lockConfirmed:0,
