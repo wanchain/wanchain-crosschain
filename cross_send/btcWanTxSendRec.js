@@ -8,12 +8,12 @@ let NormalSend = require('../wanchaintrans/index.js').NormalSend
 let TokenSend = require('../wanchaintrans/interface/transaction.js').TokenSend
 const Web3 = require('web3')
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-let logDebug
+let logger;
 
 module.exports = class btcWanTxSendRec {
 
   constructor () {
-    logDebug = global.getLogger('sendTransaction')
+      logger = global.getLogger('sendTransaction')
   }
 
   insertLockData (ctx) {
@@ -51,8 +51,8 @@ module.exports = class btcWanTxSendRec {
           }
 
           let res = collection.insert(obj)
-          console.log('insert obj = ')
-          console.log(res)
+          logger.debug('insert obj = ')
+          logger.debug(res)
         })
 
       } else {
@@ -107,8 +107,8 @@ module.exports = class btcWanTxSendRec {
           value.btcRefundTxHash = trans.refundTxHash;
           //value.status = 'refundFinished';
           let res = collection.update(value);
-          console.log("refund item=");
-          console.log(res);
+          logger.debug("refund item=");
+          logger.debug(res);
 
         } else {
           return {error: new Error('Value not find in db')}
@@ -136,8 +136,8 @@ module.exports = class btcWanTxSendRec {
           value.btcRevokeTxHash = trans.revokeTxHash;
           value.status = 'revokeFinished'
           let res = collection.update(value)
-          console.log("revoke item=");
-          console.log(res);
+          logger.debug("revoke item=");
+          logger.debug(res);
         } else {
           return {error: new Error('Value not find in db')}
         }
@@ -167,8 +167,8 @@ module.exports = class btcWanTxSendRec {
           value.status = "sentHashPending";
 
           let res = collection.update(value)
-          console.log("wan notice item=");
-          console.log(res);
+          logger.debug("wan notice item=");
+          logger.debug(res);
         } else {
           return {error: new Error('Value not find in db')}
         }
