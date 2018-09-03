@@ -437,6 +437,13 @@ const Backend = {
 		let bs = pu.promisefy(sender.sendMessage, ['sendRawTransaction', signedTx], sender);
 		return bs;
 	},
+    btcSendRawTransaction(rawTx) {
+		if(config.isStoreman){
+			return client.sendRawTransaction(rawTx);
+		}else{
+			return this.sendRawTransaction(this.btcSender, rawTx);
+		}
+    },
 	getWanBalance(sender, addr) {
 		let bs = pu.promisefy(sender.sendMessage, ['getBalance', addr], sender);
 		return bs;
@@ -677,9 +684,18 @@ const Backend = {
         tx.setInputScript(0, redeemScriptSig);
 
         let rawTx = tx.toHex();
-        let result = await this.sendRawTransaction(this.btcSender, rawTx);
-        logger.debug('_revoke result hash:', result);
-        return result
+        let btcHash;
+        try {
+            if(config.isStoreman){
+                btcHash = await client.sendRawTransaction(rawTx);
+            }else{
+                btcHash = await this.sendRawTransaction(this.btcSender, rawTx);
+            }
+        }catch(err){
+            logger.error("_revoke error: ", err);
+        }
+        logger.debug('_revoke result hash:', btcHash);
+        return btcHash
     },
 	// when wbtc->btc,  storeman --> wallet.
 	//storeman is sender.  wallet is receiverKp.
@@ -721,8 +737,6 @@ const Backend = {
 		return res;
 	},
 	async _redeem(redeemScript, txid, x, receiverKp, value) {
-		//const redeemScript = contract['redeemScript'];
-
 		var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
 		txb.setVersion(1);
 		txb.addInput(txid, 0);
@@ -733,7 +747,7 @@ const Backend = {
 
 		const redeemScriptSig = bitcoin.payments.p2sh({
 			redeem: {
-				input: bitcoin.script.compile([  // TODO: alias is who
+				input: bitcoin.script.compile([
 					bitcoin.script.signature.encode(receiverKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
 					receiverKp.publicKey,
 					Buffer.from(x, 'hex'),
@@ -744,13 +758,15 @@ const Backend = {
 			network: bitcoin.networks.testnet
 		}).input;
 		tx.setInputScript(0, redeemScriptSig);
-		let lockS = bitcoin.script.toASM(redeemScriptSig).split(' ');
-		let sc2 = bitcoin.script.compile(Buffer.from(lockS[4], 'hex'));
-
 
 		let btcHash;
+        let rawTx = tx.toHex();
 		try {
-            btcHash = await this.sendRawTransaction(this.btcSender, tx.toHex());
+			if(config.isStoreman){
+                btcHash = await client.sendRawTransaction(rawTx);
+			}else{
+                btcHash = await this.sendRawTransaction(this.btcSender, rawTx);
+			}
         }catch(err){
 		    logger.error("redeem error: ", err);
         }
@@ -1119,7 +1135,6 @@ const Backend = {
   async btcLockSave (tx) {
     let newTrans = new btcWanTxSendRec()
     let ctx = this.formatInput(tx)
-
     if (ctx.error) {
       return
     }
@@ -1131,7 +1146,6 @@ const Backend = {
     }
 
     let res = newTrans.insertLockData(ctx)
-
     if (res != undefined) {
       logger.debug(res.toString())
     }

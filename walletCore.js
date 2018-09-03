@@ -17,6 +17,7 @@ const _ = require('underscore');
 let config = require('./config');
 let montimer;
 async function recordMonitor(config, ethSend,wanSend,btcSend){
+    if(config.isStoreman) return;
     await mr.init(config, ethSend,wanSend,btcSend);
     if(montimer){
         clearInterval(montimer);

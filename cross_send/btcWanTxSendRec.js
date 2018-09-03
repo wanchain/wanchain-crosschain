@@ -1,13 +1,7 @@
 'use strict'
 
 let dbname = 'crossTransDb'
-let wanHashXSend = require('../wanchaintrans/index.js').wanHashXSend
-let btcHashXSend = require('../wanchaintrans/index.js').btcHashXSend
 
-let NormalSend = require('../wanchaintrans/index.js').NormalSend
-let TokenSend = require('../wanchaintrans/interface/transaction.js').TokenSend
-const Web3 = require('web3')
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
 let logger;
 
 module.exports = class btcWanTxSendRec {
@@ -17,9 +11,7 @@ module.exports = class btcWanTxSendRec {
   }
 
   insertLockData (ctx) {
-
     let trans = ctx
-
     try {
       if (trans.crossType == 'BTC2WAN') {
         global.getCollectionCb(dbname, 'crossTransaction', function (collection) {
@@ -91,7 +83,6 @@ module.exports = class btcWanTxSendRec {
   }
 
   insertRefundData (trans, crossType) {
-
     try {
       global.getCollectionCb(dbname, 'crossTransaction', function (collection) {
         let value = null
@@ -103,7 +94,6 @@ module.exports = class btcWanTxSendRec {
         }
 
         if (value != null) {
-
           value.btcRefundTxHash = trans.refundTxHash;
           //value.status = 'refundFinished';
           let res = collection.update(value);
