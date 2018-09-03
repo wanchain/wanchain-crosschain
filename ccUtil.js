@@ -1,13 +1,12 @@
-'use strict'
+'use strict';
 
-var crypto = require('crypto')
-var secp256k1 = require('secp256k1')
+var crypto = require('crypto');
+var secp256k1 = require('secp256k1');
 const pu = require('promisefy-util');
 const wanUtil = require("wanchain-util");
 const Client = require('bitcoin-core');
 const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
-const bs58check = require('bs58check');
 
 
 const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
@@ -278,59 +277,39 @@ const Backend = {
 		let txhash = await pu.promisefy(newTrans.sendRevokeTrans, [passwd], newTrans);
 		return txhash;
 	},
-	getDepositOrigenLockEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositOriginLockEvent).toString('hex'), null, null, hashX];
-		let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-		return b;
-	},
 	getDepositWanNoticeEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositBtcLockNoticeEvent).toString('hex'), null, null, hashX];
+		let topics = [this.getEventHash(config.depositBtcLockNoticeEvent, config.HTLCWBTCInstAbi), null, null, hashX];
 		let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-		return b;
-	},
-	getWithdrawOrigenLockEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawOriginLockEvent).toString('hex'), null, null, hashX];
-		let b = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return b;
 	},
 	getWithdrawRevokeEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcRevokeEvent).toString('hex'), null, hashX];
+		let topics = [this.getEventHash(config.withdrawBtcRevokeEvent, config.HTLCWBTCInstAbi), null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
 
 	getWithdrawCrossLockEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
+		let topics = [this.getEventHash(config.withdrawBtcCrossLockEvent, config.HTLCWBTCInstAbi),null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
 		return p;
 	},
 	getBtcWithdrawStoremanNoticeEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcCrossLockEvent).toString('hex'), null, null, hashX];
+		let topics = [this.getEventHash(config.withdrawBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
 	getDepositCrossLockEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositBtcCrossLockEvent).toString('hex'), null, null, hashX];
+		let topics = [this.getEventHash(config.depositBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
 	getDepositRedeemEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositRedeemEvent).toString('hex'), null, null, hashX];
+		let topics = [this.getEventHash(config.depositRedeemEvent, config.HTLCWBTCInstAbi), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
 		return p;
 	},
-	getWithdrawOriginRefundEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawOriginRefundEvent).toString('hex'), null, null, hashX];
-		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-		return p;
-	},
 	getWithdrawBtcRedeemEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.withdrawBtcRedeemNoticeEvent).toString('hex'), null, null, hashX];
-		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
-		return p;
-	},
-	getDepositRevokeEvent(sender, hashX) {
-		let topics = ['0x' + wanUtil.sha3(config.depositOriginRevokeEvent).toString('hex'), null, hashX];
+		let topics = [this.getEventHash(config.withdrawBtcRedeemNoticeEvent, config.HTLCWBTCInstAbi), null, null, hashX];
 		let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
 		return p;
 	},
@@ -1092,16 +1071,8 @@ const Backend = {
         return '0x' + randomBuf.toString('hex');
     },
 
-    getBtcWanCrossdbCollection() {
-	    let clctNm = config.crossCollection;
-        if(clctNm == undefined){
-	        clctNm = "crossTransaction"
-        }
-        return this.getCollection(config.crossDbname, clctNm);
-    },
-
     getBtcWanTxHistory(option) {
-        this.collection = this.getBtcWanCrossdbCollection();
+        this.collection = this.getCollection();
         let Data = this.collection.find(option);
         let his = [];
         for (var i = 0; i < Data.length; ++i) {
