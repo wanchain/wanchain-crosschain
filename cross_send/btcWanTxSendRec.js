@@ -123,10 +123,9 @@ module.exports = class btcWanTxSendRec {
 
             if (value != null) {
                 value.btcRevokeTxHash = trans.revokeTxHash;
-                value.status = 'revokeFinished'
+                //value.status = 'revokeFinished'
                 let res = collection.update(value)
-                logger.debug("revoke item=");
-                logger.debug(res);
+                logger.debug("revoke item:", res);
             } else {
                 return {error: new Error('Value not find in db')}
             }

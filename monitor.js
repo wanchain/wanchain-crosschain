@@ -92,9 +92,6 @@ const MonitorRecord = {
                     this.updateRecord(record );
                 }
             } else {
-                // sender = this.getSenderbyChain("BTC");
-                // TODO: BTC X confirmation.
-                // receipt = await be.getWithdrawOriginRefundEvent(sender,'0x'+record.HashX);
                 let redeemTxHash = record.btcRefundTxHash;
                 let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
                 logger.debug("checkXOnline: ", btcTx);
@@ -109,20 +106,20 @@ const MonitorRecord = {
     },
     async checkRevokeOnline(chain, record){
         try {
-            let sender;
-            let receipt;
             if(record.chain == "BTC"){
-                sender = this.getSenderbyChain("BTC");
-                // TODO: BTC revoke.
-                receipt = await be.getDepositRevokeEvent(sender,'0x'+record.HashX);
+                let btcTx = await be.getBtcTransaction(be.btcSender, record.btcRevokeTxHash);
+                logger.debug("checkRevokeOnline: ", btcTx);
+                if(btcTx && btcTx.confirmations && btcTx.confirmations>=1){
+                    record.status = 'sentRevokeConfirming';
+                    this.updateRecord(record );
+                }
             }else {
-                sender = this.getSenderbyChain("WAN");
-                receipt = await be.getWithdrawRevokeEvent(sender,'0x'+record.HashX);
-            }
-
-            if(receipt && receipt.length>0){
-                record.status = 'sentRevokeConfirming';
-                this.updateRecord(record );
+                let sender = this.getSenderbyChain("WAN");
+                let receipt = await be.getWithdrawRevokeEvent(sender,'0x'+record.HashX);
+                if(receipt && receipt.length>0){
+                    record.status = 'sentRevokeConfirming';
+                    this.updateRecord(record );
+                }
             }
         }catch(err){
             //console.log("checkRevokeOnline:", err);
@@ -183,8 +180,6 @@ const MonitorRecord = {
     },
     async checkXConfirm(record, waitBlocks){
         try {
-            let sender;
-            let receipt;
             if(record.chain == "BTC"){
                 let sender = this.getSenderbyChain('WAN');
                 let receipt = await this.monitorTxConfirm(sender, '0x'+record.refundTxHash, waitBlocks);
@@ -212,17 +207,25 @@ const MonitorRecord = {
     },
 
 
-    async checkRevokeConfirm(chain, record, waitBlocks){
+    async checkRevokeConfirm(record, waitBlocks){
         try {
-            let sender = this.getSenderbyChain(chain);
-            let receipt = await this.monitorTxConfirm(sender, '0x'+record.revokeTxHash, waitBlocks);
-
-            if(receipt){
-                record.revokeConfirmed += 1;
-                if(record.revokeConfirmed >= config.confirmBlocks){
+            if(record.chain == "BTC"){
+                let btcTx = await be.getBtcTransaction(be.btcSender, record.btcRevokeTxHash);
+                logger.debug("checkRevokeConfirm: ", btcTx);
+                if(btcTx && btcTx.confirmations && btcTx.confirmations>=config.btcConfirmBlocks){
                     record.status = 'revokeFinished';
+                    this.updateRecord(record );
                 }
-                this.updateRecord(record);
+            }else{
+                let sender = this.getSenderbyChain("WAN");
+                let receipt = await this.monitorTxConfirm(sender, '0x'+record.revokeTxHash, waitBlocks);
+                if(receipt){
+                    record.revokeConfirmed += 1;
+                    if(record.revokeConfirmed >= config.confirmBlocks){
+                        record.status = 'revokeFinished';
+                    }
+                    this.updateRecord(record);
+                }
             }
         }catch(err){
             logger.error("checkRevokeConfirm:", err);
@@ -374,7 +377,13 @@ const MonitorRecord = {
                 // do nothing.
                 break;
             case 'waitingRevoke':
-                if(record.revokeTxHash){
+                let txhash;
+                if(record.chain == "BTC"){
+                    txhash = record.btcRevokeTxHash;
+                }else {
+                    txhash = record.revokeTxHash;
+                }
+                if(txhash){
                     record.status = 'sentRevokePending';
                     this.updateRecord(record);
                 }
@@ -384,7 +393,7 @@ const MonitorRecord = {
                 break;
             case 'sentRevokeConfirming':
                 waitBlock = record.lockConfirmed < config.confirmBlocks ? record.lockConfirmed: config.confirmBlocks;
-                await this.checkRevokeConfirm(record.chain, record, waitBlock);
+                await this.checkRevokeConfirm(record, waitBlock);
                 break;
 
             case 'sentXPending':
