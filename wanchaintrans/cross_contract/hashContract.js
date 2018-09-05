@@ -6,7 +6,7 @@ let IContract = require("../contract/IContract.js");
 const createKeccakHash = require('keccak');
 //let util = require('utility');
 const bitcoin  = require('bitcoinjs-lib');
-
+const cm = require('../../comm.js');
 
 let BTC2WBTCfunc = ['','btc2wbtcRefund','','BTC2WBTCLock'];
 let WBTC2BTCfunc = ['wbtc2btcLock','','wbtc2btcRevoke','WBTC2BTCLock'];
@@ -21,7 +21,7 @@ module.exports = class hashContract extends IContract
 {
     constructor(tokenAddress,storeman,crossAddress,crossType)
     {
-        let abi =  global.config.HTLCWBTCInstAbi;
+        let abi =  cm.config.HTLCWBTCInstAbi;
         if(crossType == 'BTC2WBTC')
             super(abi,BTC2WBTCfunc,tokenAddress);
         else

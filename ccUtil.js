@@ -7,6 +7,7 @@ const wanUtil = require("wanchain-util");
 const Client = require('bitcoin-core');
 const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
+const cm = require('./comm.js');
 
 
 const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
@@ -57,9 +58,9 @@ const Backend = {
 	},
 
 	async init(cfg, ethsender, wansender, btcsender, cb) {
-		config = cfg ? cfg : require('./config.js');
+		config = cfg ? cfg : cm.config;
 		this.config = config;
-		this.client = new Client(global.config.btcServer.testnet);
+		this.client = new Client(config.btcServer.testnet);
 		client = this.client;
 		this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
 			this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath),
@@ -528,7 +529,7 @@ const Backend = {
 	async btc2wbtcLock(senderKp,  ReceiverHash160Addr, value, hashx) {
 		// generate script and p2sh address
 		//let blocknum = await this.getBlockNumber(this.btcSender);
-		//let redeemLockTimeStamp = blocknum + global.config.lockTime;
+		//let redeemLockTimeStamp = blocknum + config.lockTime;
         let cur = Math.floor(Date.now()/1000);
         let redeemLockTimeStamp = cur + Number(global.lockedTime);
 		let x,wallet;
@@ -547,11 +548,11 @@ const Backend = {
 		};
 		let sendResult;
 		if(wallet){
-            sendResult = await this.btcTxBuildSendWallet(senderKp, target, global.config.feeRate);
+            sendResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
 
 		}else {
-			//senrResult = await this.btcTxBuildSendWallet(senderKp, target, global.config.feeRate);
-            sendResult = await this.btcTxBuildSendStoreman(senderKp, target, global.config.feeRate);
+			//senrResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
+            sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
 		}
 
         contract.hashx = hashx;
@@ -561,7 +562,7 @@ const Backend = {
         contract.txhash = sendResult.result;
         contract.x = x;
         contract.value = value;
-        contract.feeRate = global.config.feeRate;
+        contract.feeRate = config.feeRate;
         contract.fee = sendResult.fee;
 
         this.btcLockSave(contract)
@@ -606,7 +607,7 @@ const Backend = {
         contract.ReceiverHash160Addr = receiverH160Addr;
         contract.senderH160Addr = senderH160Addr
         contract.value = amount;
-        contract.feeRate = global.config.feeRate;
+        contract.feeRate = config.feeRate;
         contract.fee = config.feeHard;
 
         this.btcRevokeSave(contract);
@@ -648,7 +649,7 @@ const Backend = {
       contract.ReceiverHash160Addr = receiverH160Addr;
       contract.senderH160Addr = senderH160Addr
       contract.value = amount;
-      contract.feeRate = global.config.feeRate;
+      contract.feeRate = config.feeRate;
       contract.fee = config.feeHard;
 
       this.btcRevokeSave(contract);
@@ -726,7 +727,7 @@ const Backend = {
 	    contract.senderH160Addr = senderH160Addr
 	    contract.x = x;
 	    contract.value = value;
-	    contract.feeRate = global.config.feeRate;
+	    contract.feeRate = config.feeRate;
 	    contract.fee = config.feeHard;
 
 	    this.btcRedeemSave(contract);
@@ -1117,7 +1118,7 @@ const Backend = {
         ctx.hashx = this.hexTrip0x(tx.hashx)
       }
 
-      ctx.feeRate = global.config.feeRate
+      ctx.feeRate = config.feeRate
       ctx.fee = tx.fee
       ctx.crossType = 'BTC2WAN'
       ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp

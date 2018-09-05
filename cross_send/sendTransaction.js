@@ -6,6 +6,7 @@ let wanHashXSend = require('../wanchaintrans/index.js').wanHashXSend;
 let ethHashXSend = require('../wanchaintrans/index.js').ethHashXSend;
 let NormalSend = require('../wanchaintrans/index.js').NormalSend;
 let TokenSend = require("../wanchaintrans/interface/transaction.js").TokenSend;
+const cm = require('../comm.js');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 let logDebug;
@@ -20,8 +21,8 @@ module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
         logDebug = global.getLogger('sendTransaction');
-        let wanSc = web3.eth.contract(global.config.HTLCWBTCInstAbi);
-        this.wanIns = wanSc.at(global.config.wanchainHtlcAddr);
+        let wanSc = web3.eth.contract(cm.config.HTLCWBTCInstAbi);
+        this.wanIns = wanSc.at(cm.config.wanchainHtlcAddr);
     }
     // the min decimal,wei.
     createTransaction(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce){

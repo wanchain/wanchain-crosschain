@@ -31,7 +31,6 @@ class walletcore  {
     constructor(cfg){
         _.extend(config, cfg);
         cm.setConfig(config);
-        global.config = config;
         this.socketUrl = config.socketUrl;
         global.getLogger = config.getLogger;
         this.wanSend = new sendFromSocket(null,'WAN');
@@ -54,7 +53,7 @@ class walletcore  {
         this.wanSend.socket.connection.close();
     }
     async reinit(){
-        let config = global.config;
+        let config = cm.config;
         this.wanSend.socket.connection.close();
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
@@ -74,7 +73,7 @@ class walletcore  {
         });
     }    
     async init(){
-        let config = global.config;
+        let config = cm.config;
         global.getCollection = this.getCollection;
         global.getCollectionCb = this.getCollectionCb;
         global.EthKeyStoreDir = this.EthKeyStoreDir;

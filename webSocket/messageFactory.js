@@ -1,5 +1,7 @@
 "use strict";
 
+const cm = require('../comm.js');
+
 let socketmessage = require("../wanchainsender/index.js").socketmessage;
 module.exports = {
     chainType : ["WAN","ETH"],
@@ -13,7 +15,7 @@ module.exports = {
         return new socketmessage('getMultiBalances',{address:address},'balance',chainType,callBack);
     },
     getMultiTokenBalance(address,chainType,callBack){
-        return new socketmessage('getMultiTokenBalance',{address:address, tokenScAddr:global.config.WBTCToken},'tokenBalance',chainType,callBack);
+        return new socketmessage('getMultiTokenBalance',{address:address, tokenScAddr:cm.config.WBTCToken},'tokenBalance',chainType,callBack);
     },
     getGasPrice(chainType, callBack){
         return new socketmessage('getGasPrice',{}, "gasPrice", chainType, callBack);
