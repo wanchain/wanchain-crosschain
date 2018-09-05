@@ -15,6 +15,7 @@ function hexTrip0x(hexs){
 	}
 	return hexs;
 }
+let self;
 
 module.exports = class sendTransaction{
     constructor(sendServer){
@@ -22,6 +23,7 @@ module.exports = class sendTransaction{
         logDebug = cm.getLogger('sendTransaction');
         let wanSc = web3.eth.contract(cm.config.HTLCWBTCInstAbi);
         this.wanIns = wanSc.at(cm.config.wanchainHtlcAddr);
+        self = this;
     }
     // the min decimal,wei.
     createTransaction(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce){
@@ -170,7 +172,7 @@ module.exports = class sendTransaction{
             });
     }
     insertNormalData(trans,result,chainType){
-        let collection =  this.getBtcCrossCollection();
+        let collection =  self.getBtcCrossCollection();
         collection.insert(
             {
                 from : trans.trans.from,
@@ -184,7 +186,7 @@ module.exports = class sendTransaction{
     }
 
     insertRefundData(trans,result){
-        let collection =  this.getBtcCrossCollection();
+        let collection =  self.getBtcCrossCollection();
         let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
         if(value){
             value.refundTxHash = hexTrip0x(result);
@@ -192,7 +194,7 @@ module.exports = class sendTransaction{
         }
     }
     insertRevokeData(trans,result){
-        let collection =  this.getBtcCrossCollection();
+        let collection =  self.getBtcCrossCollection();
         let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
         if(value){
             value.revokeTxHash = hexTrip0x(result);
