@@ -1,6 +1,6 @@
 "use strict";
 
-let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
+//let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let sendTransaction = require('./cross_send/sendTransaction.js');
 let crosschain = require('./dbDefine/crossTransDefine.js');
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
@@ -13,6 +13,7 @@ let socketServer = require("./wanchainsender/index.js").socketServer;
 const mr =  require('./monitor.js').MonitorRecord;
 const be =  require('./ccUtil.js').Backend;
 const btcUtil =  require('./btcUtil.js').btcUtil;
+const LokiDb = require('./wanchaindb/lib/lokiDbCollection');
 const _ = require('underscore');
 let config = require('./config');
 const cm = require('./comm.js');
@@ -32,14 +33,14 @@ class walletcore  {
         _.extend(config, cfg);
         cm.setConfig(config);
         this.socketUrl = config.socketUrl;
-        global.getLogger = config.getLogger;
+        cm.getLogger = config.getLogger;
         this.wanSend = new sendFromSocket(null,'WAN');
         this.ethSend = new sendFromSocket(null,'ETH');
         this.btcSend = new sendFromSocket(null,'BTC');
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath);
         this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath);
-        this.databaseGroup = databaseGroup;
-        databaseGroup.useDatabase(config.databasePath,[crosschain]);
+        // this.databaseGroup = databaseGroup;
+        // databaseGroup.useDatabase(config.databasePath,[crosschain]);
         this.be = be;
         this.btcUtil = btcUtil;
         this.sendFromSocket = sendFromSocket;
@@ -47,9 +48,11 @@ class walletcore  {
     }
     close(){
         clearInterval(montimer);
-        for (var key in databaseGroup.databaseAry) {
-            databaseGroup.databaseAry[key].db.close();
-        }
+        // for (var key in databaseGroup.databaseAry) {
+        //     databaseGroup.databaseAry[key].db.close();
+        // }
+        cm.crossDb.close();
+        cm.walletDb.close();
         this.wanSend.socket.connection.close();
     }
     async reinit(){
@@ -74,15 +77,21 @@ class walletcore  {
     }    
     async init(){
         let config = cm.config;
-        global.getCollection = this.getCollection;
-        global.getCollectionCb = this.getCollectionCb;
+        //global.getCollection = this.getCollection;
         global.EthKeyStoreDir = this.EthKeyStoreDir;
         global.WanKeyStoreDir = this.WanKeyStoreDir;
 
-        for (var key in databaseGroup.databaseAry) {
-            await databaseGroup.databaseAry[key].init();
-        }
-        databaseGroup.inited = true;
+        let crossDb = new LokiDb(cm.config.crossDbname);
+        await crossDb.loadDatabase();
+        cm.crossDb = crossDb;
+        let walletDb = new LokiDb(cm.config.btcWallet);
+        await walletDb.loadDatabase();
+        cm.walletDb = walletDb;
+
+        // for (var key in databaseGroup.databaseAry) {
+        //     await databaseGroup.databaseAry[key].init();
+        // }
+        // databaseGroup.inited = true;
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
         this.ethSend.socket = newWebSocket;
@@ -104,22 +113,22 @@ class walletcore  {
         let sendGroup = ChainType == 'BTC' ? this.btcSend : this.wanSend;
         return new sendTransaction(sendGroup);
     }
-    getCollection(dbName,collectionName){
-        return databaseGroup.getCollection(dbName,collectionName);
-    }
-    loadDatabase(dbName, cb){
-        return databaseGroup.databaseAry[dbName].db.loadDatabase({},cb);
-    }
+    // getCollection(dbName,collectionName){
+    //     return databaseGroup.getCollection(dbName,collectionName);
+    // }
+    // loadDatabase(dbName, cb){
+    //     return databaseGroup.databaseAry[dbName].db.loadDatabase({},cb);
+    // }
 
-    async getCollectionCb(dbName,collectionName, cb){
-        if(!databaseGroup.inited){
-            for (var key in databaseGroup.databaseAry) {
-                await databaseGroup.databaseAry[key].init();
-            }
-        }
-        let collection = databaseGroup.getCollection(dbName,collectionName);
-        cb(collection);
-    }
+    // async getCollectionCb(dbName,collectionName, cb){
+    //     if(!databaseGroup.inited){
+    //         for (var key in databaseGroup.databaseAry) {
+    //             await databaseGroup.databaseAry[key].init();
+    //         }
+    //     }
+    //     let collection = databaseGroup.getCollection(dbName,collectionName);
+    //     cb(collection);
+    // }
     CreaterSender(ChainType) {
         if(this.socketUrl){
             return new sendFromSocket(new socketServer(this.socketUrl,messageFactory),ChainType);
@@ -130,4 +139,4 @@ class walletcore  {
     }
 
 }
-module.exports = global.walletcore = walletcore;
+module.exports  = walletcore;

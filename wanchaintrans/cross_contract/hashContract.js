@@ -26,7 +26,7 @@ module.exports = class hashContract extends IContract
             super(abi,BTC2WBTCfunc,tokenAddress);
         else
             super(abi,WBTC2BTCfunc,tokenAddress);
-        logDebug = global.getLogger('wanchainTrans');
+        logDebug = cm.getLogger('wanchainTrans');
         this.storeman = storeman;
         this.crossAddress = crossAddress;
         this.key = this.generatePrivateKey();

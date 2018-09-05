@@ -1,6 +1,7 @@
 "use strict";
 
 const WebSocket = require('ws');
+const cm = require('../../comm.js');
 const wsOptions = {
   'handshakeTimeout': 30000,
     rejectUnauthorized: false
@@ -12,7 +13,7 @@ module.exports = class socketServer{
         let self = this;
         this.connection = new WebSocket(url, wsOptions);
         this.messageFactory = messageFactory;
-        logDebug = global.getLogger('socketServer');
+        logDebug = cm.getLogger('socketServer');
         this.connection.onerror = function (error) {
             logDebug.error('[+webSocket onError+]', error.toString());
         };

@@ -84,11 +84,8 @@ const Backend = {
 		return new sendTransaction(sender);
 	},
 
-	getCollection(dbName, collectionName) {
-		return databaseGroup.getCollection(dbName, collectionName);
-	},
 	getCrossdbCollection() {
-		return this.getCollection(config.crossDbname, config.crossCollection);
+        return  cm.crossDb.getCollection(cm.config.crossCollection);
 	},
 	async getSenderbyChain(chainType) {
 		let sender;

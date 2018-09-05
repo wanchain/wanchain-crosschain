@@ -1,10 +1,11 @@
 "use strict";
 
 let logDebug;
+const cm = require('../../comm.js');
 module.exports = class SendFromSocket{
     constructor(socket,chainType){
         this.socket = socket;
-        logDebug = global.getLogger('socketmessage');
+        logDebug = cm.getLogger('socketmessage');
         this.chainType = chainType;
     }
     close(){

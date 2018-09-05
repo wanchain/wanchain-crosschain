@@ -8,7 +8,6 @@ const bip38 = require('bip38');
 const crypto = require('crypto');
 //const cluster = require('cluster');
 const config = require('./config');
-const LokiDb = require('./wanchaindb/lib/lokiDbCollection');
 const print4debug = console.log;
 const secp256k1 = require("secp256k1");
 const cm = require('./comm.js');
@@ -21,14 +20,9 @@ function hexTrip0x(hexs){
     }
     return hexs;
 }
-let walletDb;
 const btcUtil = {
-    async getBtcWallet(){
-        if(!walletDb) {
-            walletDb = new LokiDb(cm.config.btcWallet);
-            await walletDb.loadDatabase();            
-        } 
-        return  walletDb.getCollection('btcAddress');
+    getBtcWallet(){
+        return  cm.walletDb.getCollection('btcAddress');
     },
     getAddressbyKeypair(keypair) {
         const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoinNetwork});
@@ -104,7 +98,7 @@ const btcUtil = {
 	async getECPairsbyAddr(passwd, addr) {
 		let filter = {};
 		if(addr){filter.address = addr};
-        let collection = await this.getBtcWallet();
+        let collection = this.getBtcWallet();
         let encryptedKeyResult = collection.find(filter);
 
 		let ECPairArray = [];
@@ -128,15 +122,14 @@ const btcUtil = {
 	},
 
     async getAddressList() {
-        let collection = await this.getBtcWallet();
+        let collection = this.getBtcWallet();
         let btcAddressList = collection.find();
         return btcAddressList;
     },
 
     async createAddress(passwd) {
             try {
-                let btcAddress = await this.getBtcWallet();
-                console.log("btcAddress:", btcAddress.find());
+                let btcAddress = this.getBtcWallet();
                 let result = btcAddress.get(1);
 
                 if (result) {

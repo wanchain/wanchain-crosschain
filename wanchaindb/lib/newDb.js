@@ -7,6 +7,7 @@ const Loki = require('lokijs');
 let collections = require('./collections.js');
 const path = require('path');
 let logDebug;
+const cm = require('../../comm.js');
 
 function mkdirsSync(dirname) {
     if (fs.existsSync(dirname)) {
@@ -25,7 +26,7 @@ module.exports = class wandb
         this.dbName = databaseDefine.name;
         this.db = null;
         this.collections = new collections(this,databaseDefine.collections);
-        logDebug = global.getLogger('wanchaindb');
+        logDebug = cm.getLogger('wanchaindb');
         this.filePath = filePath;
     }
     init() {

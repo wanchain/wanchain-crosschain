@@ -1,7 +1,6 @@
 "use strict";
 
 
-let dbname = 'crossTransDb';
 let wanHashXSend = require('../wanchaintrans/index.js').wanHashXSend;
 let ethHashXSend = require('../wanchaintrans/index.js').ethHashXSend;
 let NormalSend = require('../wanchaintrans/index.js').NormalSend;
@@ -20,7 +19,7 @@ function hexTrip0x(hexs){
 module.exports = class sendTransaction{
     constructor(sendServer){
         this.sendServer = sendServer;
-        logDebug = global.getLogger('sendTransaction');
+        logDebug = cm.getLogger('sendTransaction');
         let wanSc = web3.eth.contract(cm.config.HTLCWBTCInstAbi);
         this.wanIns = wanSc.at(cm.config.wanchainHtlcAddr);
     }
@@ -66,10 +65,13 @@ module.exports = class sendTransaction{
             this.trans.setAccount(EthKeyStoreDir);
         }
     }
+    getBtcCrossCollection(){
+        return  cm.crossDb.getCollection(cm.config.crossCollection);
+    }
 
     createRefundFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPrice,crossType,nonce){
         let self = this;
-        let collection = global.getCollection(dbname,'crossTransaction');
+        let collection =  this.getBtcCrossCollection();
         let lockTrans = collection.findOne({lockTxHash : lockTxHash});
         if(lockTrans) {
             self.createTransaction(lockTrans.crossAdress, tokenAddress, amountWan, storeman,
@@ -79,7 +81,7 @@ module.exports = class sendTransaction{
     }
     createRevokeFromLockTransaction(lockTxHash,tokenAddress,amountWan,storeman,wanAddress,gas,gasPrice,crossType,nonce){
         let self = this;
-        let collection = global.getCollection(dbname,'crossTransaction');
+        let collection =  this.getBtcCrossCollection();
         let lockTrans = collection.findOne({lockTxHash : lockTxHash});
         if(lockTrans) {
             self.createTransaction(lockTrans.from, tokenAddress, amountWan, storeman,
@@ -146,64 +148,59 @@ module.exports = class sendTransaction{
         })
     }
     insertLockData(trans,result,chainType){
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let cur = Date.now();
-            collection.insert(
-                {
-                    HashX : hexTrip0x(trans.Contract.hashKey),
-                    from : trans.trans.from,
-                    to : trans.trans.to,
-                    storeman:trans.Contract.storeman,
-                    crossAdress : trans.Contract.crossAddress,
-                    value : trans.amount,
-                    txValue: trans.trans.value,
-                    x : trans.Contract.key,
-                    time : cur.toString(),
-                    HTLCtime: (3000000+2*1000*Number(global.lockedTime)+cur).toString(),
-                    chain : chainType,
-                    status : 'sentHashPending',
-                    lockConfirmed:0,
-                    refundConfirmed:0,
-                    revokeConfirmed:0,
-                    lockTxHash: hexTrip0x(result),
-                    refundTxHash : '',
-                    revokeTxHash : '',
+        let collection =  this.getBtcCrossCollection();
+        let cur = Date.now();
+        collection.insert(
+            {
+                HashX : hexTrip0x(trans.Contract.hashKey),
+                from : trans.trans.from,
+                to : trans.trans.to,
+                storeman:trans.Contract.storeman,
+                crossAdress : trans.Contract.crossAddress,
+                value : trans.amount,
+                txValue: trans.trans.value,
+                x : trans.Contract.key,
+                time : cur.toString(),
+                HTLCtime: (3000000+2*1000*Number(global.lockedTime)+cur).toString(),
+                chain : chainType,
+                status : 'sentHashPending',
+                lockConfirmed:0,
+                refundConfirmed:0,
+                revokeConfirmed:0,
+                lockTxHash: hexTrip0x(result),
+                refundTxHash : '',
+                revokeTxHash : '',
 
-                });
-        })
-
+            });
     }
     insertNormalData(trans,result,chainType){
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            collection.insert(
-                {
-                    from : trans.trans.from,
-                    to : trans.trans.to,
-                    value : web3.fromWei(trans.trans.value).toString(10),
-                    time : Date.now().toString(),
-                    txhash: result,
-                    chain : chainType,
+        let collection =  this.getBtcCrossCollection();
+        collection.insert(
+            {
+                from : trans.trans.from,
+                to : trans.trans.to,
+                value : web3.fromWei(trans.trans.value).toString(10),
+                time : Date.now().toString(),
+                txhash: result,
+                chain : chainType,
 
-                });
-        });
+            });
     }
 
     insertRefundData(trans,result){
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
-            if(value){
-                value.refundTxHash = hexTrip0x(result);
-                collection.update(value);
-            }
-        });
+        let collection =  this.getBtcCrossCollection();
+        let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
+        if(value){
+            value.refundTxHash = hexTrip0x(result);
+            collection.update(value);
+        }
     }
     insertRevokeData(trans,result){
-        global.getCollectionCb(dbname,'crossTransaction', function(collection){
-            let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
-            if(value){
-                value.revokeTxHash = hexTrip0x(result);
-                collection.update(value);
-            }
-        });
+        let collection =  this.getBtcCrossCollection();
+        let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
+        if(value){
+            value.revokeTxHash = hexTrip0x(result);
+            collection.update(value);
+        }
     }
 }

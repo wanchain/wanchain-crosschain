@@ -2,6 +2,8 @@
 
 let index = 0;
 let logDebug;
+const cm = require('../../comm.js');
+
 module.exports = class socketmessage{
     constructor(action,parameters,result,chainType,callBack){
         this.message = {
@@ -9,7 +11,7 @@ module.exports = class socketmessage{
             action : action,
             parameters : parameters,
         }
-        logDebug = global.getLogger('socketmessage');
+        logDebug = cm.getLogger('socketmessage');
         this.message.parameters.chainType = chainType;
         this.result = result;
         this.callback = callBack;
