@@ -31,7 +31,7 @@ module.exports = class wandb
     init() {
         var temp = this;
         mkdirsSync(this.filePath);
-        let filePath = this.filePath + '/' + this.dbName;
+        let filePath = path.join(this.filePath,  this.dbName);
     //    web3Require.logger.debug(filePath);
         return Q.try(() => {
             // if db file doesn't exist then create it

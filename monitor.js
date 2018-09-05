@@ -36,7 +36,7 @@ const MonitorRecord = {
     },
 
     monitorTask(){
-        let collection = be.getCollection();
+        let collection = be.getCrossdbCollection();
         let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;

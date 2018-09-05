@@ -15,6 +15,7 @@ const be =  require('./ccUtil.js').Backend;
 const btcUtil =  require('./btcUtil.js').btcUtil;
 const _ = require('underscore');
 let config = require('./config');
+const cm = require('./comm.js');
 let montimer;
 async function recordMonitor(config, ethSend,wanSend,btcSend){
     if(config.isStoreman) return;
@@ -29,6 +30,7 @@ async function recordMonitor(config, ethSend,wanSend,btcSend){
 class walletcore  {
     constructor(cfg){
         _.extend(config, cfg);
+        cm.setConfig(config);
         global.config = config;
         this.socketUrl = config.socketUrl;
         global.getLogger = config.getLogger;

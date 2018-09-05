@@ -13,7 +13,7 @@ const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
 
 
 function getAddress(keypair) {
-	const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet});
+	const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: config.bitcoinNetwork});
 	return pkh.address;
 }
 
@@ -35,11 +35,8 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-const MAX_CONFIRM_BLKS = 10000000
-const MIN_CONFIRM_BLKS = 0
-
-const network = bitcoin.networks.testnet
-
+const MAX_CONFIRM_BLKS = 10000000;
+const MIN_CONFIRM_BLKS = 1;
 
 function keyPairArray2AddrArray(kps) {
 	let addrs = [];
@@ -378,7 +375,7 @@ const Backend = {
 		try {
 			let rewTx = await client.getRawTransaction(txHash);
 			//ccUtil.getTxInfo();
-			let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), bitcoin.networks.testnet);
+			let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), config.bitcoinNetwork);
 			console.log("verifyBtcUtxo ctx:", ctx);
 			if (ctx) {
 				return ctx.outs[0].value;
@@ -394,7 +391,7 @@ const Backend = {
 	//         let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
 	//         let p2sh = contract['p2sh'];
 	//         let rawTx = await client.getRawTransaction(txHash);
-	//         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),bitcoin.networks.testnet);
+	//         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),config.bitcoinNetwork);
 	//         console.log("verifyBtcUtxo ctx:", ctx);
 	//         let outs = ctx.outs;
 	//         let i;
@@ -583,13 +580,13 @@ const Backend = {
 	// wallet api, use api server.
 	async getUtxoValueByIdWallet(txid) {
 		let rawTx = await this.getRawTransaction(this.btcSender, txid);
-		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'), bitcoin.networks.testnet);
+		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'), config.bitcoinNetwork);
 		return ctx.outs[0].value;
 	},
 	// wallet api, use client.
 	async getUtxoValueByIdStoreman(txid) {
 		let rawTx = await client.getRawTransaction(txid);
-		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'), bitcoin.networks.testnet);
+		let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'), config.bitcoinNetwork);
 		return ctx.outs[0].value;
 	},
 
@@ -661,7 +658,7 @@ const Backend = {
     },
     // call this function to revoke locked btc
     async _revoke(hashx, txid,vout,amount, redeemScript, redeemLockTimeStamp, revokerKeyPair) {
-        let txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+        let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
         txb.setLockTime(redeemLockTimeStamp);
         txb.setVersion(1);
         txb.addInput(txid, vout, 0);
@@ -737,7 +734,7 @@ const Backend = {
 		return res;
 	},
 	async _redeem(redeemScript, txid, x, receiverKp, value) {
-		var txb = new bitcoin.TransactionBuilder(bitcoin.networks.testnet);
+		var txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
 		txb.setVersion(1);
 		txb.addInput(txid, 0);
 		txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - config.feeHard));
@@ -755,7 +752,7 @@ const Backend = {
 				]),
 				output: redeemScript,
 			},
-			network: bitcoin.networks.testnet
+			network: config.bitcoinNetwork
 		}).input;
 		tx.setInputScript(0, redeemScriptSig);
 
@@ -906,7 +903,7 @@ const Backend = {
 
 		logger.debug('fee', fee)
 
-		let txb = new bitcoin.TransactionBuilder(network)
+		let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
 
 		for (i = 0; i < inputs.length; i++) {
 			let inItem = inputs[i]
@@ -1059,7 +1056,7 @@ const Backend = {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     getAddress(keypair) {
-        let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoin.networks.testnet})
+        let pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: config.bitcoinNetwork})
         return pkh.address
     },
 
@@ -1088,7 +1085,7 @@ const Backend = {
     },
 
     getBtcWanTxHistory(option) {
-        this.collection = this.getCollection();
+        this.collection = this.getCrossdbCollection();
         let Data = this.collection.find(option);
         let his = [];
         for (var i = 0; i < Data.length; ++i) {
