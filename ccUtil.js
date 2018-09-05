@@ -60,7 +60,7 @@ const Backend = {
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : cm.config;
 		this.config = config;
-		this.client = new Client(config.btcServer.testnet);
+		this.client = new Client(config.btcServerNet);
 		client = this.client;
 		this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
 			this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath),
