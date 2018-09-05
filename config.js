@@ -20,25 +20,25 @@ config.bitcoinVersion = 0xef;
 //config.host = 'http://localhost'; // http://localhost
 
 if (process.platform === 'darwin') {
-    config.rpcIpcPath = path.join(process.env.HOME, '/Library/Wanchain/'+wanchainNet+'gwan.ipc');
+    config.rpcIpcPath = path.join(process.env.HOME, '/Library/Wanchain',wanchainNet,'gwan.ipc');
 } else if (process.platform === 'freebsd' || process.platform === 'linux' || process.platform === 'sunos') {
-    config.rpcIpcPath = path.join(process.env.HOME, '/.wanchain/'+wanchainNet+'gwan.ipc');
+    config.rpcIpcPath = path.join(process.env.HOME, '.wanchain',wanchainNet,'gwan.ipc');
 } else if (process.platform === 'win32') {
     config.rpcIpcPath = '\\\\.\\pipe\\gwan.ipc';
 }
 
 if (process.platform === 'darwin') {
-    config.keyStorePath = path.join(process.env.HOME, '/Library/wanchain/'+wanchainNet+'keystore');
+    config.keyStorePath = path.join(process.env.HOME, '/Library/wanchain/',wanchainNet,'keystore');
 }else if (process.platform === 'freebsd' || process.platform === 'linux' || process.platform === 'sunos') {
-    config.keyStorePath = path.join(process.env.HOME, '/.wanchain/'+wanchainNet+'keystore');
+    config.keyStorePath = path.join(process.env.HOME, '.wanchain',wanchainNet,'keystore');
 } else if(process.platform === 'win32') {
     config.keyStorePath = path.join(process.env.APPDATA, 'wanchain', wanchainNet, 'keystore');
 }
 
 if (process.platform === 'darwin') {
-    config.ethkeyStorePath = path.join(process.env.HOME, '/Library/ethereum/'+ethereumNet+'keystore/');
+    config.ethkeyStorePath = path.join(process.env.HOME, '/Library/ethereum/',ethereumNet,'keystore/');
 }else if (process.platform === 'freebsd' || process.platform === 'linux' || process.platform === 'sunos') {
-    config.ethkeyStorePath = path.join(process.env.HOME, '/.ethereum/'+ethereumNet+'keystore');
+    config.ethkeyStorePath = path.join(process.env.HOME, '.ethereum',ethereumNet,'keystore');
 } else if(process.platform === 'win32') {
     config.ethkeyStorePath = path.join(process.env.APPDATA, 'ethereum', ethereumNet, 'keystore');
 }
