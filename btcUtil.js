@@ -93,7 +93,7 @@ const btcUtil = {
     },
 
     async getECPairs(passwd) {
-        return getECPairsbyAddr(passwd);
+        return this.getECPairsbyAddr(passwd);
     },
 	async getECPairsbyAddr(passwd, addr) {
 		let filter = {};
@@ -108,8 +108,11 @@ const btcUtil = {
 				let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork);
 				ECPairArray.push(alice);
 			}
-
-			return ECPairArray[0];
+            if(addr){
+                return ECPairArray[0];
+            }else {
+                return ECPairArray;
+            }
 		} catch (err) {
 			if (err.code === 'ERR_ASSERTION') {
 				print4debug('password wrong!');

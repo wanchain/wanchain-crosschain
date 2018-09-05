@@ -73,8 +73,8 @@ const Backend = {
 		logger = config.getLogger("crossChainUtil");
 		this.ethAddrs = Object.keys(this.EthKeyStoreDir.getAccounts());
 		this.wanAddrs = Object.keys(this.WanKeyStoreDir.getAccounts());
-		global.lockedTime = await this.getWanLockTime(this.wanSender);
-        logger.debug("global.lockedTime: ", global.lockedTime);
+        cm.lockedTime = await this.getWanLockTime(this.wanSender);
+        logger.debug("lockedTime: ", cm.lockedTime);
 		this.c2wRatio = await this.getBtcC2wRatio(this.wanSender);
         logger.debug("this.c2wRatio:", this.c2wRatio);
 		if (cb) cb();
@@ -528,13 +528,13 @@ const Backend = {
 		//let blocknum = await this.getBlockNumber(this.btcSender);
 		//let redeemLockTimeStamp = blocknum + config.lockTime;
         let cur = Math.floor(Date.now()/1000);
-        let redeemLockTimeStamp = cur + Number(global.lockedTime);
+        let redeemLockTimeStamp = cur + Number(cm.lockedTime);
 		let x,wallet;
 		if(!hashx){
 			wallet = true;
 			x = this.generatePrivateKey().slice(2); // hex string without 0x
 			hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
-			redeemLockTimeStamp = cur + 2*Number(global.lockedTime);// wallet need double.
+			redeemLockTimeStamp = cur + 2*Number(cm.lockedTime);// wallet need double.
 		}
 		let senderH160Addr = bitcoin.crypto.hash160(senderKp[0].publicKey).toString('hex');
 		let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);

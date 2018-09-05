@@ -3,6 +3,7 @@
 const pu = require('promisefy-util');
 let config;
 const be = require('./ccUtil.js').Backend;
+const cm = require('./comm.js');
 
 let backendConfig = {};
 let logger;
@@ -169,8 +170,8 @@ const MonitorRecord = {
                     let block = await be.getBlockByNumber(sender, receipt.blockNumber)
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
-                    record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
-                    record.HTLCtime = (3000000+2*1000*Number(global.lockedTime)+newtime).toString();
+                    record.suspendTime = (1000*Number(cm.lockedTime)+newtime).toString();
+                    record.HTLCtime = (3000000+2*1000*Number(cm.lockedTime)+newtime).toString();
                 }else{
                     record.status = 'sentHashFailed';
                 }

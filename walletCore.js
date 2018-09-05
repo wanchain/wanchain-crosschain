@@ -77,9 +77,8 @@ class walletcore  {
     }    
     async init(){
         let config = cm.config;
-        //global.getCollection = this.getCollection;
-        global.EthKeyStoreDir = this.EthKeyStoreDir;
-        global.WanKeyStoreDir = this.WanKeyStoreDir;
+        cm.EthKeyStoreDir = this.EthKeyStoreDir;
+        cm.WanKeyStoreDir = this.WanKeyStoreDir;
 
         let crossDb = new LokiDb(cm.config.crossDbname);
         await crossDb.loadDatabase();

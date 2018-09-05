@@ -25,24 +25,22 @@ module.exports = class sendTransaction{
     }
     // the min decimal,wei.
     createTransaction(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce){
-        let WanKeyStoreDir = global.WanKeyStoreDir;
-        let EthKeyStoreDir = global.EthKeyStoreDir;
         if(this.sendServer.chainType == 'WAN'){
             this.trans = new wanHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
-            this.trans.setAccount(WanKeyStoreDir);
+            this.trans.setAccount(cm.WanKeyStoreDir);
         }
         else
         {
             this.trans = new ethHashXSend(from,tokenAddress,amount,storeman,wanAddress,gas,gasPrice,crossType,nonce);
-            this.trans.setAccount(EthKeyStoreDir);
+            this.trans.setAccount(cm.EthKeyStoreDir);
         }
     }
 
     createDepositNotice(from, storeman,userH160,hashx,txhash, lockedTimestamp, gas, pasPrice){
         let payload = this.wanIns.btc2wbtcLockNotice.getData(storeman,userH160,hashx,txhash, lockedTimestamp);
         // TokenSend(from, to, gas, gasprice nonce);
-        this.trans = new TokenSend(from, config.wanchainHtlcAddr, gas, pasPrice);
-        this.trans.setAccount(WanKeyStoreDir);
+        this.trans = new TokenSend(from, cm.config.wanchainHtlcAddr, gas, pasPrice);
+        this.trans.setAccount(cm.WanKeyStoreDir);
         this.trans.trans.data = payload;
         // console.log(this.trans);
     }
@@ -53,16 +51,14 @@ module.exports = class sendTransaction{
         })
     }
     createNormalTransaction(from,to,amount,gas,gasPrice,nonce){
-        let WanKeyStoreDir = global.WanKeyStoreDir;
-        let EthKeyStoreDir = global.EthKeyStoreDir;
         this.trans = new NormalSend(from,to,amount,gas,gasPrice,nonce);
         this.trans.ChainType = this.sendServer.chainType
         if(this.sendServer.chainType == 'WAN'){
-            this.trans.setAccount(WanKeyStoreDir);
+            this.trans.setAccount(cm.WanKeyStoreDir);
         }
         else
         {
-            this.trans.setAccount(EthKeyStoreDir);
+            this.trans.setAccount(cm.EthKeyStoreDir);
         }
     }
     getBtcCrossCollection(){
@@ -161,7 +157,7 @@ module.exports = class sendTransaction{
                 txValue: trans.trans.value,
                 x : trans.Contract.key,
                 time : cur.toString(),
-                HTLCtime: (3000000+2*1000*Number(global.lockedTime)+cur).toString(),
+                HTLCtime: (3000000+2*1000*Number(cm.lockedTime)+cur).toString(),
                 chain : chainType,
                 status : 'sentHashPending',
                 lockConfirmed:0,
