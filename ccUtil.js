@@ -370,9 +370,9 @@ const Backend = {
 	// storeman
 	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp) { // utxo.amount
 		try {
-			let rewTx = await client.getRawTransaction(txHash);
+			let ctx = await client.getTransaction(txHash,true);
 			//ccUtil.getTxInfo();
-			let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), config.bitcoinNetwork);
+			//let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), config.bitcoinNetwork);
 			console.log("verifyBtcUtxo ctx:", ctx);
 			if (ctx) {
 				return ctx.outs[0].value;
