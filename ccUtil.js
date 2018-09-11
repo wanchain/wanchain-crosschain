@@ -352,7 +352,6 @@ const Backend = {
 	},
 	async getBtcUtxo(sender, minconf, maxconf, addresses) {
 		let utxos = await this._getBtcUtxo(sender, minconf, maxconf, addresses);
-		let len = utxos.length;
 		let utxos2 = utxos.map(function (item, index) {
 			let av = item.value ? item.value : item.amount;
 			item.value = Number(web3.toBigNumber(av).mul(100000000));
@@ -548,7 +547,6 @@ const Backend = {
             sendResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
 
 		}else {
-			//senrResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
             sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
 		}
 
@@ -678,19 +676,9 @@ const Backend = {
 
         tx.setInputScript(0, redeemScriptSig);
 
-        let rawTx = tx.toHex();
-        let btcHash;
-        try {
-            if(config.isStoreman){
-                btcHash = await client.sendRawTransaction(rawTx);
-            }else{
-                btcHash = await this.sendRawTransaction(this.btcSender, rawTx);
-            }
-        }catch(err){
-            logger.error("_revoke error: ", err);
-        }
-        logger.debug('_revoke result hash:', btcHash);
-        return btcHash
+		let btcHash = this.btcSendRawTransaction(tx.toHex());
+		logger.debug('_revoke result hash:', btcHash);
+		return btcHash;
     },
 	// when wbtc->btc,  storeman --> wallet.
 	//storeman is sender.  wallet is receiverKp.
@@ -754,19 +742,8 @@ const Backend = {
 		}).input;
 		tx.setInputScript(0, redeemScriptSig);
 
-		let btcHash;
-        let rawTx = tx.toHex();
-		try {
-			if(config.isStoreman){
-                btcHash = await client.sendRawTransaction(rawTx);
-			}else{
-                btcHash = await this.sendRawTransaction(this.btcSender, rawTx);
-			}
-        }catch(err){
-		    logger.error("redeem error: ", err);
-        }
-
-		logger.debug("redeem tx id:" + btcHash);
+		let btcHash= await this.btcSendRawTransaction(tx.toHex());
+		logger.debug("_redeem tx id:" + btcHash);
 		return btcHash;
 	},
 

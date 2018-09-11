@@ -146,7 +146,7 @@ module.exports = class sendTransaction{
         })
     }
     insertLockData(trans,result,chainType){
-        let collection =  this.getBtcCrossCollection();
+        let collection =  self.getBtcCrossCollection();
         let cur = Date.now();
         collection.insert(
             {
