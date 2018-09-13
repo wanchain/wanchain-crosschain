@@ -9,5 +9,8 @@ class Cm {
     setConfig(config){
         this.cfg = config;
     }
+    getLogger(name){
+        return console.getLogger(name);
+    }
 }
 module.exports = new Cm();

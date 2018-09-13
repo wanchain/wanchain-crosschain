@@ -370,12 +370,12 @@ const Backend = {
 	// storeman
 	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp) { // utxo.amount
 		try {
-			let ctx = await client.getTransaction(txHash,true);
+			let ctx = await client.getRawTransaction(txHash,true);
 			//ccUtil.getTxInfo();
 			//let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), config.bitcoinNetwork);
 			console.log("verifyBtcUtxo ctx:", ctx);
 			if (ctx) {
-				return ctx.outs[0].value;
+			    return Number(ctx.vout[0].value)*100000000;
 			}
 			return 0;
 		} catch (err) {

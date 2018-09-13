@@ -3,25 +3,89 @@
 const WebSocket = require('ws');
 const cm = require('../../comm.js');
 const wsOptions = {
-  'handshakeTimeout': 30000,
+    'handshakeTimeout': 30000,
     rejectUnauthorized: false
 };
 let logDebug;
 
 module.exports = class socketServer{
-    constructor(url,messageFactory){
+    constructor(url,messageFactory, passiveHandler){
         let self = this;
         this.connection = new WebSocket(url, wsOptions);
         this.messageFactory = messageFactory;
+        this.passiveHandler = passiveHandler;
         logDebug = cm.getLogger('socketServer');
-        this.connection.onerror = function (error) {
-            logDebug.error('[+webSocket onError+]', error.toString());
+        this.functionDict = {};
+        this.heartCheck();
+        this.createWebSocket();
+        this.initEventHandle();
+    }
+    initEventHandle() {
+        this.connection.onmessage = (message) => {
+            this.heartCheck.start();
+            let msg = JSON.parse(message.data);
+            if(msg.header.isSubscribe && passiveHandler){
+                return self.passiveHandler(msg);
+            }
+            this.getmessage(msg);
         };
-        this.connection.onmessage = function (message) {
-            let value = JSON.parse(message.data);
-            self.getmessage(value);
+
+        this.connection.onopen = () => {
+            this.heartCheck.start();
+        };
+
+        this.connection.onpong = () => {
+            this.heartCheck.start();
+        };
+
+        this.connection.onclose = () => {
+            this.reconnect();
+        };
+
+        this.connection.onerror = () => {
+            this.reconnect();
+        };
+    }
+
+    heartCheck() {
+        this.heartCheck = {
+            timeout: 100000,
+            timeoutObj: null,
+            serverTimeoutObj: null,
+            reset() {
+                clearTimeout(this.timeoutObj);
+                clearTimeout(this.serverTimeoutObj);
+            },
+            start() {
+                this.reset();
+                this.timeoutObj = setTimeout(function () {
+                    self.connection.ping('{"event": "ping"}');
+    
+                    self.serverTimeoutObj = setTimeout(function () {
+                        self.connection.close();
+                    }, self.timeout);
+                }, this.timeout);
+            }
+        };
+    }
+    createWebSocket() {
+        try {
+            this.connection = new WebSocket(this.wsUrl, OPTIONS);
+            this.initEventHandle();
+        } catch (e) {
+            this.reconnect();
         }
-        this.functionDict = {}
+    }
+    reconnect() {
+        if (this.lockReconnect) {
+            return;
+        }
+        this.lockReconnect = true;
+        this.reTt && clearTimeout(this.reTt);
+        this.reTt = setTimeout(() => {
+            this.createWebSocket();
+            this.lockReconnect = false;
+        }, 2000);
     }
     send(json){
         this.connection.send(JSON.stringify(json));

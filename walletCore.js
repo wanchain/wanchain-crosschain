@@ -37,6 +37,9 @@ class walletcore  {
         this.wanSend = new sendFromSocket(null,'WAN');
         this.ethSend = new sendFromSocket(null,'ETH');
         this.btcSend = new sendFromSocket(null,'BTC');
+        if(config.isStoreman){
+            this.smgSend = new sendFromSocket(null,'SMG');
+        }
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath);
         this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath);
         // this.databaseGroup = databaseGroup;
@@ -74,7 +77,14 @@ class walletcore  {
                 });
             })
         });
-    }    
+    }
+    async storemanInit(){
+        let crossDb = new LokiDb(cm.config.crossDbname);
+        await crossDb.loadDatabase();
+        cm.crossDb = crossDb;
+        let newWebSocket = new socketServer(config.socketUrl,messageFactory);
+        this.wanSend.socket = newWebSocket;
+    }
     async init(){
         let config = cm.config;
         cm.EthKeyStoreDir = this.EthKeyStoreDir;
@@ -87,10 +97,6 @@ class walletcore  {
         await walletDb.loadDatabase();
         cm.walletDb = walletDb;
 
-        // for (var key in databaseGroup.databaseAry) {
-        //     await databaseGroup.databaseAry[key].init();
-        // }
-        // databaseGroup.inited = true;
         let newWebSocket = new socketServer(config.socketUrl,messageFactory);
         this.wanSend.socket = newWebSocket;
         this.ethSend.socket = newWebSocket;
@@ -112,22 +118,7 @@ class walletcore  {
         let sendGroup = ChainType == 'BTC' ? this.btcSend : this.wanSend;
         return new sendTransaction(sendGroup);
     }
-    // getCollection(dbName,collectionName){
-    //     return databaseGroup.getCollection(dbName,collectionName);
-    // }
-    // loadDatabase(dbName, cb){
-    //     return databaseGroup.databaseAry[dbName].db.loadDatabase({},cb);
-    // }
 
-    // async getCollectionCb(dbName,collectionName, cb){
-    //     if(!databaseGroup.inited){
-    //         for (var key in databaseGroup.databaseAry) {
-    //             await databaseGroup.databaseAry[key].init();
-    //         }
-    //     }
-    //     let collection = databaseGroup.getCollection(dbName,collectionName);
-    //     cb(collection);
-    // }
     CreaterSender(ChainType) {
         if(this.socketUrl){
             return new sendFromSocket(new socketServer(this.socketUrl,messageFactory),ChainType);

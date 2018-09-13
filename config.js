@@ -6,6 +6,7 @@ const path=require('path');
 const config = {};
 // config.socketUrl = 'ws://192.168.1.77:8080/';
 config.socketUrl = 'wss://34.210.104.235';
+config.agentUrl = "ws://localhost:8080";
 var wanchainNet = 'testnet';
 var ethereumNet = 'testnet';
 //config.lockTime = 1000;
