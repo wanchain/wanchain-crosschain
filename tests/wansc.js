@@ -16,9 +16,9 @@ let ccUtil;
 let btcUtil;
 const value   = 10000000;
 const wdValue = 2000000;
-const storemanHash160 = Buffer.from('d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'hex');
-const storemanHash160Addr = "0xd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe";
-const storemanWif = 'cQrhq6e1bWZ8YBqaPcg5Q8vwdhEwwq1RNsMmv2opPQ4fuW2u8HYn';
+const storemanHash160Addr = "0x9022c407879beee21132fc89008d983423198873";
+const storemanHash160 = Buffer.from(storemanHash160Addr, 'hex');
+const storemanWif = 'cUFo4w9Z94onimW9rLEDMzMJYY9V24AX28DkhA2goDNJ2bAJJKX2';
 var storeman = bitcoin.ECPair.fromWIF(
     storemanWif, bitcoin.networks.testnet
 );
