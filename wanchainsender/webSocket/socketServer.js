@@ -48,6 +48,7 @@ module.exports = class socketServer{
     }
 
     heartCheck() {
+        let self = this;
         this.heartCheck = {
             timeout: 100000,
             timeoutObj: null,
