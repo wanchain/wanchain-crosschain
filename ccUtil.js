@@ -9,6 +9,9 @@ const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
 const cm = require('./comm.js');
 
+// TODO storeman, don't exist in record.
+const stmRipemd160Addr = "0x90bcfe35d8cdc5d0ebfe2748b7296c182911d923";
+
 function getAddress(keypair) {
 	const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: config.bitcoinNetwork});
 	return pkh.address;
@@ -685,8 +688,10 @@ const Backend = {
 		let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
 		//let receiverH160Addr =  res[0].crossAdress;
 		let receiverH160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
-		let senderH160Addr =  btcUtil.addressToHash160(res[0].from,'pubkeyhash','testnet')
-		console.log("senderH160Addr:", senderH160Addr);
+		//let senderH160Addr =  btcUtil.addressToHash160(res[0].storeman,'pubkeyhash','testnet')
+		let senderH160Addr = stmRipemd160Addr;
+
+        console.log("senderH160Addr:", senderH160Addr);
 		console.log("res:", res);
 		let amount = res[0].value;
 		let txid = res[0].btcLockTxHash;
