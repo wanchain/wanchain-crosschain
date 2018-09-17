@@ -310,6 +310,17 @@ describe('wan api test', ()=>{
     let expectedAddr = btcUtil.getAddressbyKeypair(alice)
     assert.equal(addr,expectedAddr,"the address not match")
   });
+  it('mytest', async ()=>{
+      const storemanWif = 'cUFo4w9Z94onimW9rLEDMzMJYY9V24AX28DkhA2goDNJ2bAJJKX2';
+      var storemanPair = bitcoin.ECPair.fromWIF(
+          storemanWif, bitcoin.networks.testnet
+      );
+      let H160 = bitcoin.crypto.hash160(storemanPair.publicKey).toString('hex');
+      let addr = btcUtil.hash160ToAddress(H160,'pubkeyhash','testnet');
+      console.log("H160 is " + H160);
+      console.log("addr is " + addr);
+
+  })
 
   it('TC001: address2hash160', async ()=> {
 

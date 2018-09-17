@@ -57,7 +57,7 @@ const btcUtil = {
             bitcoin.opcodes.OP_EQUALVERIFY,
             bitcoin.opcodes.OP_CHECKSIG
         ]);
-        print4debug(redeemScript.toString('hex'));
+        print4debug("redeemScript:"+redeemScript.toString('hex'));
         //var scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
         //var address = bitcoin.address.fromOutputScript(scriptPubKey, network)
 

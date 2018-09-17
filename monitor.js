@@ -313,9 +313,9 @@ const MonitorRecord = {
                     record.crossConfirmed = 1;
                     record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
                     let redeemLockTimeStamp = Number('0x'+receipt[0].data.slice(66));
-                    let txid = receipt[0].data.slice(2,66);
+                    let btcLockTxHash = receipt[0].data.slice(2,66);
                     record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
-                    record.btcTxid = txid;
+                    record.btcLockTxHash = btcLockTxHash;
                     record.status = 'waitingCrossConfirming';
                     logger.debug("checkCrossHashOnline record:", record);
                     this.updateRecord(record);
