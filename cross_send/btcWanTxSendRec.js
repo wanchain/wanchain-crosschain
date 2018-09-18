@@ -25,7 +25,7 @@ module.exports = class btcWanTxSendRec {
                     from: trans.from,
                     to: trans.to,
                     storeman: trans.storeman,
-                    crossAdress: '',
+                    crossAddress: '',
                     value: trans.amount,
                     txValue: trans.value,
                     x: trans.x,
@@ -147,7 +147,7 @@ module.exports = class btcWanTxSendRec {
             }
 
             if (value != null) {
-                value.crossAdress = trans.crossAddress;
+                value.crossAddress = trans.crossAddress;
                 value.btcNoticeTxhash = trans.btcNoticeTxhash;
                 value.status = "sentHashPending";
 

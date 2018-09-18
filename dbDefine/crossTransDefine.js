@@ -23,7 +23,7 @@ module.exports = {
                 from : '',
                 to: '', // SC addr
                 storeman : '',
-                crossAdress : '', // another chain address.
+                crossAddress : '', // another chain address.
                 value : '',  // the value in the input date
                 txValue: '', // the value in the tx object, this is the native coin value;
                 x : '',
@@ -58,7 +58,7 @@ module.exports = {
                 from : '',
                 to: '', // SC addr
                 storeman : '',
-                crossAdress : '', // another chain address.
+                crossAddress : '', // another chain address.
                 value : '',  // the value in the input date
                 txValue: '', // the value in the tx object, this is the native coin value;
                 x : '',
@@ -94,7 +94,7 @@ module.exports = {
                 from : '',          //wan:sender address,                       btc:senderH160Addr
                 to: '',             //wan:smart contract address                btc:script psh address
                 storeman : '',      //wan:storeman address                      btc:ReceiverHash160Addr
-                crossAdress : '',   //wan: sender btc chain senderH160Addr      btc:wan chain address
+                crossAddress : '',   //wan: sender btc chain senderH160Addr      btc:wan chain address
                 value : '',         //wan:the value for sc input para value     btc:the value for send to psh address
                 txValue: '',        //the native coin value
                 x : '',             //X value for refund

@@ -72,7 +72,7 @@ module.exports = class sendTransaction{
         let collection =  this.getBtcCrossCollection();
         let lockTrans = collection.findOne({lockTxHash : lockTxHash});
         if(lockTrans) {
-            self.createTransaction(lockTrans.crossAdress, tokenAddress, amountWan, storeman,
+            self.createTransaction(lockTrans.crossAddress, tokenAddress, amountWan, storeman,
                 wanAddress, gas, gasPrice, crossType, nonce);
             self.trans.setKey(lockTrans.x);
         }
@@ -154,7 +154,7 @@ module.exports = class sendTransaction{
                 from : trans.trans.from,
                 to : trans.trans.to,
                 storeman:trans.Contract.storeman,
-                crossAdress : trans.Contract.crossAddress,
+                crossAddress : trans.Contract.crossAddress,
                 value : trans.amount,
                 txValue: trans.trans.value,
                 x : trans.Contract.key,

@@ -698,7 +698,7 @@ const Backend = {
 	async redeemWithHashX(hashx,receiverKp) {
 		let res = this.getBtcWanTxHistory({'HashX':hashx});
 		let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
-		//let receiverH160Addr =  res[0].crossAdress;
+		//let receiverH160Addr =  res[0].crossAddress;
 		let receiverH160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
 		//let senderH160Addr =  btcUtil.addressToHash160(res[0].storeman,'pubkeyhash','testnet')
 		let senderH160Addr = stmRipemd160Addr;
@@ -805,10 +805,10 @@ const Backend = {
 
 		fee = this.getTxSize(ninputs, 2) * feeRate
 		let change = availableSat - target.value - fee
-		
+
 		if (change < 0){
 		  return new Error('balance can not offord fee and target tranfer value');
-		}		
+		}
 
 		if (fee > target.value) {
 			return new Error('target value must be larger than the fee')
@@ -962,8 +962,8 @@ const Backend = {
 
     return await this.btcTxBuildSend(keyPairArray, amount, target, feeRate)
   },
-  
-  
+
+
   redeemSriptCheck(sriptData){
 		try {
             const WHOLE_ITEM_LENGTH = 5;
@@ -1040,7 +1040,7 @@ const Backend = {
 			return e
 
         }
-  
+
    },
 
 
