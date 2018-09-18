@@ -62,6 +62,8 @@ if (process.platform === 'win32') {
 }
 config.databasePath =  path.join(config.databasePath, 'LocalDb');
 config.btcWallet = path.join(config.databasePath, 'btcWallet.db');
+config.crossDbname = path.join(config.databasePath, 'crossTransDbBtc');
+
 config.wanKeyStorePath = config.keyStorePath;
 config.ethKeyStorePath = config.ethkeyStorePath;
 
@@ -91,7 +93,6 @@ config.withdrawBtcCrossLockEvent = 'WBTC2BTCLockNotice';
 
 
 
-config.crossDbname = 'crossTransDbBtc';
 config.crossCollection = 'btcCrossTransaction';
 config.confirmBlocks = 3;
 config.btcConfirmBlocks = 1;

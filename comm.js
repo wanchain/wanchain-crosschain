@@ -10,7 +10,7 @@ class Cm {
         this.cfg = config;
     }
     getLogger(name){
-        return console.getLogger(name);
+        return config.getLogger(name);
     }
 }
 module.exports = new Cm();

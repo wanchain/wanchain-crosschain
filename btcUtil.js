@@ -175,7 +175,7 @@ const btcUtil = {
     return address.toString();
   },
 
-  addressToHash160(address,addressType,network){
+  addressToHash160(address,addressType,network){  //'pubkeyhash','testnet'
     var address = new Address(address,addressType,network);
     return binConv(address.hash,{ in : 'bytes', out: 'hex'});
   },

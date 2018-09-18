@@ -55,7 +55,18 @@ const Backend = {
 		await pu.promiseEvent(this.CreaterSockSenderByChain, [ChainType], sender.socket.connection, "open");
 		return sender;
 	},
+	async storemanInit(cfg){
+        config = cfg ? cfg : cm.config;
+        this.config = config;
+        this.client = new Client(config.btcServerNet);
+        client = this.client;
+        logger = config.getLogger("crossChainUtil");
 
+        //TODO: storeman how to get lockedTime;
+        //cm.lockedTime = await this.getWanLockTime(this.wanSender);
+        cm.lockedTime = 3600;
+        logger.debug("lockedTime: ", cm.lockedTime);
+	},
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : cm.config;
 		this.config = config;
@@ -367,6 +378,7 @@ const Backend = {
 		return b;
 	},
 	// storeman
+	// TODO the check is to simple.
 	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp) { // utxo.amount
 		try {
 			let ctx = await client.getRawTransaction(txHash,true);
@@ -1072,6 +1084,9 @@ const Backend = {
         }
         return his;
     },
+	async reloadDb(){
+		await cm.crossDb.loadDatabase();
+	},
 
   formatInput (tx) {
 

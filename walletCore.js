@@ -78,12 +78,12 @@ class walletcore  {
             })
         });
     }
-    async storemanInit(){
+    async storemanInit(){ // TODO need it?
+        let config = cm.config;
         let crossDb = new LokiDb(cm.config.crossDbname);
         await crossDb.loadDatabase();
         cm.crossDb = crossDb;
-        let newWebSocket = new socketServer(config.socketUrl,messageFactory);
-        this.wanSend.socket = newWebSocket;
+        be.storemanInit(config);
     }
     async init(){
         let config = cm.config;

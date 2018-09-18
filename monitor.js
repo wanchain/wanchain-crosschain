@@ -414,7 +414,6 @@ const MonitorRecord = {
         if( handlingList[record.HashX]) {
             delete handlingList[record.HashX];
         }
-
     },
 }
 
