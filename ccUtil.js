@@ -64,6 +64,9 @@ const Backend = {
         cm.lockedTime = 3600;
         logger.debug("lockedTime: ", cm.lockedTime);
 	},
+	updateLockedTime(seconds){
+        cm.lockedTime = seconds;
+	},
 	async init(cfg, ethsender, wansender, btcsender, cb) {
 		config = cfg ? cfg : cm.config;
 		this.config = config;
