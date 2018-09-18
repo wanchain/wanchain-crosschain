@@ -538,6 +538,10 @@ const Backend = {
 	},
 	async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
 	    // change to array
+        let records = await ccUtil.getBtcWanTxHistory({HashX:hashx})
+		if(records.length != 0){
+        	return {txhash:records[0].btcLockTxHash};
+		}
 		return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
 	},
 
@@ -999,7 +1003,6 @@ const Backend = {
 	},
 
   formatInput (tx) {
-
     try {
       let ctx = {}
       ctx.from = this.hexTrip0x( btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash','testnet'));
