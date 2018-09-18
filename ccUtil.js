@@ -521,6 +521,7 @@ const Backend = {
 
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
+        contract.LockedTimestamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
         contract.senderH160Addr = senderH160Addr;
         contract.txhash = sendResult.result;
@@ -538,9 +539,9 @@ const Backend = {
 	},
 	async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
 	    // change to array
-        let records = await ccUtil.getBtcWanTxHistory({HashX:hashx})
+        let records = await this.getBtcWanTxHistory({HashX:hashx})
 		if(records.length != 0){
-        	return {txhash:records[0].btcLockTxHash};
+        	return {txhash:records[0].btcLockTxHash, LockedTimestamp:records[0].btcRedeemLockTimeStamp/1000};
 		}
 		return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
 	},
