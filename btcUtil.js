@@ -170,15 +170,15 @@ const btcUtil = {
     },
 
 
-  hash160ToAddress(hash160,addressType,network){
-    var address = new Address(binConv(hexTrip0x(hash160), { in : 'hex', out: 'bytes'}),addressType,network);
-    return address.toString();
-  },
+    hash160ToAddress(hash160,addressType,network){
+        var address = new Address(binConv(hexTrip0x(hash160), { in : 'hex', out: 'bytes'}),addressType,network);
+        return address.toString();
+    },
 
-  addressToHash160(address,addressType,network){  //'pubkeyhash','testnet'
-    var address = new Address(address,addressType,network);
-    return binConv(address.hash,{ in : 'bytes', out: 'hex'});
-  },
+    addressToHash160(address,addressType,network){  //'pubkeyhash','testnet'
+        var address = new Address(address,addressType,network);
+        return binConv(address.hash,{ in : 'bytes', out: 'hex'});
+    },
 
 }
 

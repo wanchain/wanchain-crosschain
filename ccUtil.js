@@ -9,9 +9,6 @@ const bitcoin = require('bitcoinjs-lib');
 const btcUtil = require('./btcUtil').btcUtil;
 const cm = require('./comm.js');
 
-// TODO storeman, don't exist in record.
-// const stmRipemd160Addr = "0x90bcfe35d8cdc5d0ebfe2748b7296c182911d923";
-
 function getAddress(keypair) {
 	const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: config.bitcoinNetwork});
 	return pkh.address;
@@ -394,38 +391,6 @@ const Backend = {
 			return 0;
 		}
 	},
-	// async _spendP2SHUtxo(storemanAddr, txHash, xHash, x, lockedTimestamp){
-	//     try {
-	//         let contract = btcUtil.hashtimelockcontract(storemanAddr, xHash, lockedTimestamp);
-	//         let p2sh = contract['p2sh'];
-	//         let rawTx = await client.getRawTransaction(txHash);
-	//         let ctx = bitcoin.Transaction.fromHex(Buffer.from(rawTx, 'hex'),config.bitcoinNetwork);
-	//         console.log("verifyBtcUtxo ctx:", ctx);
-	//         let outs = ctx.outs;
-	//         let i;
-	//         for(i=0; i<outs.length; i++) {
-	//             let out = outs[i];
-	//             let outScAsm = bitcoin.script.toASM(out.script);
-	//             let outScHex = out.script.toString('hex');
-	//             console.log("outScAsm", outScAsm);
-	//             console.log("outScHex", outScHex);
-	//             let p2shSc = generateP2shScript(p2sh).toString('hex');
-	//             if(outScHex == p2shSc){
-	//                 break;
-	//             }
-	//         }
-	//         if(i == outs.length){
-	//             throw "error p2sh";
-	//         }
-	//         let hashid = await redeem(contract, {txid:txHash, vout:i}, x);
-	//         console.log("redeem hashid: ", hashid);
-	//         return hashid;
-	//     }catch(err){
-	//         console.log("verifyBtcUtxo: ",err);
-	//         throw err;
-	//     }
-	//
-	// },
 	getEthBalance(sender, addr) {
 		let bs = pu.promisefy(sender.sendMessage, ['getBalance', addr], sender);
 		return bs;
@@ -452,16 +417,6 @@ const Backend = {
 	getWanBalance(sender, addr) {
 		let bs = pu.promisefy(sender.sendMessage, ['getBalance', addr], sender);
 		return bs;
-	},
-	getEthBalancesSlow(sender, adds) {
-		let ps = [];
-
-		// TODO: only support one request one time.
-		for (let i = 0; i < adds.length; i++) {
-			let b = pu.promisefy(sender.sendMessage, ['getBalance', adds[i]], sender);
-			ps.push(b);
-		}
-		return ps;
 	},
 	calculateLocWanFee(value, coin2WanRatio, txFeeRatio) {
 		let wei = web3.toBigNumber(value);
@@ -564,15 +519,14 @@ const Backend = {
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
-        contract.senderH160Addr = senderH160Addr
+        contract.senderH160Addr = senderH160Addr;
         contract.txhash = sendResult.result;
         contract.x = x;
         contract.value = value;
         contract.feeRate = config.feeRate;
         contract.fee = sendResult.fee;
 
-        this.btcLockSave(contract)
-
+        this.btcLockSave(contract);
 		return contract;
 	},
 	async fund(senderKp, ReceiverHash160Addr, value) {
@@ -611,7 +565,7 @@ const Backend = {
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
         contract.ReceiverHash160Addr = receiverH160Addr;
-        contract.senderH160Addr = senderH160Addr
+        contract.senderH160Addr = senderH160Addr;
         contract.value = amount;
         contract.feeRate = config.feeRate;
         contract.fee = config.feeHard;
@@ -820,53 +774,6 @@ const Backend = {
 		return {inputs, outputs, fee}
 	},
 
-
-
-
-
-	// async wbtc2btcLock(keyPairArray, amount, feeRate, destPub) {
-	// 	let XX = this.generatePrivateKey()
-	// 	let hashX = this.getHashKey(XX)
-    //
-	// 	// generate script and p2sh address
-	// 	let contract = await this.hashtimelockcontract(hashX, LOCK_BLK_NUMBER, destPub, bitcoin.crypto.hash160(keyPairArray[0].publicKey));
-    //
-	// 	let txId = await this.lock(contract, amount, keyPairArray, feeRate)
-    //
-	// 	if (txId != undefined) {
-	// 		// record it in map
-	// 		contractsMap[txId] = contract
-	// 		XXMap[txId] = XX
-	// 		return {txId: txId, hashX: hashX, redeemblocknum: contract['redeemblocknum']}
-	// 	} else {
-	// 		return null
-	// 	}
-	// },
-
-	// async btc2wbtcRefund(txHash, refunderKeyPair) {
-	// 	let rawTx = getTxInfo(txHash)
-	// 	let XX = XXMap[txHash]
-    //
-	// 	return this.refund(rawTx, XX, refunderKeyPair)
-	// },
-    //
-	// async wbtc2btcrefund(txHash, refunderKeyPair) {
-	// 	let XX = XXMap[txHash]
-	// 	let rawTx = getTxInfo(txHash)
-	// 	return this.refund(rawTx, XX, refunderKeyPair)
-	// },
-    //
-	// async btc2wbtcRevoke(txHash, revokerKeyPair) {
-	// 	let hashX = this.getHashKey(XXMap[txHash])
-	// 	let rawTx = getTxInfo(txHash)
-    //
-	// 	return await this.revoke(rawTx, revokerKeyPair)
-	// },
-    //
-	// async wbtc2btcRevoke(txHash, revokerKeyPair) {
-	// 	let rawTx = getTxInfo(txHash)
-	// 	return await this.revoke(rawTx, revokerKeyPair)
-	// },
 	async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
 		let addressArray = []
 		let addressKeyMap = {}

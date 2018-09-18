@@ -4,21 +4,15 @@ const bitcoin  = require('bitcoinjs-lib');
 const path=require('path');
 
 const config = {};
-// config.socketUrl = 'ws://192.168.1.77:8080/';
 config.socketUrl = 'wss://34.210.104.235';
 config.agentUrl = "ws://localhost:8080";
 var wanchainNet = 'testnet';
 var ethereumNet = 'testnet';
-//config.lockTime = 1000;
 config.feeRate = 3000;
 config.feeHard = 1000000;
 config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
 
-
-// config.dataName = wanchainNet;
-//config.version = '1.0.0';
-//config.host = 'http://localhost'; // http://localhost
 
 if (process.platform === 'darwin') {
     config.rpcIpcPath = path.join(process.env.HOME, '/Library/Wanchain',wanchainNet,'gwan.ipc');

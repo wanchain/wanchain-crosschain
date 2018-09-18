@@ -30,7 +30,7 @@ module.exports = class btcWanTxSendRec {
                     txValue: trans.value,
                     x: trans.x,
                     time: cur.toString(),
-                    HTLCtime: (3000000 + 2 * 1000 * Number(global.lockedTime) + cur).toString(),
+                    HTLCtime: (3000000 + 2 * 1000 * Number(cm.lockedTime) + cur).toString(),
                     chain: 'BTC',
                     status: 'sentHashPending',
                     lockConfirmed: 0,
@@ -52,13 +52,10 @@ module.exports = class btcWanTxSendRec {
             } else {
                 return {error: new Error('Not supported cross chain type')}
             }
-
         }
-
         catch (e) {
             return {error: e}
         }
-
     }
 
     insertNormalData(trans) {
@@ -108,7 +105,6 @@ module.exports = class btcWanTxSendRec {
         } catch (e) {
             return {error: e}
         }
-
     }
 
     insertRevokeData(trans) {
@@ -123,8 +119,7 @@ module.exports = class btcWanTxSendRec {
 
             if (value != null) {
                 value.btcRevokeTxHash = trans.revokeTxHash;
-                //value.status = 'revokeFinished'
-                let res = collection.update(value)
+                let res = collection.update(value);
                 logger.debug("revoke item:", res);
             } else {
                 return {error: new Error('Value not find in db')}
@@ -136,7 +131,6 @@ module.exports = class btcWanTxSendRec {
     }
 
     insertWanNoticeData(trans) {
-
         try {
             let collection =  this.getBtcCrossCollection();
             let value = null
@@ -151,7 +145,7 @@ module.exports = class btcWanTxSendRec {
                 value.btcNoticeTxhash = trans.btcNoticeTxhash;
                 value.status = "sentHashPending";
 
-                let res = collection.update(value)
+                let res = collection.update(value);
                 logger.debug("wan notice item=");
                 logger.debug(res);
             } else {
@@ -160,6 +154,5 @@ module.exports = class btcWanTxSendRec {
         } catch (e) {
             return {error: e}
         }
-
     }
 }
