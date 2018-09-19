@@ -377,12 +377,15 @@ const Backend = {
 	},
 	// storeman
 	// TODO the check is to simple.
-	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp) { // utxo.amount
+	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp, UserBtcAddr) { // utxo.amount
 		try {
 			let ctx = await client.getRawTransaction(txHash,true);
 			console.log("verifyBtcUtxo ctx:", ctx);
-			if (ctx) {
-			    return Number(ctx.vout[0].value)*100000000;
+			if (ctx && ctx.locktime == 0) {
+				let contract = btcUtil.hashtimelockcontract(hashx,lockedTimestamp,storemanAddr, UserBtcAddr); //(hashx, redeemLockTimeStamp,destHash160Addr, revokerHash160Addr)
+			    if(ctx.vout && ctx.vout[0] && ctx.vout[0].scriptPubKey.addresses[0] == contract.p2sh){
+                    return Number(ctx.vout[0].value)*100000000;
+                }
 			}
 			return 0;
 		} catch (err) {

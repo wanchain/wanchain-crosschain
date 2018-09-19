@@ -53,45 +53,33 @@ async function waitEventbyHashx(eventName,abi, hashx) {
     }
 
 }
-// async function nredeem(redeemScript, txid, x, receiverKp, value) {
-//     let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
-//
-//     txb.addInput(txid, 0);
-//     txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), value - config.feeHard);
-//
-//     txb.sign(0, receiverKp, redeemScript)
-//
-//     const rawTx = txb.build().toHex()
-//     let btcHash= await ccUtil.btcSendRawTransaction(rawTx);
-//     console.log("_redeem tx id:" + btcHash);
-//     return btcHash;
-//
-//     var txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
-//     txb.setVersion(1);
-//     txb.addInput(txid, 0);
-//     txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - config.feeHard));
-//
-//     const tx = txb.buildIncomplete();
-//     const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
-//
-//     const redeemScriptSig = bitcoin.payments.p2sh({
-//         redeem: {
-//             input: bitcoin.script.compile([
-//                 bitcoin.script.signature.encode(receiverKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-//                 receiverKp.publicKey,
-//                 Buffer.from(x, 'hex'),
-//                 bitcoin.opcodes.OP_TRUE
-//             ]),
-//             output: redeemScript,
-//         },
-//         network: config.bitcoinNetwork
-//     }).input;
-//     tx.setInputScript(0, redeemScriptSig);
-//
-//     let btcHash= await ccUtil.btcSendRawTransaction(tx.toHex());
-//     console.log("_redeem tx id:" + btcHash);
-//     return btcHash;
-// }
+async function nredeem(redeemScript, txid, x, receiverKp, value) {
+    var txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
+    txb.setVersion(1);
+    txb.addInput(txid, 0);
+    txb.addOutput(btcUtil.getAddressbyKeypair(receiverKp), (value - config.feeHard));
+
+    const tx = txb.buildIncomplete();
+    const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+
+    const redeemScriptSig = bitcoin.payments.p2sh({
+        redeem: {
+            input: bitcoin.script.compile([
+                bitcoin.script.signature.encode(receiverKp.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
+                receiverKp.publicKey,
+                Buffer.from(x, 'hex'),
+                bitcoin.opcodes.OP_TRUE
+            ]),
+            output: redeemScript,
+        },
+        network: config.bitcoinNetwork
+    }).input;
+    tx.setInputScript(0, redeemScriptSig);
+
+    let btcHash= await ccUtil.btcSendRawTransaction(tx.toHex());
+    console.log("_redeem tx id:" + btcHash);
+    return btcHash;
+}
 describe('wan api test', ()=>{
     before(async () => {
         wanchainCore = new WanchainCore({});
@@ -114,19 +102,21 @@ describe('wan api test', ()=>{
         let vout = 0;
         let preoutscript = Buffer.from("76a9147ef9142e7d6f28dda806accb891e4054d6fa9eae88ac",'hex');
         let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
-
+        txb.setVersion(1);
         txb.addInput(txid, vout);
         txb.addOutput(aliceBtcAddr, value - config.feeHard);
         const tx = txb.buildIncomplete();
         const sigHash = tx.hashForSignature(0, preoutscript, bitcoin.Transaction.SIGHASH_ALL);
-        let ScriptSig = bitcoin.script.compile([
-            bitcoin.script.signature.encode(alice.sign(sigHash), bitcoin.Transaction.SIGHASH_ALL),
-            alice.publicKey
-        ]);
+        let hashsig = alice.sign(sigHash);
+        let ScriptSig = bitcoin.payments.p2pkh({
+            signature:bitcoin.script.signature.encode(hashsig, bitcoin.Transaction.SIGHASH_ALL),
+            pubkey: alice.publicKey,
+            network: config.bitcoinNetwork
+        }).input;
+
 
         tx.setInputScript(0, ScriptSig);
-        const rawTx = txb.build().toHex();
-        let btcHash= await ccUtil.btcSendRawTransaction(rawTx);
+        let btcHash= await ccUtil.btcSendRawTransaction(tx.toHex());
         console.log("mytest tx id:" + btcHash);
         return btcHash;
     });
@@ -155,11 +145,12 @@ describe('wan api test', ()=>{
 		// await client.sendToAddress(storemanAddr, 2);
 		// await client.generate(1);
 		let record = await ccUtil.fund([alice], storemanHash160Addr, wdValue);
+		console.log("record:", record);
+        let v = await ccUtil._verifyBtcUtxo(storemanHash160Addr,record.txhash, record.hashx,record.LockedTimestamp, aliceHash160Addr); //(storemanAddr, txHash, hashx, lockedTimestamp)
 		console.log("record.redeemScript:",record.redeemScript);
 		await client.generate(1);
-		let walletRedeem = 0; //await nredeem(record.redeemScript, record.txhash, record.x, storeman, wdValue);
+		let walletRedeem = await nredeem(record.redeemScript, record.txhash, record.x, storeman, wdValue);
 		console.log(walletRedeem);
-
         let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
         console.log(checkres);
 
@@ -354,7 +345,7 @@ describe('wan api test', ()=>{
 
     });
     after('end', async ()=>{
-        wanchainCore.close();
+        //wanchainCore.close();
     });
 
   it('TC001: hash160ToAddress', async ()=> {
