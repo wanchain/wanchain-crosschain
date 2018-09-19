@@ -59,9 +59,7 @@ const Backend = {
         client = this.client;
         logger = config.getLogger("crossChainUtil");
 
-        //TODO: storeman how to get lockedTime;
-        //cm.lockedTime = await this.getWanLockTime(this.wanSender);
-        cm.lockedTime = 3600;
+        cm.lockedTime = config.lockedTime;
         logger.debug("lockedTime: ", cm.lockedTime);
 	},
 	updateLockedTime(seconds){
