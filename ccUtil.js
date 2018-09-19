@@ -382,8 +382,6 @@ const Backend = {
 	async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp) { // utxo.amount
 		try {
 			let ctx = await client.getRawTransaction(txHash,true);
-			//ccUtil.getTxInfo();
-			//let ctx = bitcoin.Transaction.fromHex(Buffer.from(rewTx, 'hex'), config.bitcoinNetwork);
 			console.log("verifyBtcUtxo ctx:", ctx);
 			if (ctx) {
 			    return Number(ctx.vout[0].value)*100000000;
@@ -660,9 +658,6 @@ const Backend = {
 	async redeemWithHashX(hashx,receiverKp) {
 		let res = this.getBtcWanTxHistory({'HashX':hashx});
 		let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp)/1000;
-		//let receiverH160Addr =  res[0].crossAddress;
-		let receiverH160Addr = bitcoin.crypto.hash160(receiverKp.publicKey).toString('hex');
-		//let senderH160Addr =  btcUtil.addressToHash160(res[0].storeman,'pubkeyhash','testnet')
 		let senderH160Addr = res[0].StoremanBtcH160;
 
         console.log("senderH160Addr:", senderH160Addr);

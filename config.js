@@ -71,8 +71,8 @@ config.wanLockGas = 300000; // 232665;
 config.wanRefundGas = 120000; // 34881;
 config.wanRevokeGas = 80000; // 49917;
 
-config.wanchainHtlcAddr = "0x4bbc39d425fff5aad40fc1c5c7287382ec52a13c";
-config.WBTCToken = "0x01322d7ff75db8ba52c56831ee7f5e76a75b6051";
+config.wanchainHtlcAddr = "0x5c35c015da4299a039e58b42ef474d94324da5e4";
+config.WBTCToken = "0x3ba524a9b01de0953ba8fe720befac9e14ff95b9";
 
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock';
 config.depositRedeemEvent = 'BTC2WBTCRefund';
