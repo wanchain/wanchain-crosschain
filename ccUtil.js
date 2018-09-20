@@ -678,6 +678,7 @@ const Backend = {
 
 	    contract.txhash = res;
 	    contract.hashx = hashx;
+        contract.HashX = hashx;
 	    contract.redeemLockTimeStamp = redeemLockTimeStamp;
 	    contract.ReceiverHash160Addr = receiverHash160Addr;
 	    contract.senderH160Addr = senderH160Addr
