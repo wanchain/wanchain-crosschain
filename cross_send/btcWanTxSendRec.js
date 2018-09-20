@@ -94,13 +94,19 @@ module.exports = class btcWanTxSendRec {
 
             if (value != null) {
                 value.btcRefundTxHash = trans.refundTxHash;
-                //value.status = 'refundFinished';
                 let res = collection.update(value);
                 logger.debug("refund item=");
                 logger.debug(res);
 
             } else {
-                return {error: new Error('Value not find in db')}
+                if(config.isStoreman){
+                    trans.btcRefundTxHash = trans.refundTxHash;
+                    let res = collection.insert(trans);
+                    logger.info("storeman refund item=");
+                    logger.info(trans);
+                }else{
+                    return {error: new Error('Value not find in db')}
+                }
             }
         } catch (e) {
             return {error: e}

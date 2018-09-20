@@ -32,8 +32,6 @@ let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-const MAX_CONFIRM_BLKS = 10000000;
-const MIN_CONFIRM_BLKS = 1;
 
 function keyPairArray2AddrArray(kps) {
 	let addrs = [];
@@ -750,7 +748,7 @@ const Backend = {
 
 		for (let i = 0; i < utxos.length; i++) {
 			const utxo = utxos[i]
-			if (utxo.confirmations >= MIN_CONFIRM_BLKS) {
+			if (utxo.confirmations >= config.MIN_CONFIRM_BLKS) {
 				availableSat += Math.round(utxo.value)
 				ninputs++
 				inputs.push(utxo)
@@ -820,15 +818,27 @@ const Backend = {
 				txb.addOutput(outItem.address, Math.round(outItem.value))
 			}
 		}
-
-		for (i = 0; i < inputs.length; i++) {
-			let inItem = inputs[i]
-			let from = inItem.address
-			let signer = addressKeyMap[from]
-			txb.sign(i, signer)
+		let rawTx;
+		if(config.isStoreman){
+			let tx = txb.buildIncomplete();
+            const sigHash = tx.hashForSignature(0, preoutscript, bitcoin.Transaction.SIGHASH_ALL);
+            let hashsig = alice.sign(sigHash);
+            let ScriptSig = bitcoin.payments.p2pkh({
+                signature:bitcoin.script.signature.encode(hashsig, bitcoin.Transaction.SIGHASH_ALL),
+                pubkey: alice.publicKey,
+                network: config.bitcoinNetwork
+            }).input;
+            tx.setInputScript(0, ScriptSig);
+			rawTx = tx.toHex();
+        }else {
+            for (i = 0; i < inputs.length; i++) {
+                let inItem = inputs[i]
+                let from = inItem.address
+                let signer = addressKeyMap[from]
+                txb.sign(i, signer)
+            }
+            rawTx = txb.build().toHex()
 		}
-
-		const rawTx = txb.build().toHex()
 		logger.debug('rawTx: ', rawTx)
 
 		return {rawTx: rawTx, fee: fee};
@@ -837,7 +847,7 @@ const Backend = {
 		let utxos;
 		try {
 			let addArr = keyPairArray2AddrArray(keyPairArray);
-			utxos = await this.getBtcUtxo(this.btcSender,MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
+			utxos = await this.getBtcUtxo(this.btcSender,config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, addArr);
 		} catch (err) {
 			throw err;
 		}
@@ -852,7 +862,7 @@ const Backend = {
 		let utxos;
 		try {
 			let addArr = keyPairArray2AddrArray(keyPairArray);
-			utxos = await this.clientGetBtcUtxo(MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, addArr);
+			utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, addArr);
 		} catch (err) {
 			throw err;
 		}

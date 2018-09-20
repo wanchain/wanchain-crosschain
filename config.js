@@ -12,6 +12,8 @@ config.feeRate = 3000;
 config.feeHard = 1000000;
 config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
+config.MAX_CONFIRM_BLKS = 100000000;
+config.MIN_CONFIRM_BLKS = 1;
 
 
 if (process.platform === 'darwin') {
