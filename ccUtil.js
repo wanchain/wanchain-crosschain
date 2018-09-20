@@ -1068,13 +1068,13 @@ const Backend = {
     let ctx = this.formatInput(tx)
 
     if (ctx.error) {
-      return
+      throw ctx.error;
     }
 
     if (tx.txhash != undefined) {
       ctx.refundTxHash = this.hexTrip0x(tx.txhash)
     } else {
-      return
+        throw new Error("No refundTxHash");
     }
 
     let res = newTrans.insertRefundData(ctx)

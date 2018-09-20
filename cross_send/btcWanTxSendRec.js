@@ -99,7 +99,7 @@ module.exports = class btcWanTxSendRec {
                 logger.debug(res);
 
             } else {
-                if(config.isStoreman){
+                if(cm.config.isStoreman){
                     trans.btcRefundTxHash = trans.refundTxHash;
                     let res = collection.insert(trans);
                     logger.info("storeman refund item=");
