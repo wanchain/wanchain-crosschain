@@ -1029,6 +1029,7 @@ const Backend = {
         return {'error': new Error('hashx can not be undefined')}
       } else {
         ctx.hashx = this.hexTrip0x(tx.hashx)
+        ctx.HashX = this.hexTrip0x(tx.hashx)
       }
 
       ctx.feeRate = config.feeRate
