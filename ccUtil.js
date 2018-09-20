@@ -820,18 +820,18 @@ const Backend = {
 			}
 		}
 		let rawTx;
-		if(config.isStoreman){
-			let tx = txb.buildIncomplete();
-            const sigHash = tx.hashForSignature(0, preoutscript, bitcoin.Transaction.SIGHASH_ALL);
-            let hashsig = alice.sign(sigHash);
-            let ScriptSig = bitcoin.payments.p2pkh({
-                signature:bitcoin.script.signature.encode(hashsig, bitcoin.Transaction.SIGHASH_ALL),
-                pubkey: alice.publicKey,
-                network: config.bitcoinNetwork
-            }).input;
-            tx.setInputScript(0, ScriptSig);
-			rawTx = tx.toHex();
-        }else {
+        // if(config.isStoreman){
+			// let tx = txb.buildIncomplete();
+        //     const sigHash = tx.hashForSignature(0, preoutscript, bitcoin.Transaction.SIGHASH_ALL);
+        //     let hashsig = alice.sign(sigHash);
+        //     let ScriptSig = bitcoin.payments.p2pkh({
+        //         signature:bitcoin.script.signature.encode(hashsig, bitcoin.Transaction.SIGHASH_ALL),
+        //         pubkey: alice.publicKey,
+        //         network: config.bitcoinNetwork
+        //     }).input;
+        //     tx.setInputScript(0, ScriptSig);
+			// rawTx = tx.toHex();
+        // }else {
             for (i = 0; i < inputs.length; i++) {
                 let inItem = inputs[i]
                 let from = inItem.address
@@ -839,7 +839,7 @@ const Backend = {
                 txb.sign(i, signer)
             }
             rawTx = txb.build().toHex()
-		}
+		//}
 		logger.debug('rawTx: ', rawTx)
 
 		return {rawTx: rawTx, fee: fee};
