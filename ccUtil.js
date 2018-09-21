@@ -849,8 +849,10 @@ const Backend = {
             bitcoin.opcodes.OP_HASH160,
             Buffer.from(contract.p2sh, 'hex'),
             bitcoin.opcodes.OP_EQUAL]);
-        let cctx = client.getRawTransaction(txid,1);
-        txb.addInput(txid, 0, undefined,cctx.vout[0].scriptPubKey.hex);
+        txb.addInput(txid, 0, undefined, outsc);
+        // let cctx = await client.getRawTransaction(txid,1);
+        // txb.addInput(txid, 0, undefined, Buffer.from(cctx.vout[0].scriptPubKey.hex,'hex'));
+
         txb.addOutput(config.storemanBtcAddr, (value - config.feeHard));
 
         const tx = txb.buildIncomplete();
@@ -1025,20 +1027,6 @@ const Backend = {
             }
         }
         let rawTx;
-        if(config.isStoreman && config.isMpc){
-            let tx = txb.buildIncomplete();
-            let signs = await mpc.signMpcBtcTransaction(tx);
-            console.log("signs:",signs);
-            for (i = 0; i < signs.length; i++) {
-                let ScriptSig = bitcoin.payments.p2pkh({
-                    signature:Buffer.from(signs[i].slice(2),'hex'),
-                    pubkey: alice.publicKey,
-                    network: config.bitcoinNetwork
-                }).input;
-                tx.setInputScript(i, ScriptSig);
-            }
-            rawTx = tx.toHex();
-        }else {
             for (i = 0; i < inputs.length; i++) {
                 let inItem = inputs[i]
                 let from = inItem.address
@@ -1046,7 +1034,6 @@ const Backend = {
                 txb.sign(i, signer)
             }
             rawTx = txb.build().toHex()
-        }
         logger.debug('rawTx: ', rawTx)
 
         return {rawTx: rawTx, fee: fee};
