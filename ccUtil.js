@@ -407,6 +407,10 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['sendRawTransaction', signedTx], sender);
         return bs;
     },
+    saveNormalBtcTransactionInfo(txInfo) {
+		let dbSaver = new btcWanTxSendRec();
+		dbSaver.insertNormalData(txInfo);
+	},
     btcSendRawTransaction(rawTx) {
         if (config.isStoreman) {
             return client.sendRawTransaction(rawTx);
