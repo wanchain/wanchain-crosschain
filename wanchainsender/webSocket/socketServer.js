@@ -11,6 +11,7 @@ let logDebug;
 module.exports = class socketServer{
     constructor(url,messageFactory, passiveHandler){
         let self = this;
+        this.wsUrl = url;
         this.connection = new WebSocket(url, wsOptions);
         this.messageFactory = messageFactory;
         this.passiveHandler = passiveHandler;
@@ -34,9 +35,9 @@ module.exports = class socketServer{
             this.heartCheck.start();
         };
 
-        this.connection.onpong = () => {
+        this.connection.on('pong', () => {
             this.heartCheck.start();
-        };
+        });
 
         this.connection.onclose = () => {
             this.reconnect();
@@ -48,7 +49,7 @@ module.exports = class socketServer{
     }
 
     heartCheck() {
-        let self = this;
+        let that = this;
         this.heartCheck = {
             timeout: 100000,
             timeoutObj: null,
@@ -58,20 +59,21 @@ module.exports = class socketServer{
                 clearTimeout(this.serverTimeoutObj);
             },
             start() {
+                let self = this;
                 this.reset();
                 this.timeoutObj = setTimeout(function () {
-                    self.connection.ping('{"event": "ping"}');
-    
+                    that.connection.ping('{"event": "ping"}');
                     self.serverTimeoutObj = setTimeout(function () {
-                        self.connection.close();
+                        that.connection.close();
                     }, self.timeout);
                 }, this.timeout);
             }
         };
     }
+
     createWebSocket() {
         try {
-            this.connection = new WebSocket(this.wsUrl, OPTIONS);
+            this.connection = new WebSocket(this.wsUrl, wsOptions);
             this.initEventHandle();
         } catch (e) {
             this.reconnect();
