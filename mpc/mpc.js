@@ -16,6 +16,7 @@ function signMpcBtcTransaction(tx) {
         bitcoin.opcodes.OP_EQUALVERIFY,
         bitcoin.opcodes.OP_CHECKSIG
     ]).toString('hex');
+    config.log("signMpcBtcTransaction tx:", tx);
     let mpcTx = {};
     mpcTx.Version = tx.version;
     mpcTx.LockTime = tx.locktime;
@@ -41,7 +42,7 @@ function signMpcBtcTransaction(tx) {
         o.PubKeyScrip = storemanScriptSig;
         mpcTx.TxIn.push(o);
     }
-
+    config.log("signMpcBtcTransaction mpcTx:", mpcTx);
     return new Promise((resolve, reject) => {
         try {
             web3.storeman.signMpcBtcTransaction(mpcTx, (err, result) => {
