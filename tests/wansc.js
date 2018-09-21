@@ -85,7 +85,7 @@ describe('wan api test', ()=>{
         wanchainCore = new WanchainCore({});
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
-        await wanchainCore.init();
+        //await wanchainCore.init();
         ccUtil.storemanInit();
         client = ccUtil.client;
         // let kps = btcUtil.getECPairs("xx");
@@ -125,6 +125,8 @@ describe('wan api test', ()=>{
 		// wait storeman lock notice.
 		// await client.sendToAddress(storemanAddr, 2);
 		// await client.generate(1);
+        config.isStoreman = true;
+        config.isMpc = false;
 		let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
 		let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
 		let record = await ccUtil.Storemanfund(storeman, aliceHash160Addr, wdValue, hashx);
@@ -150,24 +152,24 @@ describe('wan api test', ()=>{
         config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
         config.stmPublickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
         config.storemanBtcAddr = "mnTUjdLRP7mPQ4UQjheK6UuWXff5ZJfwvL";
-		let record = await ccUtil.fund([alice], config.stmRipemd160Addr, wdValue);
-		console.log("record:", record);
-        let v = await ccUtil._verifyBtcUtxo(config.stmRipemd160Addr,record.txhash, record.hashx,record.LockedTimestamp, aliceHash160Addr); //(storemanAddr, txHash, hashx, lockedTimestamp)
-		console.log("record.redeemScript:",record.redeemScript);
-		await client.generate(1);
+		// let record = await ccUtil.fund([alice], config.stmRipemd160Addr, wdValue);
+		// console.log("record:", record);
+        // let v = await ccUtil._verifyBtcUtxo(config.stmRipemd160Addr,record.txhash, record.hashx,record.LockedTimestamp, aliceHash160Addr); //(storemanAddr, txHash, hashx, lockedTimestamp)
+		// console.log("record.redeemScript:",record.redeemScript);
+		// await client.generate(1);
+        const record = { p2sh: '2NA36WpSyj5NLY6zeFaRNoFfhiU4mH9GPsm',
+            hashx: '7bb67b798e188871f5e0336de548f0a43e3255ddced6b05c01e7afeda05f7e2e',
+            redeemLockTimeStamp: NaN,
+            redeemScript: Buffer.from("63a8207bb67b798e188871f5e0336de548f0a43e3255ddced6b05c01e7afeda05f7e2e8876a9144c20a09fc986ee43149aeb52375315deffdd9e746700b17576a9147ef9142e7d6f28dda806accb891e4054d6fa9eae6888ac",'hex'),
+            x: '748c22dfe4fa6ba269308e9932ab568de8b58237686081c5f9a53dd39a68a6f6',
+                LockedTimestamp: NaN,
+                ReceiverHash160Addr: '4c20a09fc986ee43149aeb52375315deffdd9e74',
+                senderH160Addr: '7ef9142e7d6f28dda806accb891e4054d6fa9eae',
+                txhash: 'ff7e5055906383f335c088336ccc3c030f9f2058ec4d2d5ed8f62b05b2fccaa1',
+                value: 2000000,
+                feeRate: 3000,
+                fee: 777000 };
 
-        // const record = { p2sh: '2N9U89o6z3CM2mU32EYXEYhqvC6655Wgo65',
-        //     hashx: '5ed8fa0255f4a12e3f0e8f14f52caca48f7ddd481aaaba8b908f9372c513e03d',
-        //     redeemLockTimeStamp: NaN,
-        //     redeemScript: Buffer.from("63a8205ed8fa0255f4a12e3f0e8f14f52caca48f7ddd481aaaba8b908f9372c513e03d8876a9144c20a09fc986ee43149aeb52375315deffdd9e746700b17576a9147ef9142e7d6f28dda806accb891e4054d6fa9eae6888ac",'hex'),
-        //     x: '55ab1ce0bcc3673b83842915e254e710b88c2fcf84258510ed1d3b390a10b29e',
-        //     LockedTimestamp: NaN,
-        //     ReceiverHash160Addr: '0x90bcfe35d8cdc5d0ebfe2748b7296c182911d923',
-        //     senderH160Addr: '7ef9142e7d6f28dda806accb891e4054d6fa9eae',
-        //     txhash: 'e8f28662df72ed099eaaf15da183b9467074af94cfcb47bbb402c84d4ff1cafc',
-        //     value: 2000000,
-        //     feeRate: 3000,
-        //     fee: 777000 };
 		let walletRedeem = await ccUtil.redeemMpc(record.x, record.hashx, record.redeemScript,  aliceHash160Addr, wdValue,record.txhash);
 		console.log(walletRedeem);
         let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})

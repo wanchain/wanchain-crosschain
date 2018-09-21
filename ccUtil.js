@@ -515,7 +515,7 @@ const Backend = {
         if (wallet) {
             sendResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
         } else {
-            if(confg.isMpc){
+            if(config.isMpc){
                 sendResult = await this.btcTxBuildSendStoremanMpc(senderKp, target, config.feeRate);
             }else{
                 sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
@@ -566,10 +566,10 @@ const Backend = {
     },
     async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
         // change to array
-        let records = await this.getBtcWanTxHistory({HashX: hashx})
-        if (records.length != 0) {
-            return {txhash: records[0].btcLockTxHash, LockedTimestamp: records[0].btcRedeemLockTimeStamp / 1000};
-        }
+        // let records = await this.getBtcWanTxHistory({HashX: hashx})
+        // if (records.length != 0) {
+        //     return {txhash: records[0].btcLockTxHash, LockedTimestamp: records[0].btcRedeemLockTimeStamp / 1000};
+        // }
         return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
     },
     async StoremanfundMpc(ReceiverHash160Addr, value, hashx) {
@@ -845,17 +845,23 @@ const Backend = {
     async _redeemMpc(redeemScript, txid, x,  value, contract) {
         var txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
         txb.setVersion(1);
-        let outsc = bitcoin.script.compile([
-            bitcoin.opcodes.OP_HASH160,
-            Buffer.from(contract.p2sh, 'hex'),
-            bitcoin.opcodes.OP_EQUAL]);
-        txb.addInput(txid, 0, undefined, outsc);
-        // let cctx = await client.getRawTransaction(txid,1);
-        // txb.addInput(txid, 0, undefined, Buffer.from(cctx.vout[0].scriptPubKey.hex,'hex'));
-
+        // let outsc = bitcoin.script.compile([
+        //     bitcoin.opcodes.OP_HASH160,
+        //     Buffer.from(contract.p2sh, 'hex'),
+        //     bitcoin.opcodes.OP_EQUAL]);
+        // txb.addInput(txid, 0, undefined, outsc);
+        let cctx = await client.getRawTransaction(txid,1);
+        //txb.addInput(txid, 0, 0xffffffff, Buffer.from(cctx.vout[0].scriptPubKey.hex,'hex'));
+        //txb.addInput(txid, 0);
+        txb.addInput(txid, 0, 0xffffffff, redeemScript);
         txb.addOutput(config.storemanBtcAddr, (value - config.feeHard));
 
+        //const tx = txb.buildIncomplete();
         const tx = txb.buildIncomplete();
+        tx.ins[0].script = redeemScript;
+        //tx.ins[0].script = Buffer.from(cctx.vout[0].scriptPubKey.hex,'hex');
+        const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+        console.log("sigHash:",sigHash);
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
         var storemanPair = bitcoin.ECPair.fromPublicKey(Buffer.from(config.stmPublickey,'hex'));
@@ -863,7 +869,7 @@ const Backend = {
             redeem: {
                 input: bitcoin.script.compile([
                     Buffer.from(signs[0].slice(2), 'hex'),
-                    storemanPair.publicKey,//Buffer.from(config.stmPublickey,'hex'),
+                    Buffer.from(config.stmPublickey,'hex'),//storemanPair.publicKey,//Buffer.from(config.stmPublickey,'hex'),
                     Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
                 ]),
@@ -871,6 +877,7 @@ const Backend = {
             },
             network: config.bitcoinNetwork
         }).input;
+        console.log("redeemScriptSig:",redeemScriptSig.toString('hex'));
         tx.setInputScript(0, redeemScriptSig);
         console.log("XXXXXXXXXXXXXXX: tx.toHex()   ", tx.toHex());
         let btcHash = await this.btcSendRawTransaction(tx.toHex());

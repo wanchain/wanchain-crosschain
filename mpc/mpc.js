@@ -37,9 +37,9 @@ function signMpcBtcTransaction(tx) {
         sub.Hash = thash.reverse().toString('hex');
         sub.Index = tx.ins[i].index;
         o.PreviousOutPoint = sub;
-        o.SignatureScript = '0x'+tx.ins[i].script.toString('hex');
+        o.SignatureScript = '0x';//+tx.ins[i].script.toString('hex');
         o.Sequence = tx.ins[i].sequence;
-        o.PubKeyScrip = storemanScriptSig;
+        o.PubKeyScrip = '0x'+tx.ins[0].script.toString('hex') ||  storemanScriptSig;
         mpcTx.TxIn.push(o);
     }
     console.log("signMpcBtcTransaction mpcTx:", mpcTx);
