@@ -103,7 +103,7 @@ describe('wan api test', ()=>{
         let preoutscript = Buffer.from("76a9147ef9142e7d6f28dda806accb891e4054d6fa9eae88ac",'hex');
         let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
         txb.setVersion(1);
-        txb.addInput(txid, vout);
+        txb.addInput(txid, vout, undefined,);
         txb.addOutput(aliceBtcAddr, value - config.feeHard);
         const tx = txb.buildIncomplete();
         const sigHash = tx.hashForSignature(0, preoutscript, bitcoin.Transaction.SIGHASH_ALL);
