@@ -553,7 +553,6 @@ const Backend = {
         contract.ReceiverHash160Addr = ReceiverHash160Addr;
         contract.senderH160Addr = senderH160Addr;
         contract.txhash = sendResult.result;
-        contract.x = x;
         contract.value = value;
         contract.feeRate = config.feeRate;
         contract.fee = sendResult.fee;
@@ -799,7 +798,7 @@ const Backend = {
         let redeemScript = contract['redeemScript'];
         logger.debug("redeem redeemScript:", redeemScript);
 
-        let res = await this._redeem(redeemScript, txid, x, receiverKp, value);
+        let res = await this._redeemMpc(redeemScript, txid, x,  value);
 
         contract.txhash = res;
         contract.hashx = hashx;
