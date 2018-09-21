@@ -369,7 +369,16 @@ describe('wan api test', ()=>{
       console.log("H160 is " + H160);
       console.log("addr is " + addr);
 
-  })
+  });
+    it('TC001: storemanH1602addr', async ()=> {
+
+        let userH160 = "0x4c20a09fc986ee43149aeb52375315deffdd9e74";
+
+        let addr = btcUtil.hash160ToAddress(userH160,'pubkeyhash','testnet');
+
+        console.log("the address from hash160 = " + addr);
+
+    });
 
   it('TC001: address2hash160', async ()=> {
 
