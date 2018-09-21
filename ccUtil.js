@@ -381,7 +381,7 @@ const Backend = {
             if (ctx && ctx.locktime == 0) {
                 let contract = btcUtil.hashtimelockcontract(hashx, lockedTimestamp, storemanAddr, UserBtcAddr); //(hashx, redeemLockTimeStamp,destHash160Addr, revokerHash160Addr)
                 if (ctx.vout && ctx.vout[0] && ctx.vout[0].scriptPubKey.addresses[0] == contract.p2sh) {
-                    return Number(ctx.vout[0].value) * 100000000;
+                    return Number(web3.toBigNumber(ctx.vout[0].value).mul(100000000));  //Number(ctx.vout[0].value) * 100000000;
                 }
             }
             return 0;
@@ -850,11 +850,12 @@ const Backend = {
         const tx = txb.buildIncomplete();
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
+        var storemanPair = bitcoin.ECPair.fromPublicKey(config.stmPublickey);
         const redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
                 input: bitcoin.script.compile([
                     Buffer.from(signs[0].slice(2), 'hex'),
-                    Buffer.from(config.stmPublickey,'hex'),
+                    storemanPair.publicKey,//Buffer.from(config.stmPublickey,'hex'),
                     Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
                 ]),

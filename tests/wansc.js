@@ -365,6 +365,7 @@ describe('wan api test', ()=>{
       var storemanPair = bitcoin.ECPair.fromWIF(
           storemanWif, bitcoin.networks.testnet
       );
+
       let H160 = bitcoin.crypto.hash160(storemanPair.publicKey).toString('hex');
       let addr = btcUtil.hash160ToAddress(H160,'pubkeyhash','testnet');
       console.log("H160 is " + H160);
