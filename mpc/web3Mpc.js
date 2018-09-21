@@ -16,7 +16,7 @@ module.exports = {
             methods:
                 [
                     insertMethod('addValidMpcTxRaw', 'storeman_addValidMpcTxRaw', 1, [null], null),
-                    insertMethod('signMpcTransaction', 'storeman_signMpcTransaction', 1, [null], null),
+                    insertMethod('signMpcBtcTransaction', 'storeman_signMpcBtcTransaction', 1, [null], null),
                 ],
             properties:[],
         });

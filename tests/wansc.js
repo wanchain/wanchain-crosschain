@@ -85,7 +85,8 @@ describe('wan api test', ()=>{
         wanchainCore = new WanchainCore({});
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
-        await wanchainCore.init();
+        //await wanchainCore.init();
+        ccUtil.storemanInit();
         client = ccUtil.client;
         // let kps = btcUtil.getECPairs("xx");
         // let addr = btcUtil.getAddressbyKeypair(kps[0]);
@@ -379,10 +380,29 @@ describe('wan api test', ()=>{
         console.log("the address from hash160 = " + addr);
 
     });
+    it('mpc1', async ()=>{
+        config.isStoreman = true;
+        config.isMpc = true;
+        config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
+        config.publickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
+        config.storemanBtcAddr = "mnTUjdLRP7mPQ4UQjheK6UuWXff5ZJfwvL";
+        let target = {
+            address: aliceBtcAddr,
+            value: value
+        };
+        let utxos = await ccUtil.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS,[config.storemanBtcAddr]);
+        console.log("utxos:", utxos);
+        let result = await ccUtil.btcBuildTransactionMpc(utxos, target, config.feeRate);
+        console.log("result:", result);
+        let ctx = await ccUtil.client.decodeRawTransaction(result.rawTx);
+        console.log("ctx:", ctx);
+        let txhash = await ccUtil.client.sendRawTransaction(result.rawTx);
+        console.log("txhash:", txhash);
+    });
 
   it('TC001: address2hash160', async ()=> {
 
-    let addr = btcUtil.getAddressbyKeypair(alice)
+    let addr = btcUtil.getAddressbyKeypair(alice);
     let hash160 = btcUtil.addressToHash160(addr,'pubkeyhash','testnet');
 
     console.log("the hash160 from address =" + hash160)

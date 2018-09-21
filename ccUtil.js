@@ -515,10 +515,38 @@ const Backend = {
         let sendResult;
         if (wallet) {
             sendResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
-
         } else {
-            sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
+            if(confg.isMpc){
+                sendResult = await this.btcTxBuildSendStoremanMpc(senderKp, target, config.feeRate);
+            }else{
+                sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
+            }
         }
+
+        contract.hashx = hashx;
+        contract.redeemLockTimeStamp = redeemLockTimeStamp;
+        contract.LockedTimestamp = redeemLockTimeStamp;
+        contract.ReceiverHash160Addr = ReceiverHash160Addr;
+        contract.senderH160Addr = senderH160Addr;
+        contract.txhash = sendResult.result;
+        contract.x = x;
+        contract.value = value;
+        contract.feeRate = config.feeRate;
+        contract.fee = sendResult.fee;
+
+        this.btcLockSave(contract);
+        return contract;
+    },
+    async btc2wbtcLockMpc(ReceiverHash160Addr, value, hashx) {
+        let cur = Math.floor(Date.now() / 1000);
+        let redeemLockTimeStamp = cur + Number(cm.lockedTime);
+        let senderH160Addr = bitcoin.crypto.hash160(senderKp[0].publicKey).toString('hex');
+        let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);
+        let target = {
+            address: contract['p2sh'],
+            value: value
+        };
+        let sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
 
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
@@ -546,7 +574,14 @@ const Backend = {
         }
         return this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
     },
-
+    async StoremanfundMpc(ReceiverHash160Addr, value, hashx) {
+        // change to array
+        let records = await this.getBtcWanTxHistory({HashX: hashx})
+        if (records.length != 0) {
+            return {txhash: records[0].btcLockTxHash, LockedTimestamp: records[0].btcRedeemLockTimeStamp / 1000};
+        }
+        return this.btc2wbtcLockMpc( ReceiverHash160Addr, value, hashx);
+    },
     // wallet api, use api server.
     async getUtxoValueByIdWallet(txid) {
         let rawTx = await this.getRawTransaction(this.btcSender, txid);
@@ -813,7 +848,56 @@ const Backend = {
 
         return {inputs, outputs, fee}
     },
+    async btcBuildTransactionMpc(utxos,  target, feeRate) {
+        let balance = this.getUTXOSBalance(utxos);
+        if (balance <= target.value) {
+            throw(new Error(" balance <= target.value"));
+        }
 
+        let {inputs, outputs, fee} = this.coinselect(utxos, target, feeRate);
+
+        // .inputs and .outputs will be undefined if no solution was found
+        if (!inputs || !outputs) {
+            throw(new Error("utxo balance is not enough"));
+        }
+
+        logger.debug('fee', fee)
+
+        let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
+        txb.setVersion(1);
+        for (let i = 0; i < inputs.length; i++) {
+            //let inItem = inputs[i]
+            //let txid = Buffer.from(inputs[i].txid,'hex').reverse().toString('hex');
+            //txb.addInput(txid, inItem.vout)
+            txb.addInput(inputs[i].txid, inputs[i].vout)
+        }
+
+        // put out at 0 position
+        for (let i = 0; i < outputs.length; i++) {
+            let outItem = outputs[i]
+            if (!outItem.address) {
+                txb.addOutput(config.storemanBtcAddr, Math.round(outItem.value))
+            } else {
+                txb.addOutput(outItem.address, Math.round(outItem.value))
+            }
+        }
+        let rawTx;
+        let tx = txb.buildIncomplete();
+        let signs = await mpc.signMpcBtcTransaction(tx);
+        console.log("signs:",signs);
+        for (let i = 0; i < signs.length; i++) {
+            let ScriptSig = bitcoin.payments.p2pkh({
+                signature:Buffer.from(signs[i].slice(2),'hex'),
+                pubkey: Buffer.from(config.publickey,'hex'),
+                network: config.bitcoinNetwork
+            }).input;
+            tx.setInputScript(i, ScriptSig);
+        }
+        rawTx = tx.toHex();
+        logger.debug('rawTx: ', rawTx)
+
+        return {rawTx: rawTx, fee: fee};
+    },
     async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
         let addressArray = []
         let addressKeyMap = {}
@@ -910,6 +994,16 @@ const Backend = {
         const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
         if (!rawTx) {
             throw("no enough utxo.");
+        }
+        let result = await client.sendRawTransaction(rawTx);
+        return {result: result, fee: fee}
+    },
+    async btcTxBuildSendStoremanMpc(target, feeRate) {
+        let utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [config.storemanBtcAddr]);
+
+        const {rawTx, fee} = await this.btcBuildTransactionMpc(utxos, target, feeRate);
+        if (!rawTx) {
+            throw(new Error("no enough utxo."));
         }
         let result = await client.sendRawTransaction(rawTx);
         return {result: result, fee: fee}
