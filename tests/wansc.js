@@ -85,7 +85,7 @@ describe('wan api test', ()=>{
         wanchainCore = new WanchainCore({});
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
-        //await wanchainCore.init();
+        await wanchainCore.init();
         ccUtil.storemanInit();
         client = ccUtil.client;
         // let kps = btcUtil.getECPairs("xx");
@@ -145,12 +145,30 @@ describe('wan api test', ()=>{
 		// wait storeman lock notice.
 		// await client.sendToAddress(storemanAddr, 2);
 		// await client.generate(1);
-		let record = await ccUtil.fund([alice], storemanHash160Addr, wdValue);
+        config.isStoreman = true;
+        config.isMpc = true;
+        config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
+        config.stmPublickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
+        config.storemanBtcAddr = "mnTUjdLRP7mPQ4UQjheK6UuWXff5ZJfwvL";
+		let record = await ccUtil.fund([alice], config.stmRipemd160Addr, wdValue);
 		console.log("record:", record);
-        let v = await ccUtil._verifyBtcUtxo(storemanHash160Addr,record.txhash, record.hashx,record.LockedTimestamp, aliceHash160Addr); //(storemanAddr, txHash, hashx, lockedTimestamp)
+        let v = await ccUtil._verifyBtcUtxo(config.stmRipemd160Addr,record.txhash, record.hashx,record.LockedTimestamp, aliceHash160Addr); //(storemanAddr, txHash, hashx, lockedTimestamp)
 		console.log("record.redeemScript:",record.redeemScript);
 		await client.generate(1);
-		let walletRedeem = await nredeem(record.redeemScript, record.txhash, record.x, storeman, wdValue);
+
+        // const record = { p2sh: '2N9U89o6z3CM2mU32EYXEYhqvC6655Wgo65',
+        //     hashx: '5ed8fa0255f4a12e3f0e8f14f52caca48f7ddd481aaaba8b908f9372c513e03d',
+        //     redeemLockTimeStamp: NaN,
+        //     redeemScript: Buffer.from("63a8205ed8fa0255f4a12e3f0e8f14f52caca48f7ddd481aaaba8b908f9372c513e03d8876a9144c20a09fc986ee43149aeb52375315deffdd9e746700b17576a9147ef9142e7d6f28dda806accb891e4054d6fa9eae6888ac",'hex'),
+        //     x: '55ab1ce0bcc3673b83842915e254e710b88c2fcf84258510ed1d3b390a10b29e',
+        //     LockedTimestamp: NaN,
+        //     ReceiverHash160Addr: '0x90bcfe35d8cdc5d0ebfe2748b7296c182911d923',
+        //     senderH160Addr: '7ef9142e7d6f28dda806accb891e4054d6fa9eae',
+        //     txhash: 'e8f28662df72ed099eaaf15da183b9467074af94cfcb47bbb402c84d4ff1cafc',
+        //     value: 2000000,
+        //     feeRate: 3000,
+        //     fee: 777000 };
+		let walletRedeem = await ccUtil.redeemMpc(record.x, record.hashx, record.redeemScript,  aliceHash160Addr, wdValue,record.txhash);
 		console.log(walletRedeem);
         let checkres = ccUtil.getBtcWanTxHistory({'HashX':record.hashx})
         console.log(checkres);
@@ -385,7 +403,7 @@ describe('wan api test', ()=>{
         config.isStoreman = true;
         config.isMpc = true;
         config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
-        config.publickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
+        config.stmPublickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
         config.storemanBtcAddr = "mnTUjdLRP7mPQ4UQjheK6UuWXff5ZJfwvL";
         let target = {
             address: aliceBtcAddr,
