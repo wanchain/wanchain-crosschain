@@ -539,13 +539,13 @@ const Backend = {
     async btc2wbtcLockMpc(ReceiverHash160Addr, value, hashx) {
         let cur = Math.floor(Date.now() / 1000);
         let redeemLockTimeStamp = cur + Number(cm.lockedTime);
-        let senderH160Addr = bitcoin.crypto.hash160(senderKp[0].publicKey).toString('hex');
+        let senderH160Addr = config.stmRipemd160Addr;
         let contract = await btcUtil.hashtimelockcontract(hashx, redeemLockTimeStamp, ReceiverHash160Addr, senderH160Addr);
         let target = {
             address: contract['p2sh'],
             value: value
         };
-        let sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
+        let sendResult = await this.btcTxBuildSendStoremanMpc(target, config.feeRate);
 
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
