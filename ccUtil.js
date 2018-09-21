@@ -849,7 +849,8 @@ const Backend = {
             bitcoin.opcodes.OP_HASH160,
             Buffer.from(contract.p2sh, 'hex'),
             bitcoin.opcodes.OP_EQUAL]);
-        txb.addInput(txid, 0, undefined,outsc);
+        let cctx = client.getRawTransaction(txid,1);
+        txb.addInput(txid, 0, undefined,cctx.vout[0].scriptPubKey.hex);
         txb.addOutput(config.storemanBtcAddr, (value - config.feeHard));
 
         const tx = txb.buildIncomplete();
