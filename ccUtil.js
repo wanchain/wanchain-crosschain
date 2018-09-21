@@ -738,7 +738,7 @@ const Backend = {
         let redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
                 input: bitcoin.script.compile([
-                    Buffer.from(signs[0], 'hex'),
+                    Buffer.from(signs[0].slice(2), 'hex'),
                     Buffer.from(config.stmPublickey,'hex'),
                     bitcoin.opcodes.OP_FALSE
                 ]),
@@ -853,7 +853,7 @@ const Backend = {
         const redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
                 input: bitcoin.script.compile([
-                    Buffer.from(signs[0], 'hex'),
+                    Buffer.from(signs[0].slice(2), 'hex'),
                     Buffer.from(config.stmPublickey,'hex'),
                     Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
@@ -1023,7 +1023,7 @@ const Backend = {
             console.log("signs:",signs);
             for (i = 0; i < signs.length; i++) {
                 let ScriptSig = bitcoin.payments.p2pkh({
-                    signature:Buffer.from(signs[i],'hex'),
+                    signature:Buffer.from(signs[i].slice(2),'hex'),
                     pubkey: alice.publicKey,
                     network: config.bitcoinNetwork
                 }).input;
