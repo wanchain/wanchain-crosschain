@@ -725,8 +725,8 @@ const Backend = {
         txb.addOutput(config.storemanBtcAddr, (amount - config.feeHard));
 
         let tx = txb.buildIncomplete();
-        const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
         tx.ins[0].script = redeemScript;
+        const sigHash = tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
 
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
@@ -747,6 +747,7 @@ const Backend = {
         }else{
             let btcHash = await this.btcSendRawTransaction(tx.toHex());
             logger.info("_revokeMpc tx id:" + btcHash);
+            logger.info("_revokeMpc sigHash:" + sigHash);
             return btcHash;
         }
     },
@@ -849,7 +850,7 @@ const Backend = {
 
         const tx = txb.buildIncomplete();
         tx.ins[0].script = redeemScript;
-        const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+        const sigHash = tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
 
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
@@ -951,7 +952,7 @@ const Backend = {
         let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
         txb.setVersion(1);
         for (let i = 0; i < inputs.length; i++) {
-            txb.addInput(inputs[i].txid, inputs[i].vout, config.DEFAULT_SEQUENCE)
+            txb.addInput(inputs[i].txid, inputs[i].vout)
         }
 
         // put out at 0 position
@@ -968,7 +969,6 @@ const Backend = {
         for (let i = 0; i < inputs.length; i++) {
             tx.ins[i].script = config.storemanScript;
         }
-        const sigHash = tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
         for (let i = 0; i < signs.length; i++) {
@@ -981,7 +981,7 @@ const Backend = {
         }
         rawTx = tx.toHex();
         logger.debug('rawTx: ', rawTx)
-
+        const sigHash = tx.getId();
         return {rawTx: rawTx, fee: fee, sigHash:sigHash};
     },
     async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
@@ -1079,13 +1079,11 @@ const Backend = {
         if(config.isMpcSlaver){
             return sigHash;
         }else{
-            let btcHash = await this.btcSendRawTransaction(tx.toHex());
-            logger.info("_revokeMpc tx id:" + btcHash);
-            return btcHash;
+            let result = await client.sendRawTransaction(rawTx);
+            logger.info("btcTxBuildSendStoremanMpc tx id:" + result);
+            logger.info("###############################sigHash:"+ sigHash);
+            return {result: result, fee: fee}
         }
-
-        let result = await client.sendRawTransaction(rawTx);
-        return {result: result, fee: fee}
     },
 
     async btcSendTransaction(keyPairArray, amount, destAddress, feeRate) {
