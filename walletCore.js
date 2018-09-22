@@ -1,12 +1,9 @@
 "use strict";
 
-//let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let sendTransaction = require('./cross_send/sendTransaction.js');
-let crosschain = require('./dbDefine/crossTransDefine.js');
 let sendFromSocket = require("./wanchainsender/index.js").SendFromSocket;
 const sendFromWeb3 = require("./wanchainsender/index.js").SendFromWeb3;
 const wanchaintrans = require("./wanchaintrans/index.js");
-const NormalSend = wanchaintrans.NormalSend;
 let keystoreDir = require('wanchain-keystore').keystoreDir;
 let messageFactory = require('./webSocket/messageFactory.js');
 let socketServer = require("./wanchainsender/index.js").socketServer;
@@ -42,8 +39,7 @@ class walletcore  {
         }
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath);
         this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath);
-        // this.databaseGroup = databaseGroup;
-        // databaseGroup.useDatabase(config.databasePath,[crosschain]);
+
         this.be = be;
         this.btcUtil = btcUtil;
         this.sendFromSocket = sendFromSocket;
@@ -51,9 +47,6 @@ class walletcore  {
     }
     close(){
         clearInterval(montimer);
-        // for (var key in databaseGroup.databaseAry) {
-        //     databaseGroup.databaseAry[key].db.close();
-        // }
         cm.crossDb.close();
         cm.walletDb.close();
         this.wanSend.socket.connection.close();

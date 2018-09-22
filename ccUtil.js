@@ -24,13 +24,12 @@ let btcWanTxSendRec = require('./cross_send/btcWanTxSendRec.js');
 
 let messageFactory = require('./webSocket/messageFactory.js');
 let socketServer = require("./wanchainsender/index.js").socketServer;
-let databaseGroup = require('./wanchaindb/index.js').databaseGroup;
 let keystoreDir = require('wanchain-keystore').keystoreDir;
 let logger;
 let config;
 const WebSocket = require('ws');
 const Web3 = require("web3");
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+const web3 = new Web3();
 
 function keyPairArray2AddrArray(kps) {
     let addrs = [];
@@ -55,6 +54,7 @@ const Backend = {
         this.client = new Client(config.btcServerNet);
         client = this.client;
         logger = config.getLogger("crossChainUtil");
+        btcUtil.init();
 
         cm.lockedTime = config.lockedTime;
         logger.debug("lockedTime: ", cm.lockedTime);
@@ -67,6 +67,7 @@ const Backend = {
         this.config = config;
         this.client = new Client(config.btcServerNet);
         client = this.client;
+        btcUtil.init();
         this.EthKeyStoreDir = new keystoreDir(config.ethKeyStorePath),
             this.WanKeyStoreDir = new keystoreDir(config.wanKeyStorePath),
             this.ethSender = ethsender;
@@ -372,8 +373,7 @@ const Backend = {
         let b = Buffer.concat([b1, b2, b3]);
         return b;
     },
-    // storeman
-    // TODO the check is to simple.
+
     async _verifyBtcUtxo(storemanAddr, txHash, hashx, lockedTimestamp, UserBtcAddr) { // utxo.amount
         try {
             let ctx = await client.getRawTransaction(txHash, true);
@@ -854,12 +854,11 @@ const Backend = {
 
         let signs = await mpc.signMpcBtcTransaction(tx);
         console.log("signs:",signs);
-        var storemanPair = bitcoin.ECPair.fromPublicKey(Buffer.from(config.stmPublickey,'hex'));
         const redeemScriptSig = bitcoin.payments.p2sh({
             redeem: {
                 input: bitcoin.script.compile([
                     Buffer.from(signs[0].slice(2), 'hex'),
-                    Buffer.from(config.stmPublickey,'hex'),//storemanPair.publicKey,//Buffer.from(config.stmPublickey,'hex'),
+                    Buffer.from(config.stmPublickey,'hex'),
                     Buffer.from(x, 'hex'),
                     bitcoin.opcodes.OP_TRUE
                 ]),
@@ -867,9 +866,9 @@ const Backend = {
             },
             network: config.bitcoinNetwork
         }).input;
-        console.log("redeemScriptSig:",redeemScriptSig.toString('hex'));
+        logger.debug("redeemScriptSig:",redeemScriptSig.toString('hex'));
         tx.setInputScript(0, redeemScriptSig);
-        console.log("XXXXXXXXXXXXXXX: tx.toHex()   ", tx.toHex());
+        logger.debug("tx.toHex(): ", tx.toHex());
         let btcHash = await this.btcSendRawTransaction(tx.toHex());
         logger.debug("_redeemMpc tx id:" + btcHash);
         return btcHash;
