@@ -94,6 +94,9 @@ config.confirmBlocks = 3;
 config.btcConfirmBlocks = 1;
 config.isStoreman = false;
 config.isMpc = false;
+config.isLeader = false;
+config.isMpcSlaver = false;
+
 config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
 config.publickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
 config.stmPublickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
