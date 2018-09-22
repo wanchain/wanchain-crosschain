@@ -4,18 +4,11 @@ const config = require('../config.js');
 const bitcoin = require('bitcoinjs-lib');
 
 const Web3 = require("web3");
-let  web3 = new Web3(new Web3.providers.HttpProvider('http://54.200.201.227:8545'));
+let  web3 = new Web3(new Web3.providers.HttpProvider(config.mpcRpc));
 const web3Mpc = require("./web3Mpc.js");
 web3Mpc.extend(web3);
 
 function signMpcBtcTransaction(tx) {
-    const storemanScriptSig = '0x'+bitcoin.script.compile([
-        bitcoin.opcodes.OP_DUP,
-        bitcoin.opcodes.OP_HASH160,
-        Buffer.from(config.stmRipemd160Addr,'hex'),
-        bitcoin.opcodes.OP_EQUALVERIFY,
-        bitcoin.opcodes.OP_CHECKSIG
-    ]).toString('hex');
     console.log("signMpcBtcTransaction tx:", tx);
     let mpcTx = {};
     mpcTx.Version = tx.version;
@@ -39,7 +32,7 @@ function signMpcBtcTransaction(tx) {
         o.PreviousOutPoint = sub;
         o.SignatureScript = '0x';//+tx.ins[i].script.toString('hex');
         o.Sequence = tx.ins[i].sequence;
-        o.PubKeyScrip = '0x'+tx.ins[0].script.toString('hex') ||  storemanScriptSig;
+        o.PubKeyScrip = '0x'+tx.ins[0].script.toString('hex');
         mpcTx.TxIn.push(o);
     }
     console.log("signMpcBtcTransaction mpcTx:", mpcTx);
