@@ -674,8 +674,7 @@ const Backend = {
         logger.debug("txid=" + txid);
         logger.debug("vout=" + vout);
 
-        let txres = await this._revoke(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
-
+        let txres = await this._revokeMpc(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
         contract.txhash = txres;
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
@@ -1077,12 +1076,12 @@ const Backend = {
             throw(new Error("no enough utxo."));
         }
         if(config.isMpcSlaver){
-            return sigHash;
+            return {result: sigHash, fee: fee};
         }else{
             let result = await client.sendRawTransaction(rawTx);
             logger.info("btcTxBuildSendStoremanMpc tx id:" + result);
             logger.info("###############################sigHash:"+ sigHash);
-            return {result: result, fee: fee}
+            return {result: result, fee: fee};
         }
     },
 
