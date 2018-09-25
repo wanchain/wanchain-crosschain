@@ -12,11 +12,6 @@ const mpc = require('./mpc/mpc.js');
 const fs = require('fs');
 const path = require('path');
 
-function getAddress(keypair) {
-    const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: config.bitcoinNetwork});
-    return pkh.address;
-}
-
 let client;
 const keythereum = require("keythereum");
 keythereum.constants.quiet = true;
@@ -34,17 +29,17 @@ const WebSocket = require('ws');
 const Web3 = require("web3");
 const web3 = new Web3();
 
-function keyPairArray2AddrArray(kps) {
-    let addrs = [];
-    for (let i = 0; i < kps.length; i++) {
-        addrs.push(getAddress(kps[i]));
-    }
-    return addrs;
-}
 
 const Backend = {
     CreaterSockSenderByChain(ChainType) {
         return new sendFromSocket(new socketServer(config.socketUrl, messageFactory), ChainType);
+    },
+    keyPairArray2AddrArray(kps) {
+        let addrs = [];
+        for (let i = 0; i < kps.length; i++) {
+            addrs.push(this.getAddress(kps[i]));
+        }
+        return addrs;
     },
     async createrSocketSender(ChainType) {
         let sender = this.CreaterSockSenderByChain(ChainType);
@@ -1040,14 +1035,14 @@ const Backend = {
     async btcTxBuildSendWallet(keyPairArray, target, feeRate) {
         let utxos;
         try {
-            let addArr = keyPairArray2AddrArray(keyPairArray);
+            let addArr = this.keyPairArray2AddrArray(keyPairArray);
             utxos = await this.getBtcUtxo(this.btcSender, config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, addArr);
         } catch (err) {
             throw err;
         }
         const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
         if (!rawTx) {
-            throw("no enough utxo.");
+            throw(new Error("no enough utxo."));
         }
         let result = await this.sendRawTransaction(this.btcSender, rawTx);
         return {result: result, fee: fee}
@@ -1055,7 +1050,7 @@ const Backend = {
     async btcTxBuildSendStoreman(keyPairArray, target, feeRate) {
         let utxos;
         try {
-            let addArr = keyPairArray2AddrArray(keyPairArray);
+            let addArr = this.keyPairArray2AddrArray(keyPairArray);
             utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, addArr);
         } catch (err) {
             throw err;
@@ -1063,7 +1058,7 @@ const Backend = {
 
         const {rawTx, fee} = await this.btcBuildTransaction(utxos, keyPairArray, target, feeRate);
         if (!rawTx) {
-            throw("no enough utxo.");
+            throw(new Error("no enough utxo."));
         }
         let result = await client.sendRawTransaction(rawTx);
         return {result: result, fee: fee}
