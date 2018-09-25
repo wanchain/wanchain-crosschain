@@ -919,9 +919,9 @@ const Backend = {
             return new Error('balance can not offord fee and target tranfer value');
         }
 
-        if (fee > target.value) {
-            return new Error('target value must be larger than the fee')
-        }
+        // if (fee > target.value) {
+        //     return new Error('target value must be larger than the fee')
+        // }
 
         outputs.push(target)
         outputs.push({'value': change})
