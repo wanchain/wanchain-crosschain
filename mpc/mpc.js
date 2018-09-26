@@ -8,8 +8,8 @@ let  web3 = new Web3(new Web3.providers.HttpProvider(config.mpcRpc));
 const web3Mpc = require("./web3Mpc.js");
 web3Mpc.extend(web3);
 
-function signMpcBtcTransaction(tx) {
-    console.log("signMpcBtcTransaction tx:", tx);
+function tx2mpcTx(tx){
+    console.log("tx2mpcTx tx:", tx);
     let mpcTx = {};
     mpcTx.Version = tx.version;
     mpcTx.LockTime = tx.locktime;
@@ -35,6 +35,10 @@ function signMpcBtcTransaction(tx) {
         o.PkScript = '0x'+tx.ins[0].script.toString('hex');
         mpcTx.TxIn.push(o);
     }
+    return mpcTx;
+}
+function signMpcBtcTransaction(tx) {
+    let mpcTx = tx2mpcTx(tx);
     console.log("signMpcBtcTransaction mpcTx:", mpcTx);
     return new Promise((resolve, reject) => {
         try {
@@ -56,10 +60,12 @@ function signMpcBtcTransaction(tx) {
 }
 
 function addValidMpcBtcTx(tx) {
+    let mpcTx = tx2mpcTx(tx);
+    console.log("addValidMpcBtcTx mpcTx:", mpcTx);
     return new Promise((resolve, reject) => {
         try {
             console.log(web3.storeman);
-            web3.storeman.addValidMpcBtcTx(tx, (err, result) => {
+            web3.storeman.addValidMpcBtcTx(mpcTx, (err, result) => {
                 if (!err) {
                     console.log("********************************** mpc addValidMpcBtcTx successfully **********************************", result);
                     resolve(result);
