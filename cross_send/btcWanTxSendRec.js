@@ -16,149 +16,126 @@ module.exports = class btcWanTxSendRec {
 
     insertLockData(ctx) {
         let trans = ctx
-        try {
-            if (trans.crossType == 'BTC2WAN') {
-                let collection =  this.getBtcCrossCollection();
-                let cur = Date.now()
-                let obj = {
-                    HashX: trans.hashx,
-                    from: trans.from,
-                    to: trans.to,
-                    storeman: trans.storeman,
-                    crossAddress: '',
-                    value: trans.amount,
-                    txValue: trans.value,
-                    x: trans.x,
-                    time: cur.toString(),
-                    HTLCtime: (3000000 + 2 * 1000 * Number(cm.lockedTime) + cur).toString(),
-                    chain: 'BTC',
-                    status: 'sentHashPending',
-                    lockConfirmed: 0,
-                    refundConfirmed: 0,
-                    revokeConfirmed: 0,
-                    lockTxHash: '',
-                    refundTxHash: '',
-                    revokeTxHash: '',
-                    btcRedeemLockTimeStamp: 1000 * trans.redeemLockTimeStamp,
-                    btcNoticeTxhash: '',
-                    btcLockTxHash: trans.lockTxHash,
-                    btcRefundTxHash: '',
-                    btcRevokeTxHash: ''
-                }
-
-                let res = collection.insert(obj)
-                logger.debug('insert obj = ')
-                logger.debug(res)
-            } else {
-                return {error: new Error('Not supported cross chain type')}
+        if (trans.crossType == 'BTC2WAN') {
+            let collection =  this.getBtcCrossCollection();
+            let cur = Date.now()
+            let obj = {
+                HashX: trans.hashx,
+                from: trans.from,
+                to: trans.to,
+                storeman: trans.storeman,
+                crossAddress: '',
+                value: trans.amount,
+                txValue: trans.value,
+                x: trans.x,
+                time: cur.toString(),
+                HTLCtime: (3000000 + 2 * 1000 * Number(cm.lockedTime) + cur).toString(),
+                chain: 'BTC',
+                status: 'sentHashPending',
+                lockConfirmed: 0,
+                refundConfirmed: 0,
+                revokeConfirmed: 0,
+                lockTxHash: '',
+                refundTxHash: '',
+                revokeTxHash: '',
+                btcRedeemLockTimeStamp: 1000 * trans.redeemLockTimeStamp,
+                btcNoticeTxhash: '',
+                btcLockTxHash: trans.lockTxHash,
+                btcRefundTxHash: '',
+                btcRevokeTxHash: ''
             }
-        }
-        catch (e) {
-            return {error: e}
+
+            let res = collection.insert(obj)
+            logger.debug('insert obj = ')
+            logger.debug(res)
+        } else {
+            throw(new Error('Not supported cross chain type'));
         }
     }
 
     insertNormalData(trans) {
-        try {
-            let collection =  this.getBtcCrossCollection();
-            if (trans.crossType == 'BTC2WAN') {
-                collection.insert(
-                    {
-                        from: trans.from,
-                        to: trans.to,
-                        value: trans.value.toString(10),
-                        time: Date.now().toString(),
-                        txhash: trans.txHash,
-                        chain: 'BTC',
-                    })
-                return null
-            } else {
-                return {error: new Error('Not supported cross chain type')}
-            }
-
-        } catch (e) {
-            return {error: e}
+        let collection =  this.getBtcCrossCollection();
+        if (trans.crossType == 'BTC2WAN') {
+            collection.insert(
+                {
+                    from: trans.from,
+                    to: trans.to,
+                    value: trans.value.toString(10),
+                    time: Date.now().toString(),
+                    txhash: trans.txHash,
+                    chain: 'BTC',
+                })
+            return null
+        } else {
+            throw(new Error('Not supported cross chain type'));
         }
     }
 
     insertRefundData(trans, crossType) {
-        try {
-            let collection =  this.getBtcCrossCollection();
-            let value = null
+        let collection =  this.getBtcCrossCollection();
+        let value = null
 
-            if (trans.crossType == 'BTC2WAN') {
-                value = collection.findOne({HashX: trans.hashx})
-            } else {
-                return {error: new Error('Not supported cross chain type')}
+        if (trans.crossType == 'BTC2WAN') {
+            value = collection.findOne({HashX: trans.hashx})
+        } else {
+            throw(new Error('Not supported cross chain type'));
+        }
+
+        if (value != null) {
+            value.btcRefundTxHash = trans.refundTxHash;
+            let res = collection.update(value);
+            logger.debug("refund item=");
+            logger.debug(res);
+
+        } else {
+            if(cm.config.isStoreman){
+                trans.btcRefundTxHash = trans.refundTxHash;
+                let res = collection.insert(trans);
+                logger.info("storeman refund item=");
+                logger.info(trans);
+            }else{
+                throw(new Error('Value not find in db'));
             }
-
-            if (value != null) {
-                value.btcRefundTxHash = trans.refundTxHash;
-                let res = collection.update(value);
-                logger.debug("refund item=");
-                logger.debug(res);
-
-            } else {
-                if(cm.config.isStoreman){
-                    trans.btcRefundTxHash = trans.refundTxHash;
-                    let res = collection.insert(trans);
-                    logger.info("storeman refund item=");
-                    logger.info(trans);
-                }else{
-                    return {error: new Error('Value not find in db')}
-                }
-            }
-        } catch (e) {
-            return {error: e}
         }
     }
 
     insertRevokeData(trans) {
-        try {
-            let collection =  this.getBtcCrossCollection();
-            let value = null
-            if (trans.crossType == 'BTC2WAN') {
-                value = collection.findOne({HashX: trans.hashx})
-            } else {
-                return {error: new Error('Not supported cross chain type')}
-            }
-
-            if (value != null) {
-                value.btcRevokeTxHash = trans.revokeTxHash;
-                let res = collection.update(value);
-                logger.debug("revoke item:", res);
-            } else {
-                return {error: new Error('Value not find in db')}
-            }
-        } catch (e) {
-            return {error: e}
+        let collection =  this.getBtcCrossCollection();
+        let value = null
+        if (trans.crossType == 'BTC2WAN') {
+            value = collection.findOne({HashX: trans.hashx})
+        } else {
+            throw(new Error('Not supported cross chain type'));
         }
 
+        if (value != null) {
+            value.btcRevokeTxHash = trans.revokeTxHash;
+            let res = collection.update(value);
+            logger.debug("revoke item:", res);
+        } else {
+            throw(new Error('Value not find in db'));
+        }
     }
 
     insertWanNoticeData(trans) {
-        try {
-            let collection =  this.getBtcCrossCollection();
-            let value = null
-            if (trans.crossType == 'BTC2WAN') {
-                value = collection.findOne({HashX: trans.hashx})
-            } else {
-                return {error: new Error('Not supported cross chain type')}
-            }
+        let collection =  this.getBtcCrossCollection();
+        let value = null
+        if (trans.crossType == 'BTC2WAN') {
+            value = collection.findOne({HashX: trans.hashx})
+        } else {
+            throw(new Error('Not supported cross chain type'));
+        }
 
-            if (value != null) {
-                value.crossAddress = trans.crossAddress;
-                value.btcNoticeTxhash = trans.btcNoticeTxhash;
-                value.status = "sentHashPending";
+        if (value != null) {
+            value.crossAddress = trans.crossAddress;
+            value.btcNoticeTxhash = trans.btcNoticeTxhash;
+            value.status = "sentHashPending";
 
-                let res = collection.update(value);
-                logger.debug("wan notice item=");
-                logger.debug(res);
-            } else {
-                return {error: new Error('Value not find in db')}
-            }
-        } catch (e) {
-            return {error: e}
+            let res = collection.update(value);
+            logger.debug("wan notice item=");
+            logger.debug(res);
+        } else {
+            throw(new Error('Value not find in db'));
         }
     }
 }

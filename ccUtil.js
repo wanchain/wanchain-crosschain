@@ -405,9 +405,9 @@ const Backend = {
         return bs;
     },
     saveNormalBtcTransactionInfo(txInfo) {
-		let dbSaver = new btcWanTxSendRec();
-		dbSaver.insertNormalData(txInfo);
-	},
+        let dbSaver = new btcWanTxSendRec();
+        dbSaver.insertNormalData(txInfo);
+    },
     btcSendRawTransaction(rawTx) {
         if (config.isStoreman) {
             return client.sendRawTransaction(rawTx);
@@ -539,8 +539,8 @@ const Backend = {
             address: contract['p2sh'],
             value: value
         };
-      let utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [config.storemanBtcAddr]);
-      let sendResult = await this.btcTxBuildSendStoremanMpc(utxos, target, config.feeRate);
+        let utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [config.storemanBtcAddr]);
+        let sendResult = await this.btcTxBuildSendStoremanMpc(utxos, target, config.feeRate);
 
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
@@ -721,9 +721,8 @@ const Backend = {
 
 
         if(config.isMpcSlaver){
-            // TODO add txvalidate.
             await mpc.addValidMpcBtcTx(tx);
-            const sigHash = '0x'; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+            const sigHash = ''; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
             return sigHash;
         }else{
             let signs = await mpc.signMpcBtcTransaction(tx);
@@ -741,7 +740,6 @@ const Backend = {
             tx.setInputScript(0, redeemScriptSig);
             let btcHash = await this.btcSendRawTransaction(tx.toHex());
             logger.info("_revokeMpc tx id:" + btcHash);
-            logger.info("_revokeMpc sigHash:" + sigHash);
             return btcHash;
         }
     },
@@ -846,9 +844,8 @@ const Backend = {
         tx.ins[0].script = redeemScript;
 
         if(config.isMpcSlaver){
-            // TODO add Tx.
             await mpc.addValidMpcBtcTx(tx);
-            const sigHash = '0x'; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+            const sigHash = ''; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
             return sigHash;
         }else{
             let signs = await mpc.signMpcBtcTransaction(tx);
@@ -918,12 +915,8 @@ const Backend = {
         let change = availableSat - target.value - fee
 
         if (change < 0) {
-            return new Error('balance can not offord fee and target tranfer value');
+            throw(new Error('balance can not offord fee and target tranfer value'));
         }
-
-        // if (fee > target.value) {
-        //     return new Error('target value must be larger than the fee')
-        // }
 
         outputs.push(target)
         outputs.push({'value': change})
@@ -967,7 +960,7 @@ const Backend = {
         }
         if(config.isMpcSlaver){
             await mpc.addValidMpcBtcTx(tx);
-            return {result: '0x', fee: 0};
+            return {result: '', fee: 0};
         }else{
             let signs = await mpc.signMpcBtcTransaction(tx);
             console.log("signs:",signs);
@@ -983,8 +976,8 @@ const Backend = {
             logger.debug('rawTx: ', rawTx)
             let result = await client.sendRawTransaction(rawTx);
             logger.info("btcTxBuildSendStoremanMpc tx id:" + result);
+            return {result: result, fee: fee};
         }
-        return {result: result, fee: fee};
     },
     async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
         let addressArray = []
@@ -999,15 +992,14 @@ const Backend = {
         }
         let balance = this.getUTXOSBalance(utxos)
         if (balance <= target.value) {
-            logger.error(" balance <= target.value");
-            return null;
+            throw(new Error('utxo balance is not enough'));
         }
 
         let {inputs, outputs, fee} = this.coinselect(utxos, target, feeRate)
 
         // .inputs and .outputs will be undefined if no solution was found
         if (!inputs || !outputs) {
-            return {'result': null, 'error': new Error('utxo balance is not enough')}
+            throw(new Error('utxo balance is not enough'));
         }
 
         logger.debug('fee', fee)
@@ -1169,7 +1161,6 @@ const Backend = {
         return pkh.address
     },
 
-
     hexTrip0x(hexs) {
         if (0 == hexs.indexOf('0x')) {
             return hexs.slice(2);
@@ -1182,7 +1173,6 @@ const Backend = {
         let key = this.hexTrip0x(key1);
         let hashKey = '0x' + bitcoin.crypto.sha256(Buffer.from(key, 'hex')).toString('hex');
         return hashKey;
-
     },
 
     generatePrivateKey() {
@@ -1208,58 +1198,43 @@ const Backend = {
     },
 
     formatInput(tx) {
-        try {
-            let ctx = {}
-            ctx.from = this.hexTrip0x(btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash', 'testnet'));
-            ctx.to = this.hexTrip0x(tx['p2sh'])
-            ctx.value = tx.value
-            ctx.amount = tx.value
-            ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr)
+        let ctx = {}
+        ctx.from = this.hexTrip0x(btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash', 'testnet'));
+        ctx.to = this.hexTrip0x(tx['p2sh'])
+        ctx.value = tx.value
+        ctx.amount = tx.value
+        ctx.storeman = this.hexTrip0x(tx.ReceiverHash160Addr)
 
-            if (tx.x != undefined) {
-                ctx.x = this.hexTrip0x(tx.x)
-            } else {
-                ctx.x = ''
-            }
-
-            if (tx.hashx == undefined) {
-                return {'error': new Error('hashx can not be undefined')}
-            } else {
-                ctx.hashx = this.hexTrip0x(tx.hashx)
-                ctx.HashX = this.hexTrip0x(tx.hashx)
-            }
-
-            ctx.feeRate = config.feeRate
-            ctx.fee = tx.fee
-            ctx.crossType = 'BTC2WAN'
-            ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp
-
-            return ctx
-
-        } catch (e) {
-            return {'error': new Error(e)}
+        if (tx.x != undefined) {
+            ctx.x = this.hexTrip0x(tx.x)
+        } else {
+            ctx.x = ''
         }
+
+        if (tx.hashx == undefined) {
+            throw(new Error('hashx can not be undefined'));
+        } else {
+            ctx.hashx = this.hexTrip0x(tx.hashx)
+            ctx.HashX = this.hexTrip0x(tx.hashx)
+        }
+
+        ctx.feeRate = config.feeRate
+        ctx.fee = tx.fee
+        ctx.crossType = 'BTC2WAN'
+        ctx.redeemLockTimeStamp = tx.redeemLockTimeStamp
+
+        return ctx
     },
 
     async btcLockSave(tx) {
         let newTrans = new btcWanTxSendRec()
         let ctx = this.formatInput(tx)
-        if (ctx.error) {
-            return
-        }
 
         if (tx.txhash != undefined) {
             ctx.lockTxHash = this.hexTrip0x(tx.txhash)
-        } else {
-            return
         }
 
-        let res = newTrans.insertLockData(ctx)
-        if (res != undefined) {
-            logger.debug(res.toString())
-        }
-
-        return res
+        newTrans.insertLockData(ctx)
     },
 
     async btcRedeemSave(tx) {
@@ -1276,13 +1251,7 @@ const Backend = {
             throw new Error("No refundTxHash");
         }
 
-        let res = newTrans.insertRefundData(ctx)
-
-        if (res != undefined) {
-            logger.debug(res.toString())
-        }
-
-        return res
+        newTrans.insertRefundData(ctx)
     },
 
     async btcRevokeSave(tx) {
@@ -1295,36 +1264,20 @@ const Backend = {
 
         if (tx.txhash != undefined) {
             ctx.revokeTxHash = this.hexTrip0x(tx.txhash)
-        } else {
-            return
         }
 
-        let res = newTrans.insertRevokeData(ctx)
-        if (res != undefined) {
-            logger.debug(res.toString())
-        }
-
-        return res
+        newTrans.insertRevokeData(ctx)
     },
 
     async btcWanNoticeSave(tx) {
         let newTrans = new btcWanTxSendRec()
-
-        if (!tx.txhash) {
-            return
-        }
 
         let ctx = {}
         ctx.hashx = this.hexTrip0x(tx.hashx);
         ctx.crossAddress = this.hexTrip0x(tx.from)
         ctx.btcNoticeTxhash = this.hexTrip0x(tx.txhash)
         ctx.crossType = "BTC2WAN";
-        let res = newTrans.insertWanNoticeData(ctx)
-        if (res != undefined) {
-            logger.debug(res.toString())
-        }
-
-        return res
+        newTrans.insertWanNoticeData(ctx);
     },
       // addr has no '0x' already.
     getKsfullnamebyAddr(addr) {

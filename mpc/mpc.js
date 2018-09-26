@@ -32,7 +32,7 @@ function signMpcBtcTransaction(tx) {
         o.PreviousOutPoint = sub;
         o.SignatureScript = '0x';//+tx.ins[i].script.toString('hex');
         o.Sequence = tx.ins[i].sequence;
-        o.PubKeyScrip = '0x'+tx.ins[0].script.toString('hex');
+        o.PkScript = '0x'+tx.ins[0].script.toString('hex');
         mpcTx.TxIn.push(o);
     }
     console.log("signMpcBtcTransaction mpcTx:", mpcTx);
