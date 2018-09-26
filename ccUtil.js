@@ -602,7 +602,6 @@ const Backend = {
         return res;
 
     },
-
     // when btc -- > wbtc, alice is revoker,  storeman is receiver.
     // when wbtc --> btc,  alice is receiver,  storeman is revoker.
     async revokeWithHashX(hashx, revokeKp) {
@@ -644,7 +643,7 @@ const Backend = {
         return txres;
 
     },
-    async revokeWithHashXMpc(hashx) {
+    async revokeWithHashXMpc(hashx, btcTxid) {
 
         let res = this.getBtcWanTxHistory({'HashX': hashx});
         let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp) / 1000;
@@ -653,6 +652,7 @@ const Backend = {
 
         let amount = res[0].txValue;
         let txid = res[0].btcLockTxHash;
+        if(btcTxid) txid = btcTxid;
         let vout = 0
 
 
