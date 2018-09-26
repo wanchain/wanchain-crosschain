@@ -376,7 +376,7 @@ const Backend = {
         try {
             let ctx = await client.getRawTransaction(txHash, true);
             console.log("verifyBtcUtxo ctx:", ctx);
-            if (ctx && ctx.locktime == 0) {
+            if (ctx && ctx.locktime == 0 && ctx.confirmations && ctx.confirmations > config.btcConfirmBlocks) {
                 let contract = btcUtil.hashtimelockcontract(hashx, lockedTimestamp, storemanAddr, UserBtcAddr); //(hashx, redeemLockTimeStamp,destHash160Addr, revokerHash160Addr)
                 if (ctx.vout && ctx.vout[0] && ctx.vout[0].scriptPubKey.addresses[0] == contract.p2sh) {
                     return Number(web3.toBigNumber(ctx.vout[0].value).mul(100000000));  //Number(ctx.vout[0].value) * 100000000;
@@ -720,25 +720,27 @@ const Backend = {
 
         let tx = txb.buildIncomplete();
         tx.ins[0].script = redeemScript;
-        const sigHash = tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
 
-        let signs = await mpc.signMpcBtcTransaction(tx);
-        console.log("signs:",signs);
-        let redeemScriptSig = bitcoin.payments.p2sh({
-            redeem: {
-                input: bitcoin.script.compile([
-                    Buffer.from(signs[0].slice(2), 'hex'),
-                    Buffer.from(config.stmPublickey,'hex'),
-                    bitcoin.opcodes.OP_FALSE
-                ]),
-                output: redeemScript
-            }
-        }).input;
-        tx.setInputScript(0, redeemScriptSig);
 
         if(config.isMpcSlaver){
+            // TODO add txvalidate.
+            await mpc.addValidMpcBtcTx(tx);
+            const sigHash = '0x'; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
             return sigHash;
         }else{
+            let signs = await mpc.signMpcBtcTransaction(tx);
+            console.log("signs:",signs);
+            let redeemScriptSig = bitcoin.payments.p2sh({
+                redeem: {
+                    input: bitcoin.script.compile([
+                        Buffer.from(signs[0].slice(2), 'hex'),
+                        Buffer.from(config.stmPublickey,'hex'),
+                        bitcoin.opcodes.OP_FALSE
+                    ]),
+                    output: redeemScript
+                }
+            }).input;
+            tx.setInputScript(0, redeemScriptSig);
             let btcHash = await this.btcSendRawTransaction(tx.toHex());
             logger.info("_revokeMpc tx id:" + btcHash);
             logger.info("_revokeMpc sigHash:" + sigHash);
@@ -844,28 +846,30 @@ const Backend = {
 
         const tx = txb.buildIncomplete();
         tx.ins[0].script = redeemScript;
-        const sigHash = tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
 
-        let signs = await mpc.signMpcBtcTransaction(tx);
-        console.log("signs:",signs);
-        const redeemScriptSig = bitcoin.payments.p2sh({
-            redeem: {
-                input: bitcoin.script.compile([
-                    Buffer.from(signs[0].slice(2), 'hex'),
-                    Buffer.from(config.stmPublickey,'hex'),
-                    Buffer.from(x, 'hex'),
-                    bitcoin.opcodes.OP_TRUE
-                ]),
-                output: redeemScript,
-            },
-            network: config.bitcoinNetwork
-        }).input;
-        logger.debug("redeemScriptSig:",redeemScriptSig.toString('hex'));
-        tx.setInputScript(0, redeemScriptSig);
-        logger.debug("tx.toHex(): ", tx.toHex());
         if(config.isMpcSlaver){
+            // TODO add Tx.
+            await mpc.addValidMpcBtcTx(tx);
+            const sigHash = '0x'; // tx.getId();//tx.hashForSignature(0, redeemScript, bitcoin.Transaction.SIGHASH_ALL);
             return sigHash;
         }else{
+            let signs = await mpc.signMpcBtcTransaction(tx);
+            console.log("signs:",signs);
+            const redeemScriptSig = bitcoin.payments.p2sh({
+                redeem: {
+                    input: bitcoin.script.compile([
+                        Buffer.from(signs[0].slice(2), 'hex'),
+                        Buffer.from(config.stmPublickey,'hex'),
+                        Buffer.from(x, 'hex'),
+                        bitcoin.opcodes.OP_TRUE
+                    ]),
+                    output: redeemScript,
+                },
+                network: config.bitcoinNetwork
+            }).input;
+            logger.debug("redeemScriptSig:",redeemScriptSig.toString('hex'));
+            tx.setInputScript(0, redeemScriptSig);
+            logger.debug("tx.toHex(): ", tx.toHex());
             let btcHash = await this.btcSendRawTransaction(tx.toHex());
             logger.info("_redeemMpc tx id:" + btcHash);
             return btcHash;
@@ -928,7 +932,7 @@ const Backend = {
 
         return {inputs, outputs, fee}
     },
-    async btcBuildTransactionMpc(utxos,  target, feeRate) {
+    async btcTxBuildSendStoremanMpc(utxos,  target, feeRate) {
         let balance = this.getUTXOSBalance(utxos);
         if (balance <= target.value) {
             throw(new Error(" balance <= target.value"));
@@ -963,20 +967,26 @@ const Backend = {
         for (let i = 0; i < inputs.length; i++) {
             tx.ins[i].script = config.storemanScript;
         }
-        let signs = await mpc.signMpcBtcTransaction(tx);
-        console.log("signs:",signs);
-        for (let i = 0; i < signs.length; i++) {
-            let ScriptSig = bitcoin.payments.p2pkh({
-                signature:Buffer.from(signs[i].slice(2),'hex'),
-                pubkey: Buffer.from(config.publickey,'hex'),
-                network: config.bitcoinNetwork
-            }).input;
-            tx.setInputScript(i, ScriptSig);
+        if(config.isMpcSlaver){
+            await mpc.addValidMpcBtcTx(tx);
+            return {result: '0x', fee: 0};
+        }else{
+            let signs = await mpc.signMpcBtcTransaction(tx);
+            console.log("signs:",signs);
+            for (let i = 0; i < signs.length; i++) {
+                let ScriptSig = bitcoin.payments.p2pkh({
+                    signature:Buffer.from(signs[i].slice(2),'hex'),
+                    pubkey: Buffer.from(config.publickey,'hex'),
+                    network: config.bitcoinNetwork
+                }).input;
+                tx.setInputScript(i, ScriptSig);
+            }
+            rawTx = tx.toHex();
+            logger.debug('rawTx: ', rawTx)
+            let result = await client.sendRawTransaction(rawTx);
+            logger.info("btcTxBuildSendStoremanMpc tx id:" + result);
         }
-        rawTx = tx.toHex();
-        logger.debug('rawTx: ', rawTx)
-        const sigHash = tx.getId();
-        return {rawTx: rawTx, fee: fee, sigHash:sigHash};
+        return {result: result, fee: fee};
     },
     async btcBuildTransaction(utxos, keyPairArray, target, feeRate) {
         let addressArray = []
@@ -1063,22 +1073,7 @@ const Backend = {
         let result = await client.sendRawTransaction(rawTx);
         return {result: result, fee: fee}
     },
-    async btcTxBuildSendStoremanMpc(target, feeRate) {
-        let utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [config.storemanBtcAddr]);
 
-        const {rawTx, fee, sigHash} = await this.btcBuildTransactionMpc(utxos, target, feeRate);
-        if (!rawTx) {
-            throw(new Error("no enough utxo."));
-        }
-        if(config.isMpcSlaver){
-            return {result: sigHash, fee: fee};
-        }else{
-            let result = await client.sendRawTransaction(rawTx);
-            logger.info("btcTxBuildSendStoremanMpc tx id:" + result);
-            logger.info("###############################sigHash:"+ sigHash);
-            return {result: result, fee: fee};
-        }
-    },
 
     async btcSendTransaction(keyPairArray, amount, destAddress, feeRate) {
         let target = {

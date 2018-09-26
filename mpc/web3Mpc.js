@@ -1,5 +1,5 @@
 
-"use strict"
+"use strict";
 
 module.exports = {
     extend: (web3) => {
@@ -15,7 +15,7 @@ module.exports = {
             property: 'storeman',
             methods:
                 [
-                    insertMethod('addValidMpcTxRaw', 'storeman_addValidMpcTxRaw', 1, [null], null),
+                    insertMethod('addValidMpcBtcTx', 'storeman_addValidMpcBtcTx', 1, [null], null),
                     insertMethod('signMpcBtcTransaction', 'storeman_signMpcBtcTransaction', 1, [null], null),
                 ],
             properties:[],
