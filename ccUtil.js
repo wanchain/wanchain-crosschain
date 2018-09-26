@@ -512,10 +512,11 @@ const Backend = {
         if (!config.isStoreman) {
             sendResult = await this.btcTxBuildSendWallet(senderKp, target, config.feeRate);
         } else {
+            let utxos = await this.clientGetBtcUtxo(config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [config.storemanBtcAddr]);
             if(config.isMpc){
-                sendResult = await this.btcTxBuildSendStoremanMpc(senderKp, target, config.feeRate);
+                sendResult = await this.btcTxBuildSendStoremanMpc(utxos, target, config.feeRate);
             }else{
-                sendResult = await this.btcTxBuildSendStoreman(senderKp, target, config.feeRate);
+                sendResult = await this.btcTxBuildSendStoreman(utxos, target, config.feeRate);
             }
         }
 

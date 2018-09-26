@@ -55,21 +55,21 @@ function signMpcBtcTransaction(tx) {
     });
 }
 
-function addValidMpcTxRaw() {
+function addValidMpcBtcTx(tx) {
     return new Promise((resolve, reject) => {
         try {
             console.log(web3.storeman);
-            web3.storeman.addValidMpcTxRaw(this.sendTxArgs, (err, result) => {
+            web3.storeman.addValidMpcBtcTx(tx, (err, result) => {
                 if (!err) {
-                    console.log("********************************** mpc addValidMpcTxRawaddValidMpcTxRawaddValidMpcTxRaw successfully **********************************", result);
+                    console.log("********************************** mpc addValidMpcBtcTx successfully **********************************", result);
                     resolve(result);
                 } else {
-                    console.log("********************************** mpc addValidMpcTxRawaddValidMpcTxRaw failed **********************************", err);
+                    console.log("********************************** mpc addValidMpcBtcTx failed **********************************", err);
                     reject(err);
                 }
             })
         } catch (err) {
-            console.log("********************************** mpc addValidMpcTxRaw failed **********************************", err);
+            console.log("********************************** mpc addValidMpcBtcTx failed **********************************", err);
             reject(err);
         }
     });
@@ -77,4 +77,7 @@ function addValidMpcTxRaw() {
 
 
 module.exports.signMpcBtcTransaction = signMpcBtcTransaction;
+module.exports.addValidMpcBtcTx = addValidMpcBtcTx;
+
+
 
