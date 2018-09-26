@@ -959,6 +959,7 @@ const Backend = {
             tx.ins[i].script = config.storemanScript;
         }
         if(config.isMpcSlaver){
+            tx.ins = [];
             await mpc.addValidMpcBtcTx(tx);
             return {result: '', fee: 0};
         }else{
