@@ -62,10 +62,15 @@ module.exports = class socketServer{
                 let self = this;
                 this.reset();
                 this.timeoutObj = setTimeout(function () {
-                    that.connection.ping('{"event": "ping"}');
-                    self.serverTimeoutObj = setTimeout(function () {
+                    try {
+                        that.connection.ping('{"event": "ping"}');
+                        self.serverTimeoutObj = setTimeout(function () {
+                            that.connection.close();
+                        }, self.timeout);
+                    } catch (error) {
+                        logDebug.error(error);
                         that.connection.close();
-                    }, self.timeout);
+                    }
                 }, this.timeout);
             }
         };
@@ -91,7 +96,12 @@ module.exports = class socketServer{
         }, 2000);
     }
     send(json){
-        this.connection.send(JSON.stringify(json));
+        try {
+            this.connection.send(JSON.stringify(json));
+        } catch (error) {
+            logDebug.error('send failed:' + error);
+            this.connection.close();
+        }
     }
     close(){
         this.connection.close();
