@@ -667,7 +667,7 @@ const Backend = {
         logger.debug("txid=" + txid);
         logger.debug("vout=" + vout);
 
-        let txres = await this._revokeMpc(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp, revokeKp);
+        let txres = await this._revokeMpc(hashx, txid, vout, amount, redeemScript, redeemLockTimeStamp);
         contract.txhash = txres;
         contract.hashx = hashx;
         contract.redeemLockTimeStamp = redeemLockTimeStamp;
