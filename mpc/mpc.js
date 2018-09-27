@@ -2,6 +2,7 @@
 
 const config = require('../config.js');
 const bitcoin = require('bitcoinjs-lib');
+const cm = require('./comm.js');
 
 const Web3 = require("web3");
 let  web3 = new Web3(new Web3.providers.HttpProvider(config.mpcRpc));
@@ -9,7 +10,7 @@ const web3Mpc = require("./web3Mpc.js");
 web3Mpc.extend(web3);
 
 function tx2mpcTx(tx){
-    console.log("tx2mpcTx tx:", tx);
+    cm.logger.info("tx2mpcTx tx:", tx);
     let mpcTx = {};
     mpcTx.Version = tx.version;
     mpcTx.LockTime = tx.locktime;
@@ -39,21 +40,22 @@ function tx2mpcTx(tx){
 }
 function signMpcBtcTransaction(tx) {
     let mpcTx = tx2mpcTx(tx);
-    console.log("signMpcBtcTransaction mpcTx:", mpcTx);
+    cm.logger.info("signMpcBtcTransaction mpcTx:", mpcTx);
     return new Promise((resolve, reject) => {
         try {
             web3.storeman.signMpcBtcTransaction(mpcTx, (err, result) => {
                 if (!err) {
-                    console.log("********************************** mpc signViaMpc successfully **********************************", result);
+                    cm.logger.info("********************************** mpc signViaMpc successfully **********************************", result);
                     resolve(result);
 
                 } else {
-                    console.log("********************************** mpc signViaMpc failed **********************************", err);
+                    cm.logger.info("********************************** mpc signViaMpc failed **********************************", err);
+                    cm.logger.info("tx:", tx);
                     reject(err);
                 }
             })
         } catch (err) {
-            console.log("********************************** mpc signViaMpc failed **********************************", err);
+            cm.logger.info("********************************** mpc signViaMpc failed **********************************", err);
             reject(err);
         }
     });
@@ -61,21 +63,21 @@ function signMpcBtcTransaction(tx) {
 
 function addValidMpcBtcTx(tx) {
     let mpcTx = tx2mpcTx(tx);
-    console.log("addValidMpcBtcTx mpcTx:", mpcTx);
+    cm.logger.info("addValidMpcBtcTx mpcTx:", mpcTx);
     return new Promise((resolve, reject) => {
         try {
-            console.log(web3.storeman);
+            cm.logger.info(web3.storeman);
             web3.storeman.addValidMpcBtcTx(mpcTx, (err, result) => {
                 if (!err) {
-                    console.log("********************************** mpc addValidMpcBtcTx successfully **********************************", result);
+                    cm.logger.info("********************************** mpc addValidMpcBtcTx successfully **********************************", result);
                     resolve(result);
                 } else {
-                    console.log("********************************** mpc addValidMpcBtcTx failed **********************************", err);
+                    cm.logger.info("********************************** mpc addValidMpcBtcTx failed **********************************", err);
                     reject(err);
                 }
             })
         } catch (err) {
-            console.log("********************************** mpc addValidMpcBtcTx failed **********************************", err);
+            cm.logger.info("********************************** mpc addValidMpcBtcTx failed **********************************", err);
             reject(err);
         }
     });
