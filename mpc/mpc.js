@@ -2,7 +2,7 @@
 
 const config = require('../config.js');
 const bitcoin = require('bitcoinjs-lib');
-const cm = require('./comm.js');
+const cm = require('../comm.js');
 
 const Web3 = require("web3");
 let  web3 = new Web3(new Web3.providers.HttpProvider(config.mpcRpc));
