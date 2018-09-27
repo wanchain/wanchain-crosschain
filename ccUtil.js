@@ -638,7 +638,7 @@ const Backend = {
         contract.feeRate = config.feeRate;
         contract.fee = config.feeHard;
 
-        this.btcRevokeSave(contract);
+        await this.btcRevokeSave(contract);
 
         return txres;
 
