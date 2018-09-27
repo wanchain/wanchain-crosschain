@@ -8,6 +8,7 @@ class Cm {
     }
     setConfig(config){
         this.cfg = config;
+        this.logger = config.getLogger("wanchain-crosschain");
     }
     getLogger(name){
         return config.getLogger(name);
