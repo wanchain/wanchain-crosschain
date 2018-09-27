@@ -81,10 +81,10 @@ config.isMpc = false;
 config.isLeader = false;
 config.isMpcSlaver = false;
 
-config.stmRipemd160Addr = "4c20a09fc986ee43149aeb52375315deffdd9e74";
-config.publickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
-config.stmPublickey = '027464ad9f8c81b8d19a3239974cab0238ed742e31fb8ce3c8c937b4a04634ca6e';
-config.storemanBtcAddr = "mnTUjdLRP7mPQ4UQjheK6UuWXff5ZJfwvL";
+config.stmRipemd160Addr = "81973c84d7814f2b4a0ade68c30d59280dbbd339";
+config.publickey = '024c3c98d60b222a10fb94f9bf3ad10c00fe6374029eb4327b361bc7ba4172b648';
+config.stmPublickey = '024c3c98d60b222a10fb94f9bf3ad10c00fe6374029eb4327b361bc7ba4172b648';
+config.storemanBtcAddr = "msLAdtYnYn7nX74NAG7yvvSVVrVeYMsnLR";
 config.storemanWif = 'cUFo4w9Z94onimW9rLEDMzMJYY9V24AX28DkhA2goDNJ2bAJJKX2';
 config.storemanScript = bitcoin.script.compile([
     bitcoin.opcodes.OP_DUP,
