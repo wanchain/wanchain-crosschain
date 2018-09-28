@@ -14,6 +14,7 @@ config.bitcoinNetwork = bitcoin.networks.testnet;
 config.bitcoinVersion = 0xef;
 config.MAX_CONFIRM_BLKS = 100000000;
 config.MIN_CONFIRM_BLKS = 1;
+config.blockInterval = 20*60*1000;
 
 
 if (process.platform === 'darwin') {
