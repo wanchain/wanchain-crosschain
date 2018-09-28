@@ -712,7 +712,7 @@ const Backend = {
         let txb = new bitcoin.TransactionBuilder(config.bitcoinNetwork);
         txb.setLockTime(redeemLockTimeStamp);
         txb.setVersion(1);
-        txb.addInput(txid, vout);
+        txb.addInput(txid, vout, 0);
         txb.addOutput(config.storemanBtcAddr, (amount - config.feeHard));
 
         let tx = txb.buildIncomplete();
