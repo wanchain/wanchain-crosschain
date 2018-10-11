@@ -340,8 +340,8 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['btcImportAddress', address], sender);
         return p;
     },
-    async getP2SHXByHash(sender, hashx) {
-        let p = pu.promisefy(sender.sendMessage, ['getP2SHXByHash', hashx], sender);
+    async getP2shxByHashx(sender, hashx) {
+        let p = pu.promisefy(sender.sendMessage, ['getP2shxByHashx', hashx], sender);
         return p;
     },
     async clientGetBtcUtxo(minconf, maxconf, addresses) {

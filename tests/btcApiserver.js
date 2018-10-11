@@ -142,9 +142,9 @@ describe('btc api test', ()=>{
         let result = await btcUtil.getAddressList();
         console.log('result: ', result);
     });
-    it('TC012: getP2SHXByHash', async ()=>{
+    it('TC012: getP2shxByHashx', async ()=>{
         // mocha --timeout 100000 test.js
-        let result = await ccUtil.getP2SHXByHash(ccUtil.btcSender, "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774");
+        let result = await ccUtil.getP2shxByHashx(ccUtil.btcSender, "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774");
         console.log('result: ', result);
     });
     it('TC013: getUtxoValueById', async ()=>{

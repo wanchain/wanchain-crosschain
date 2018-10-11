@@ -62,8 +62,8 @@ module.exports = {
     btcImportAddress( address, chainType, callBack){
         return new socketmessage('btcImportAddress',{address:address},'',chainType,callBack);
     },
-	getP2SHXByHash(hashx, chainType, callBack){
-		return new socketmessage('getP2SHXByHash',{hashx:hashx},'x',chainType,callBack);
+	getP2shxByHashx(hashx, chainType, callBack){
+		return new socketmessage('getP2shxByHashx',{hashx:hashx},'x',chainType,callBack);
 	},
     monitorLog(address,topics,chainType,callBack){
         return new socketmessage('monitorLog',{address:address,topics:topics},'logs',chainType,callBack);
