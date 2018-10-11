@@ -167,6 +167,38 @@ const btcUtil = {
         }
     },
 
+    async removeAddress(addr, passwd) {
+        let filter = {}
+        if (addr) {filter.address = addr}
+
+        let collection = this.getBtcWallet()
+        let encryptedKeyResult = collection.find(filter)
+
+        let ECPairArray = []
+        try {
+            for (let i = 0; i < encryptedKeyResult.length; i++) {
+                let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[i].encryptedKey, passwd)
+                let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork)
+                ECPairArray.push(alice)
+            }
+
+            if (ECPairArray.length === 0) {
+                logger.debug('password wrong or no pair!')
+                return;
+            }
+
+            await collection.remove(encryptedKeyResult);
+        } catch (err) {
+            if (err.code === 'ERR_ASSERTION') {
+                logger.debug('password wrong!')
+            } else {
+                logger.debug('err: ', err)
+                console.log(err);
+            }
+            return ECPairArray
+        }
+    },
+
     generatePrivateKey () {
         let randomBuf
         do {

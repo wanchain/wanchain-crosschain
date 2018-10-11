@@ -21,9 +21,24 @@ describe('btc api test', ()=>{
 	    client = ccUtil.client;
         console.log("start");
     });
+
+    // it('TC000: remove btc address', async ()=>{
+    //     let result = await btcUtil.getAddressList();
+    //     console.log('address: ', result);
+    //     console.log('create btc address.');
+    //     await btcUtil.createAddress('1234567890');
+    //     console.log('create btc address finsih.');
+    //     result = await btcUtil.getAddressList();
+    //     console.log('address: ', result);
+    //     let address = result.pop();
+    //     console.log('remove address:', address.address);
+    //     btcUtil.removeAddress(address.address, '1234567890');
+    //     console.log('remove finish.');
+    // });
+
     it('TC001: send a transaction', async ()=>{
-        const aliceAddr = "mxTSiHT4fRVysL6URcGwD5WmELTSiJV8PV";
-        const aliceWif = "cTDgGYxyf1psvn2x1CueypAWNTXvCFL9kzhZhKZFHsP6o7LejjRi";
+        const aliceAddr = "mtCotFuC1JP448Y3uhEbyPeP7UduYUn6Vb";
+        const aliceWif = "6PYSkjxao4iBgTn4mW5AgYD77PtwePM8a9UmpKm8snRc4A4SqryGpvHief";
         const alice = bitcoin.ECPair.fromWIF(aliceWif,bitcoin.networks.testnet );
         let {address} = bitcoin.payments.p2pkh({pubkey: alice.publicKey, network: bitcoin.networks.testnet});
         assert.equal(address, aliceAddr, "address is wrong");
@@ -63,7 +78,7 @@ describe('btc api test', ()=>{
         let result = await ccUtil.sendRawTransaction(ccUtil.btcSender,rawTx);
         console.log("result hash:", result);
     });
-    it('TC001: get utxo of a random address', async ()=>{
+    it('TC002: get utxo of a random address', async ()=>{
         let toPair = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
         let {address} = bitcoin.payments.p2pkh({pubkey: toPair.publicKey, network: bitcoin.networks.testnet});
         let txHash = await client.sendToAddress(address, "0.01");
@@ -74,68 +89,66 @@ describe('btc api test', ()=>{
         utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
         console.log("utxos: ", utxos);
     });
-    it('TC001: get block number', async ()=>{
+    it('TC003: get block number', async ()=>{
         let height = await ccUtil.getBlockNumber(ccUtil.btcSender);
         console.log("block number: ", height);
     });
-    it('TC001: get raw transaction', async ()=>{
-        let hash = "baaa32a51ef1e31a78916cec87a79d778969222d40558d1e730fc45a61192ad4";
+    it('TC004: get raw transaction', async ()=>{
+        let hash = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";
         let tx = await ccUtil.getTxInfo(ccUtil.btcSender, hash);
         console.log("get transaction: ", tx);
     });
-    it('create btc addr', ()=>{
-        btcUtil.createBtcAddr();
+    it('TC005: create btc addr', null, async ()=>{
+        await btcUtil.createAddress('1234567890');
     });
 
-    it('get all ECPair', async ()=>{
+
+    it('TC007: get all btcAddress', async ()=>{
+        // mocha --timeout 100000 test.js
+        let result = await btcUtil.getAddressList();
+        console.log('result: ', result);
+
+    //    let toPair = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
+    //    let {address} = bitcoin.payments.p2pkh({pubkey: toPair.publicKey, network: bitcoin.networks.testnet});
+    //    let txHash = await client.sendToAddress(address, "0.01");
+    //    await client.generate(1);
+    //    let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
+    //    console.log("utxos: ", utxos);
+    //    await pu.sleep(10000);
+    //    utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
+    //    console.log("utxos: ", utxos);
+   });
+
+    it('TC006: get all ECPair', async ()=>{
         // mocha --timeout 100000 test.js
         let result = await btcUtil.getECPairs('1234567890');
         console.log('result: ', result);
     });
 
-    it('get all btcAddress', async ()=>{
-        // mocha --timeout 100000 test.js
-        let result = await btcUtil.getAddress();
-        console.log('result: ', result);
-
-       let toPair = bitcoin.ECPair.makeRandom({network:bitcoin.networks.testnet});
-       let {address} = bitcoin.payments.p2pkh({pubkey: toPair.publicKey, network: bitcoin.networks.testnet});
-       let txHash = await client.sendToAddress(address, "0.01");
-       await client.generate(1);
-       let utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
-       console.log("utxos: ", utxos);
-       await pu.sleep(10000);
-       utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
-       console.log("utxos: ", utxos);
-   });
-   it('TC001: get block number', async ()=>{
+   it('TC008: get block number', async ()=>{
+       console.log('tc008start');
        let height = await ccUtil.getBlockNumber(ccUtil.btcSender);
        console.log("block number: ", height);
+       console.log('tc008end');
    });
-   it('TC001: get raw transaction', async ()=>{
-       let hash = "baaa32a51ef1e31a78916cec87a79d778969222d40558d1e730fc45a61192ad4";
+   it('TC009: get raw transaction', async ()=>{
+       let hash = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";
        let tx = await ccUtil.getTxInfo(ccUtil.btcSender, hash);
        console.log("get transaction: ", tx);
    });
 
-    it('create btcAddress', async ()=>{
+    it('TC011: get btc address list', async ()=>{
         // mocha --timeout 100000 test.js
-        let result = await btcUtil.createAddress('1234567890');
+        let result = await btcUtil.getAddressList();
         console.log('result: ', result);
     });
-
-    it('get btc address list', async ()=>{
-        // mocha --timeout 100000 test.js
-        let result = await btcUtil.getAddress();
-        console.log('result: ', result);
-    });
-    it('getP2SHXByHash', async ()=>{
+    it('TC012: getP2SHXByHash', async ()=>{
         // mocha --timeout 100000 test.js
         let result = await ccUtil.getP2SHXByHash(ccUtil.btcSender, "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774");
         console.log('result: ', result);
     });
-    it('TC001: getUtxoValueById', async ()=>{
-        const txid = "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774";  // 12345000
+    it('TC013: getUtxoValueById', async ()=>{
+        const txid = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";  // 12345000
         let value;
         value = await ccUtil.getUtxoValueByIdStoreman(txid);
         console.log('result: ', value);
@@ -147,6 +160,7 @@ describe('btc api test', ()=>{
 
     after('end', async ()=>{
         wanchainCore.close();
+        process.exit(0);
     })
 });
 

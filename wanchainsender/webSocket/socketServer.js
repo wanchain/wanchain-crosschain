@@ -66,7 +66,7 @@ module.exports = class socketServer{
                         that.connection.ping('{"event": "ping"}');
                         self.serverTimeoutObj = setTimeout(function () {
                             that.connection.close();
-                        }, self.timeout);
+                        }, self.timeout * 20);
                     } catch (error) {
                         logDebug.error(error);
                         that.connection.close();
