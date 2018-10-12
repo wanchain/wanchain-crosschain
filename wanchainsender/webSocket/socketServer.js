@@ -68,7 +68,7 @@ module.exports = class socketServer{
                             that.connection.close();
                         }, self.timeout * 20);
                     } catch (error) {
-                        logDebug.error(error);
+                        logDebug.debug("heartCheck: ",error);
                         that.connection.close();
                     }
                 }, this.timeout);
