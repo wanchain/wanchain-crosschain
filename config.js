@@ -61,8 +61,8 @@ config.wanLockGas = 300000; // 232665;
 config.wanRefundGas = 120000; // 34881;
 config.wanRevokeGas = 80000; // 49917;
 
-config.wanchainHtlcAddr = "0x5c35c015da4299a039e58b42ef474d94324da5e4";
-config.WBTCToken = "0x3ba524a9b01de0953ba8fe720befac9e14ff95b9";
+config.wanchainHtlcAddr = "0x4b11ae8ea012d8bb1e81410c02aa020e10b3871f";
+config.WBTCToken = "0x377f1a186ffce3a8b5d1662f8a7636c417721289";
 
 config.depositBtcCrossLockEvent = 'BTC2WBTCLock';
 config.depositRedeemEvent = 'BTC2WBTCRefund';
@@ -82,10 +82,10 @@ config.isMpc = false;
 config.isLeader = false;
 config.isMpcSlaver = false;
 
-config.stmRipemd160Addr = "81973c84d7814f2b4a0ade68c30d59280dbbd339";
-config.publickey = '024c3c98d60b222a10fb94f9bf3ad10c00fe6374029eb4327b361bc7ba4172b648';
-config.stmPublickey = '024c3c98d60b222a10fb94f9bf3ad10c00fe6374029eb4327b361bc7ba4172b648';
-config.storemanBtcAddr = "msLAdtYnYn7nX74NAG7yvvSVVrVeYMsnLR";
+config.stmRipemd160Addr = "0x83e5ca256c9ffd0ae019f98e4371e67ef5026d2d";
+config.publickey = '02dbd446d6ccbeab8954f98fb5712ebb1a4211ed68717c11c0e489818417dd296e';
+config.stmPublickey = '02dbd446d6ccbeab8954f98fb5712ebb1a4211ed68717c11c0e489818417dd296e';
+config.storemanBtcAddr = "msYN6FJfvA3p2XoVzgjZpZV4AbEcwBQEEJ";
 config.storemanWif = 'cUFo4w9Z94onimW9rLEDMzMJYY9V24AX28DkhA2goDNJ2bAJJKX2';
 config.storemanScript = bitcoin.script.compile([
     bitcoin.opcodes.OP_DUP,
@@ -112,5 +112,5 @@ config.btcServer={
         password: "PASS"
     }
 };
-config.btcServerNet = config.btcServer.regtest;
+config.btcServerNet = config.btcServer.testnet;
 module.exports = config;
