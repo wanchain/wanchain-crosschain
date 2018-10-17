@@ -18,8 +18,8 @@ config.blockInterval = 20*60*1000;
 
 
 if (process.platform === 'darwin') {
-    config.rpcIpcPath = path.join(process.env.HOME, '/Library/wanchain',wanchainNet,'gwan.ipc');
-    config.keyStorePath = path.join(process.env.HOME, '/Library/wanchain/',wanchainNet,'keystore');
+    config.rpcIpcPath = path.join(process.env.HOME, '/Library/Wanchain',wanchainNet,'gwan.ipc');
+    config.keyStorePath = path.join(process.env.HOME, '/Library/Wanchain/',wanchainNet,'keystore');
     config.ethkeyStorePath = path.join(process.env.HOME, '/Library/ethereum/',ethereumNet,'keystore/');
     config.databasePath = path.join(process.env.HOME,'Library/LocalDb');
 } else if (process.platform === 'freebsd' || process.platform === 'linux' || process.platform === 'sunos') {
