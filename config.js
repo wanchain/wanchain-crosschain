@@ -82,7 +82,7 @@ config.isMpc = false;
 config.isLeader = false;
 config.isMpcSlaver = false;
 
-config.stmRipemd160Addr = "0x83e5ca256c9ffd0ae019f98e4371e67ef5026d2d";
+config.stmRipemd160Addr = "83e5ca256c9ffd0ae019f98e4371e67ef5026d2d"; // no 0x
 config.publickey = '02dbd446d6ccbeab8954f98fb5712ebb1a4211ed68717c11c0e489818417dd296e';
 config.stmPublickey = '02dbd446d6ccbeab8954f98fb5712ebb1a4211ed68717c11c0e489818417dd296e';
 config.storemanBtcAddr = "msYN6FJfvA3p2XoVzgjZpZV4AbEcwBQEEJ";

@@ -14,7 +14,7 @@ function tx2mpcTx(tx){
     let mpcTx = {};
     mpcTx.Version = tx.version;
     mpcTx.LockTime = tx.locktime;
-    mpcTx.From = '0x'+config.stmRipemd160Addr;
+    mpcTx.From = '0x'+cm.config.stmRipemd160Addr;
     mpcTx.TxOut = [];
     for(let i=0; i<tx.outs.length; i++){
         let o = {};

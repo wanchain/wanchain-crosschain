@@ -99,7 +99,7 @@ module.exports = class socketServer{
         try {
             this.connection.send(JSON.stringify(json));
         } catch (error) {
-            logDebug.error('send failed:' + error);
+            logDebug.debug('send failed:' + error); //there is a reconnect, so change socket serve error level to debug. 
             this.connection.close();
         }
     }
