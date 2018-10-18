@@ -875,17 +875,13 @@ const Backend = {
 
             let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
             let fixedRedeemScript = contract['redeemScript'];
-            logger.debug("fixed redeem script")
+            //logger.debug("fixed redeem script:", fixedRedeemScript);
 
             //get the fixed script hash
             let fixedCmdData = bitcoin.script.compile(Buffer.from(fixedRedeemScript, 'hex'));
             let fixedCmd = bitcoin.script.toASM(fixedCmdData);
-
             let scInputs = bitcoin.script.compile(Buffer.from(sriptData, 'hex'));
-
             let lockSc = bitcoin.script.toASM(scInputs).split(' ');
-
-            logger.debug(lockSc);
 
             let XX = lockSc[XPOS];
             if (lockSc.length != WHOLE_ITEM_LENGTH || XX.length != 64 || lockSc[OP_TRUE_POS] !== 'OP_1') {
@@ -893,14 +889,10 @@ const Backend = {
             }
 
             let scOutput = bitcoin.script.compile(Buffer.from(lockSc[LOCK_SC_POS], 'hex'));
-
-
             let gotRedeemScriptArray = bitcoin.script.toASM(scOutput).split(' ');
             if (gotRedeemScriptArray.length != REDEEM_SCRIPT_ITEM_LENGTH) {
                 return new Error("wrong redeem script item number");
             }
-
-            logger.debug(gotRedeemScriptArray);
 
             let gotHASHX = gotRedeemScriptArray[FIXED_HASH_X_POS];
             let gotLKTIME = gotRedeemScriptArray[FIXED_LK_TIME_POS];
@@ -913,7 +905,6 @@ const Backend = {
             gotRedeemScriptArray[FIXED_REVOKER_HASH160_POS] = FIXED_REVOKER_HASH160;
 
             let changedRedeemScript = gotRedeemScriptArray.join(' ');
-
             if (fixedCmd == changedRedeemScript) {
                 return {
                     'X': XX,
@@ -927,9 +918,7 @@ const Backend = {
             }
 
         } catch (e) {
-
             return e
-
         }
 
     },
