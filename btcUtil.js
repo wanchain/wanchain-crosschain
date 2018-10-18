@@ -22,8 +22,12 @@ function hexTrip0x (hexs) {
 
 let logger=console;
 const btcUtil = {
-    init () {
-        logger = cm.getLogger('btcUtil')
+    init (log) {
+        if(log){
+            logger = log;
+        }else{
+            logger = cm.getLogger('btcUtil')
+        }
     },
     getBtcWallet () {
         return cm.walletDb.getCollection('btcAddress')

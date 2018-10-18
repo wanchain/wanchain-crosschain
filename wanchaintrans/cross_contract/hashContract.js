@@ -8,7 +8,7 @@ const createKeccakHash = require('keccak');
 const bitcoin  = require('bitcoinjs-lib');
 const cm = require('../../comm.js');
 
-let BTC2WBTCfunc = ['','btc2wbtcRefund','','BTC2WBTCLock'];
+let BTC2WBTCfunc = ['','btc2wbtcRedeem','','BTC2WBTCLock'];
 let WBTC2BTCfunc = ['wbtc2btcLock','','wbtc2btcRevoke','WBTC2BTCLock'];
 let logDebug;
 function hexTrip0x(hexs){
