@@ -31,7 +31,7 @@ module.exports = {
                 suspendTime:'',
                 HTLCtime : '',
                 chain : '',
-                status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
+                status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,redeemFinished.
                             //                                                              suspending,waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
                 lockConfirmed:0,
                 refundConfirmed:0,
@@ -66,7 +66,7 @@ module.exports = {
                 suspendTime:'',
                 HTLCtime : '',
                 chain : '',
-                status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
+                status: '', // sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,redeemFinished.
                             //                                                              suspending,waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
                 lockConfirmed:0,
                 refundConfirmed:0,
@@ -102,7 +102,7 @@ module.exports = {
                 suspendTime:'',     //the time span from lock                   record.suspendTime = (1000*Number(global.lockedTime)+newtime).toString();
                 HTLCtime : '',      //the time span from for htlc timeout       record.HTLCtime = (100000+2*1000*Number(global.lockedTime)+newtime).toString();
                 chain : '',         //wan:'WAN'                                  btc:'BTC'
-                status: '',         //sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,refundFinished.
+                status: '',         //sentHashPending, sentHashConfirming, sentHashFailed/waitingCross, waitingCrossConfirming, waitingX, sentXPending, sentXConfirming,redeemFinished.
                                     //suspending,waitingRevoke,sentRevokePending, sentRevokeConfirming, revokeFinished.
                 lockConfirmed:0,    //the confirmed block number for lock  transaction
                 refundConfirmed:0,  //the confrmed block number for refund transaction

@@ -38,7 +38,7 @@ const MonitorRecord = {
 
     monitorTask(){
         let collection = be.getCrossdbCollection();
-        let history = collection.find({ 'status' : { '$nin' : ['refundFinished','revokeFinished','sentHashFailed'] } });
+        let history = collection.find({ 'status' : { '$nin' : ['redeemFinished','revokeFinished','sentHashFailed'] } });
         //logger.debug(history);
         let self = this;
         logger.debug('handlingList length is ', Object.keys(handlingList).length);
@@ -168,7 +168,7 @@ const MonitorRecord = {
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
                     record.suspendTime = (1000*Number(cm.lockedTime)+newtime).toString();
-                    record.HTLCtime = (6*cm.config.blockInterval+2*1000*Number(cm.lockedTime)+newtime).toString();
+                    record.HTLCtime = (2*60*60*1000+2*1000*Number(cm.lockedTime)+newtime).toString();// extra 2 hours, because btc locktime need more than 5 blocks.
                 }else{
                     record.status = 'sentHashFailed';
                 }
@@ -186,7 +186,7 @@ const MonitorRecord = {
                 if(receipt){
                     record.refundConfirmed += 1;
                     if(record.refundConfirmed >= config.confirmBlocks){
-                        record.status = 'refundFinished';
+                        record.status = 'redeemFinished';
                     }
                     this.updateRecord(record);
                 }
@@ -196,7 +196,7 @@ const MonitorRecord = {
                 let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
                 logger.debug("checkXOnline: ", btcTx);
                 if(btcTx && btcTx.confirmations && btcTx.confirmations>=config.btcConfirmBlocks){
-                    record.status = 'refundFinished';
+                    record.status = 'redeemFinished';
                     this.updateRecord(record );
                 }
             }
@@ -406,7 +406,7 @@ const MonitorRecord = {
                 await this.checkXConfirm(record, waitBlock);
                 break;
 
-            case 'refundFinished':
+            case 'redeemFinished':
             case 'revokeFinished':
                 break;
             default:
