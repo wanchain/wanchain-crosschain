@@ -873,12 +873,12 @@ const Backend = {
             const FIXED_REVOKER_HASH160 = '3533435f431a6a016ed0de73bd9645c8e2694416';
             const FIXED_REVOKER_HASH160_POS = 13;
 
-            let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
-            let fixedRedeemScript = contract['redeemScript'];
+            //let contract = btcUtil.hashtimelockcontract(FIXED_HASHX, FIXED_LK_TIME, FIXED_DEST_HASH160, FIXED_REVOKER_HASH160);
+            //let fixedRedeemScript = contract['redeemScript'];
             //logger.debug("fixed redeem script:", fixedRedeemScript);
-
+            let fixedRedeemScriptTemplate = '63a8207eadc448515742a095d9e8cae09755e3e55ef3e3a08e4e84ce7d7ec5801cf5108876a9149a6b60f74a6bae176df05c3b0a118f85bab5c585670164b17576a9143533435f431a6a016ed0de73bd9645c8e26944166888ac';
             //get the fixed script hash
-            let fixedCmdData = bitcoin.script.compile(Buffer.from(fixedRedeemScript, 'hex'));
+            let fixedCmdData = bitcoin.script.compile(Buffer.from(fixedRedeemScriptTemplate, 'hex'));
             let fixedCmd = bitcoin.script.toASM(fixedCmdData);
             let scInputs = bitcoin.script.compile(Buffer.from(sriptData, 'hex'));
             let lockSc = bitcoin.script.toASM(scInputs).split(' ');
