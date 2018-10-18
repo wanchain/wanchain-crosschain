@@ -415,6 +415,11 @@ describe('wan api test', ()=>{
     console.log("the expected hash160 from address =" + expectedH160.toString('hex'))
 
     assert.equal(hash160,expectedH160,"the address not match")
+    
+    // test addr to h160
+    let addr2 = "mnAqWSmymTpJRcsPmN5uTDA2uFxPZTX29j";
+    let hash1602 = btcUtil.addressToHash160(addr2,'pubkeyhash','testnet');
+	console.log("hash1602: ",hash1602);
   });
 
 
