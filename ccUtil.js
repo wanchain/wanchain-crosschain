@@ -1085,6 +1085,41 @@ const Backend = {
         } catch (error) {
             return false;
         }
+    },
+
+    /**
+      * Filter btc addresses by amount, return the addresses with sufficient amount. 
+      * @param addressList All the btc addresses.
+      * @param amount The amount to fit.
+      */
+    async filterBtcAddressByAmount(addressList, amount) {
+        let addressWithBalance = [];
+        for (let i = 0; i < addressList.length; i++) {
+            let utxos = await this.getBtcUtxo(this.btcSender, config.MIN_CONFIRM_BLKS, config.MAX_CONFIRM_BLKS, [addressList[i].address]);
+            let result = await this.getUTXOSBalance(utxos);
+
+            addressWithBalance.push({
+                'address': addressList[i].address,
+                'balance': Number(web3.toBigNumber(result).div(100000000).toString())
+            });
+        }
+
+        addressWithBalance = addressWithBalance.sort((a, b) => {
+            return b.balance - a.balance;
+        });
+
+        let addressListReturn = [];
+        let totalBalance = 0;
+        for (let i = 0; i < addressWithBalance.length; i++) {
+            totalBalance += addressWithBalance[i].balance;
+            addressListReturn.push(addressWithBalance[i].address);
+
+            if(totalBalance > Number(amount)) {
+                break;
+            }
+        }
+
+        return addressListReturn;
     }
 }
 
