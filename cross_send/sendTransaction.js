@@ -159,7 +159,7 @@ module.exports = class sendTransaction{
                 txValue: trans.trans.value,
                 x : trans.Contract.key,
                 time : cur.toString(),
-                HTLCtime: (3000000+2*1000*Number(cm.lockedTime)+cur).toString(),
+                HTLCtime: (2*60*60*1000+2*1000*Number(cm.lockedTime)+cur).toString(),
                 chain : chainType,
                 status : 'sentHashPending',
                 lockConfirmed:0,

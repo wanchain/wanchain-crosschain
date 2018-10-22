@@ -166,13 +166,13 @@ const MonitorRecord = {
             let receipt = await this.monitorTxConfirm(sender, txhash, 0);
             if(receipt){
                 if(receipt.status === '0x1'){
-                    record.status = 'sentHashConfirming';
                     // update the time to block time.
                     let block = await be.getBlockByNumber(sender, receipt.blockNumber);
                     let newtime = Number(block.timestamp)*1000;
                     record.time = newtime.toString();
                     record.suspendTime = (1000*Number(cm.lockedTime)+newtime).toString();
                     record.HTLCtime = (2*60*60*1000+2*1000*Number(cm.lockedTime)+newtime).toString();// extra 2 hours, because btc locktime need more than 5 blocks.
+                    record.status = 'sentHashConfirming';
                 }else{
                     record.status = 'sentHashFailed';
                 }
