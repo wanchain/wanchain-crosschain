@@ -1,6 +1,6 @@
 {
-  "name": "wanchain-crosschain",
-  "version": "0.1.4",
+  "name": "wanchain-crosschainbtc",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
