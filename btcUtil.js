@@ -10,9 +10,6 @@ const config = require('./config')
 const secp256k1 = require('secp256k1')
 const cm = require('./comm.js')
 
-let bitcoinNetwork = config.bitcoinNetwork
-let version = config.bitcoinVersion
-
 function hexTrip0x (hexs) {
     if (0 == hexs.indexOf('0x')) {
         return hexs.slice(2)
@@ -33,7 +30,7 @@ const btcUtil = {
         return cm.walletDb.getCollection('btcAddress')
     },
     getAddressbyKeypair (keypair) {
-        const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: bitcoinNetwork})
+        const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: cm.config.bitcoinNetwork})
         return pkh.address
     },
 
@@ -65,8 +62,8 @@ const btcUtil = {
         logger.debug('redeemScript:' + redeemScript.toString('hex'))
 
         let addressPay = bitcoin.payments.p2sh({
-            redeem: {output: redeemScript, network: bitcoinNetwork},
-            network: bitcoinNetwork
+            redeem: {output: redeemScript, network: cm.config.bitcoinNetwork},
+            network: cm.config.bitcoinNetwork
         })
         let address = addressPay.address
 
@@ -93,7 +90,7 @@ const btcUtil = {
     },
     async decryptedWIF (encrypted, pwd) {
         let decryptedKey = await bip38.decrypt(encrypted, pwd)
-        let privateKeyWif = await wif.encode(version, decryptedKey.privateKey, decryptedKey.compressed)
+        let privateKeyWif = await wif.encode(cm.config.bitcoinNetwork.wif, decryptedKey.privateKey, decryptedKey.compressed)
 
         return privateKeyWif
     },
@@ -112,7 +109,7 @@ const btcUtil = {
         try {
             for (let i = 0; i < encryptedKeyResult.length; i++) {
                 let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[i].encryptedKey, passwd)
-                let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork)
+                let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, cm.config.bitcoinNetwork)
                 ECPairArray.push(alice)
             }
             if (addr) {
@@ -148,18 +145,16 @@ const btcUtil = {
             }
 
             const keyPair = bitcoin.ECPair.makeRandom({
-                network: bitcoinNetwork,
+                network: cm.config.bitcoinNetwork,
                 rng: () => Buffer.from(crypto.randomBytes(32))
             })
-            const {address} = await bitcoin.payments.p2pkh({pubkey: keyPair.publicKey, network: bitcoinNetwork})
+            const {address} = await bitcoin.payments.p2pkh({pubkey: keyPair.publicKey, network: cm.config.bitcoinNetwork})
             const privateKey = keyPair.toWIF()
-            const decoded = wif.decode(privateKey, version)
+            const decoded = wif.decode(privateKey, cm.config.bitcoinNetwork.wif)
             const encrypted = await bip38.encrypt(decoded.privateKey, decoded.compressed, passwd)
 
             let newAddress = {address: address, encryptedKey: encrypted}
             btcAddress.insert(newAddress)
-            let t = await btcAddress.find({address: address})
-            console.log('t: ', t)
             return newAddress
         } catch (err) {
             if (err.code === 'ERR_ASSERTION') {
@@ -182,7 +177,7 @@ const btcUtil = {
         try {
             for (let i = 0; i < encryptedKeyResult.length; i++) {
                 let privateKeyWif = await this.decryptedWIF(encryptedKeyResult[i].encryptedKey, passwd)
-                let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, bitcoinNetwork)
+                let alice = await bitcoin.ECPair.fromWIF(privateKeyWif, cm.config.bitcoinNetwork)
                 ECPairArray.push(alice)
             }
 

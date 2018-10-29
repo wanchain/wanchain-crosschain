@@ -11,7 +11,7 @@ var ethereumNet = 'testnet';
 config.feeRate = 300;
 config.feeHard = 100000;
 config.bitcoinNetwork = bitcoin.networks.testnet;
-config.bitcoinVersion = 0xef;
+//config.bitcoinVersion = 0xef;
 config.MAX_CONFIRM_BLKS = 100000000;
 config.MIN_CONFIRM_BLKS = 0;
 
