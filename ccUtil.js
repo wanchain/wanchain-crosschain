@@ -163,7 +163,7 @@ const Backend = {
             let info = {};
             info.address = this.wanAddrs[i];
             info.balance = bs[this.wanAddrs[i]];
-            info.wethBalance = es[this.wanAddrs[i]];
+            info.tokenBalance = es[this.wanAddrs[i]];
             infos.push(info);
         }
 
