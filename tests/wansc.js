@@ -380,9 +380,9 @@ describe('wan api test', ()=>{
   });
     it('TC001: storemanH1602addr', async ()=> {
 
-        let userH160 = "0x4c20a09fc986ee43149aeb52375315deffdd9e74";
+        let userH160 = "83C96ffdCE7A2206421A4C33B2CF2030CE53e772";
 
-        let addr = btcUtil.hash160ToAddress(userH160,'pubkeyhash','testnet');
+        let addr = btcUtil.hash160ToAddress(userH160,'pubkeyhash','mainnet');
 
         console.log("the address from hash160 = " + addr);
 
@@ -422,5 +422,16 @@ describe('wan api test', ()=>{
 	console.log("hash1602: ",hash1602);
   });
 
+    it('TC031: redeemSriptCheck', async ()=> {
 
+        let rawTx = "010000000146d1c29fda08598536aba9620632d9707a3da2f5c1e65abd9c6fbfa4c57f8c2300000000eb473044022075125fbd3518eee4d9eef710571304c0c56c6870c6cf81988e4e5e48e81bab4d02206a4d4858e70a4f73ac0fb0166466e4aeba7f0e4359331b4d110efd062292ed850121027342e5e9e09ea43b0ba299ca876e1079d85eb13183e273f8370aca199da7818d20fa455ed58d6bd4d113568163f690386450a35b4a2ef1ae102d1ec1b0af4f70ea514c5d63a820d0355f64e97f9346c10d47ffde69572d3599168f902bacfed18252542b7c28e68876a9149fbe5cfb59c0d678f56d172379f0bcdbcd6ef1b26704ef2fd95bb17576a91483c96ffdce7a2206421a4c33b2cf2030ce53e7726888acffffffff0130e60200000000001976a9149fbe5cfb59c0d678f56d172379f0bcdbcd6ef1b288ac00000000";
+        let ctx = bitcoin.Transaction.fromHex(rawTx);
+        let result = ccUtil.redeemSriptCheck(ctx.ins[0].script.toString('hex'));
+        if( !(result instanceof Error)) {
+            // only handle REVOKERHASH160 is storeman
+            const stmRipemd160Addr = ("83C96ffdCE7A2206421A4C33B2CF2030CE53e772").toLowerCase();
+            console.log("result.REVOKERHASH160: ", result.REVOKERHASH160,"stmRipemd160Addr", stmRipemd160Addr);
+            assert.equal(result.REVOKERHASH160 , stmRipemd160Addr, "stmRipemd160Addr is wrong")
+        }
+    });
 });
