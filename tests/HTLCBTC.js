@@ -152,9 +152,45 @@ describe('btc api test', () => {
 
   })
 
-  it('TC002: test htlcbtc refund', async () => {
-    // txid = await ccUtil.btc2wbtcRefund(txid.txId,[alice]);
+it('HTLCBTC002: test htlcbtc refund', async () => {
+    let utxos = [
+      {
+        txId: '1',
+        vout: 0,
+        confirmations:3,
+        value: 0.001011 * 100000000
+      },
+      {
+        txId: '2',
+        vout: 0,
+        value:  0.001004 * 100000000
+      },
+      {
+        txId: '3',
+        vout: 0,
+        confirmations:3,
+        value:  0.06691551 * 100000000
+      },
+      {
+        txId: '4',
+        vout: 0,
+        confirmations:3,
+        value:  0.06855311 * 100000000
+      }
+  ];
+
+    let targets =
+      {
+        address: '1EHNa6Q4Jz2uvNExL497mE43ikXhwF6kZm',
+        value: 0.0000001 * 100000000
+      };
+
+
+    ccUtil.coinselect(utxos,targets,300);
+
+
   })
+  
   
   
   
