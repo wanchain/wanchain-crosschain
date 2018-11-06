@@ -163,7 +163,7 @@ const Backend = {
             let info = {};
             info.address = this.wanAddrs[i];
             info.balance = bs[this.wanAddrs[i]];
-            info.wethBalance = es[this.wanAddrs[i]];
+            info.tokenBalance = es[this.wanAddrs[i]];
             infos.push(info);
         }
 
@@ -968,7 +968,7 @@ const Backend = {
 
     formatInput(tx) {
         let ctx = {}
-        ctx.from = this.hexTrip0x(btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash', 'testnet'));
+        ctx.from = this.hexTrip0x(btcUtil.hash160ToAddress(tx.senderH160Addr, 'pubkeyhash', config.network));
         ctx.to = this.hexTrip0x(tx['p2sh'])
         ctx.value = tx.value
         ctx.amount = tx.value
