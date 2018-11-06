@@ -254,23 +254,18 @@ async function showBalance(info){
 }
 
 
-async function main(){
-    await client.generate(1);
-
-    await client.importAddress(getAddress(alice), "");
-    await client.importAddress(getAddress(storeman), "");
-
-    await showBalance('Begin');
-
-    await testRedeem();
-
-    await showBalance('End');
-}
 
 
 
 describe('btc api test', ()=> {
     before(async () => {
+        config.btcServerNet = {
+            network: 'regtest',
+            host: "127.0.0.1",
+            port: 18443,
+            username: "USER",
+            password: "PASS"
+        };
         wanchainCore = new WanchainCore(config);
         ccUtil = wanchainCore.be;
         btcUtil = wanchainCore.btcUtil;
@@ -300,7 +295,7 @@ describe('btc api test', ()=> {
         let txhash = await fundHtlc();
         lastTxid = txhash;
         console.log("htcl lock hash: ", txhash);
-        const tx = {};
+        tx = {};
         tx.storeman = storemanHash160Addr;
         tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
         tx.hashx=lastContract.hashx;
@@ -357,7 +352,36 @@ describe('btc api test', ()=> {
     //         console.log("inScHex", inScHex);
     //     }
     // });
+    it('TC001: test decode', async () => {
+        //  ?????????????????lockS: ASM  OP_IF OP_SHA256 eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e5 OP_EQUALVERIFY OP_DUP OP_HASH160 7ef9142e7d6f28dda806accb891e4054d6fa9eae OP_ELSE 09c500 OP_CHECKLOCKTIMEVERIFY OP_DROP OP_DUP OP_HASH160 d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe OP_ENDIF OP_EQUALVERIFY OP_CHECKSIG
+        //   ############### x: 9d5b27cd395af22ce9a30a11c0ea62d6add2864da21b5a11410d3b8a17aac1b5
+        // ############### hashx: eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e5
+        let redeemScriptSigData = '473044022015c227f40f5dae2f8e40124eb6c2b0556c48d428208823d595803a522454ebd5022061bfb8fa71a00013d3d719d11f2b046a85162bc70c10d9831ee08aca5c3916f501210334de97350340e8537fdae10f92081f40378fe3d46346b0c753b2cb8f1169290a209d5b27cd395af22ce9a30a11c0ea62d6add2864da21b5a11410d3b8a17aac1b5514c5c63a820eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e58876a9147ef9142e7d6f28dda806accb891e4054d6fa9eae670309c500b17576a914d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe6888ac'
+        // let sc2 = bitcoin.script.compile(Buffer.from(redeemScriptSigData,'hex'));
+        //
+        //  let lockS = bitcoin.script.toASM(sc2).split(' ');
+        //  console.log(lockS);
+        //
+        //  let sc4 = bitcoin.script.compile(Buffer.from(lockS[4],'hex'));
+        //  let dex = bitcoin.script.toASM(sc4);
+        //  console.log(dex);
 
+        let XX = ccUtil.generatePrivateKey()
+        console.log('XX=' + XX)
+
+        let hashXX = ccUtil.getHashKey(XX)
+        console.log('hashXX=' + hashXX)
+
+        let res = ccUtil.redeemSriptCheck(redeemScriptSigData)
+
+        assert.notEqual(res, undefined, 'response is undefined')
+
+        console.log('HASHX=' + res.HASHX.toString('hex'))
+        console.log('LOCKTIME=' + res.LOCKTIME.toString('hex'))
+        console.log('DESTHASH160=' + res.DESTHASH160.toString('hex'))
+        console.log('DESTHASH160=' + res.REVOKERHASH160.toString('hex'))
+
+    })
     after('end', async ()=>{
         wanchainCore.close();
     });

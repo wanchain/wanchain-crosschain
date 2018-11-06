@@ -18,6 +18,10 @@ function hexTrip0x (hexs) {
 }
 
 let logger=console;
+/**
+ * @class
+ * @classdesc  bitcoin utils.
+ */
 const btcUtil = {
     init (log) {
         if(log){
@@ -29,6 +33,10 @@ const btcUtil = {
     getBtcWallet () {
         return cm.walletDb.getCollection('btcAddress')
     },
+    /**
+     * the the btc address by ecPair.
+     * @param {Object} keypair the btc ecpair.
+     */
     getAddressbyKeypair (keypair) {
         const pkh = bitcoin.payments.p2pkh({pubkey: keypair.publicKey, network: cm.config.bitcoinNetwork})
         return pkh.address
@@ -95,9 +103,18 @@ const btcUtil = {
         return privateKeyWif
     },
 
+    /**
+     * get all the keyPair in the wallet
+     * @param {string} passwd the wallet password.
+     */
     async getECPairs (passwd) {
         return this.getECPairsbyAddr(passwd)
     },
+    /**
+     * get all the keyPair in the wallet
+     * @param {string} passwd the wallet password.
+     * @param {string} addr  the bitcoin address
+     */
     async getECPairsbyAddr (passwd, addr) {
         let filter = {}
         if (addr) {filter.address = addr}
@@ -128,12 +145,19 @@ const btcUtil = {
         }
     },
 
+    /**
+     * get all the record in the bitcoin wallet
+     */
     async getAddressList () {
         let collection = this.getBtcWallet()
         let btcAddressList = collection.find()
         return btcAddressList
     },
 
+    /**
+     * create a bitcoin address and encry and insert to the wallet
+     * @param {string} passwd the wallet password.
+     */
     async createAddress (passwd) {
         try {
             let btcAddress = this.getBtcWallet()
@@ -206,15 +230,27 @@ const btcUtil = {
         return '0x' + randomBuf.toString('hex')
     },
 
+    /**
+     * convert the hash160 to bitcoin address
+     * @param {string} hash160 the h160 address
+     * @param {string} addressType the  address typr. 'pubkeyhash'
+     * @param {string} network the bitcoin network. 'mainnet' | 'testnet'
+     */
     hash160ToAddress (hash160, addressType, network) {
         var address = new Address(binConv(hexTrip0x(hash160), {in: 'hex', out: 'bytes'}), addressType, network)
         return address.toString()
     },
 
+    /**
+     * convert the  bitcoin address to hash160
+     * @param {string} address the bitcoin address
+     * @param {string} addressType the  address typr. 'pubkeyhash'
+     * @param {string} network the bitcoin network. 'mainnet' | 'testnet'
+     */
     addressToHash160 (address, addressType, network) {  //'pubkeyhash','testnet'
         var address = new Address(address, addressType, network)
         return binConv(address.hash, {in: 'bytes', out: 'hex'})
-    },
+    }
 }
 
 exports.btcUtil = btcUtil

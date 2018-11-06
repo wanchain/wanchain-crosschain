@@ -25,7 +25,15 @@ async function recordMonitor(config, ethSend,wanSend,btcSend){
         mr.monitorTask();
     }, 6000);
 }
+    /**
+     * @class
+     * @classdesc  Manage all the modules of SDK.
+     */
 class walletcore  {
+  /**
+   * @constructor
+   * @param {Object}  cfg    - The Json format config.
+   */
     constructor(cfg){
         _.extend(config, cfg);
         cm.setConfig(config);
@@ -78,6 +86,9 @@ class walletcore  {
         cm.crossDb = crossDb;
         be.storemanInit(config);
     }
+  /**
+   * initiate the class
+   */
     async init(){
         let config = cm.config;
         cm.EthKeyStoreDir = this.EthKeyStoreDir;

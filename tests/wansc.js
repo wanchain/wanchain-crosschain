@@ -404,23 +404,6 @@ describe('wan api test', ()=>{
         console.log("txhash:", txhash);
     });
 
-  it('TC001: address2hash160', async ()=> {
-
-    let addr = btcUtil.getAddressbyKeypair(alice);
-    let hash160 = btcUtil.addressToHash160(addr,'pubkeyhash','testnet');
-
-    console.log("the hash160 from address =" + hash160)
-    let expectedH160 = bitcoin.crypto.hash160(alice.publicKey).toString('hex');
-
-    console.log("the expected hash160 from address =" + expectedH160.toString('hex'))
-
-    assert.equal(hash160,expectedH160,"the address not match")
-    
-    // test addr to h160
-    let addr2 = "mnAqWSmymTpJRcsPmN5uTDA2uFxPZTX29j";
-    let hash1602 = btcUtil.addressToHash160(addr2,'pubkeyhash','testnet');
-	console.log("hash1602: ",hash1602);
-  });
 
     it('TC031: redeemSriptCheck', async ()=> {
 
