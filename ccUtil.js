@@ -29,6 +29,10 @@ const Web3 = require("web3");
 const web3 = new Web3();
 
 
+/**
+ * @class
+ * @classdesc  crosschain backend utils.
+ */
 const Backend = {
     CreaterSockSenderByChain(ChainType) {
         return new sendFromSocket(new socketServer(config.socketUrl, messageFactory), ChainType);
@@ -530,10 +534,23 @@ const Backend = {
         return contract;
     },
 
+    /**
+     * the wallet fund bitcoin to storeman.
+     * @param {Object} senderKp the ecpair arrry in the bitcoin wallet
+     * @param {string} ReceiverHash160Addr storeman hash160 address
+     * @param {integer} value the amount that wallet send to storeman
+     */
     async fund(senderKp, ReceiverHash160Addr, value) {
         // for wallet senderKp is array.
         return await this.btc2wbtcLock(senderKp, ReceiverHash160Addr, value, null);
     },
+    /**
+     * the storeman fund bitcoin to wallet.
+     * @param {Object} senderKp the ecpair of storeman
+     * @param {string} ReceiverHash160Addr wallet bitcoin hash160 address
+     * @param {integer} value the amount that storeman send to wallet
+     * @param {string} hashx the hash of secret
+     */
     async Storemanfund(senderKp, ReceiverHash160Addr, value, hashx) {
         return await this.btc2wbtcLock([senderKp], ReceiverHash160Addr, value, hashx);
     },
