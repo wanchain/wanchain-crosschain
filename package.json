@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --globals '*' --timeout 0 tests/",
-    "apiDoc": "./node_modules/.bin/jsdoc ./ -r  -c ./docConf.json -t ./node_modules/ink-docstrap/template -d ./doc"
+    "apiDoc": "./node_modules/.bin/jsdoc ./ -r  -c ./docConf.json -t ./node_modules/ink-docstrap/template -d ./docs"
   },
   "dependencies": {
     "bignumber.js": "^4.0.2",
