@@ -14,7 +14,7 @@ let client;
 let wanchainCore;
 let ccUtil;
 let btcUtil;
-describe('btc api test', ()=>{
+describe('btc basic api test', ()=>{
   before(async ()=>{
     wanchainCore = new WanchainCore(config);
     ccUtil = wanchainCore.be;

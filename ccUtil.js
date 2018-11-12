@@ -196,7 +196,7 @@ const Backend = {
         return bs;
     },
     getRawTransaction(sender, txhash) {
-        return getTxInfo(sender, txhash);
+        return this.getTxInfo(sender, txhash);
     },
     createEthAddr(keyPassword) {
         let params = {keyBytes: 32, ivBytes: 16};
@@ -253,6 +253,13 @@ const Backend = {
         let txhash = await pu.promisefy(newTrans.sendLockTrans, [tx.passwd], newTrans);
         return txhash;
     },
+    /**
+     * send btc2wbtcLockNotice to wanchain after lock BTC.
+     * because wallet send btc to P2SH address, wan storeman can't kown it, the wallet must notice wanchain.
+     * thus wallet send a btc2wbtcLockNotice transaction to wanchain.
+     * @param {Object} sender the websocket sender to apiserver. ccUtil.wanSender.
+     * @param {Object} tx json format transaction include the btc lock information.
+     */
     async sendWanNotice(sender, tx) {
         let newTrans = this.createTrans(sender);
         newTrans.createDepositNotice(tx.from, tx.storeman, tx.userH160, tx.hashx, tx.txHash, tx.lockedTimestamp,
@@ -872,6 +879,10 @@ const Backend = {
     },
 
 
+    /**
+     * parse redeem script data, fetch hashx, x, lockedTime, destH160, revokerH160.
+     * @param {string} sriptData the redeem script data.
+     */
     redeemSriptCheck(sriptData) {
         try {
             const WHOLE_ITEM_LENGTH = 5;

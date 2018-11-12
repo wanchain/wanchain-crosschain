@@ -4,14 +4,13 @@ const bitcoin  = require('bitcoinjs-lib');
 const path=require('path');
 
 const config = {};
-config.socketUrl = 'wss://34.210.104.235';
+config.socketUrl = 'wss://apitest.wanchain.info';
 config.agentUrl = "ws://localhost:8080";
 var wanchainNet = 'testnet';
 var ethereumNet = 'testnet';
 config.feeRate = 300;
 config.feeHard = 100000;
 config.bitcoinNetwork = bitcoin.networks.testnet;
-//config.bitcoinVersion = 0xef;
 config.MAX_CONFIRM_BLKS = 100000000;
 config.MIN_CONFIRM_BLKS = 0;
 
