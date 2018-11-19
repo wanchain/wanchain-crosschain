@@ -183,7 +183,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id=".fund"><span class="type-signature">&lt;static> </span>fund(senderKp, ReceiverHash160Addr, value)</h4>
+    <h4 class="name" id=".sendWanHash"><span class="type-signature">&lt;static> </span>sendWanHash(sender, tx)</h4>
     
     
 </dt>
@@ -191,7 +191,7 @@
 
     
     <div class="description">
-        the wallet fund bitcoin to storeman.
+        the wallet send lockWbtc transaction to storeman.
     </div>
     
 
@@ -226,7 +226,7 @@
 
         <tr>
             
-                <td class="name"><code>senderKp</code></td>
+                <td class="name"><code>sender</code></td>
             
 
             <td class="type">
@@ -243,20 +243,20 @@
 
             
 
-            <td class="description last">the ecpair arrry in the bitcoin wallet</td>
+            <td class="description last">the websocket sender to apiserver. ccUtil.wanSender.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>ReceiverHash160Addr</code></td>
+                <td class="name"><code>tx</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
 
@@ -267,20 +267,129 @@
 
             
 
-            <td class="description last">storeman hash160 address</td>
+            <td class="description last">the transaction to lockWbtc</td>
         </tr>
 
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".getBtcSmgList"><span class="type-signature">&lt;static> </span>getBtcSmgList(sender)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        fetch the storemanGroup list.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>value</code></td>
+                <td class="name"><code>sender</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">integer</span>
+<span class="param-type">Object</span>
 
 
 
@@ -291,7 +400,7 @@
 
             
 
-            <td class="description last">the amount that wallet send to storeman</td>
+            <td class="description last">the websocket sender to apiserver. ccUtil.wanSender.</td>
         </tr>
 
     
@@ -451,6 +560,645 @@ thus wallet send a btc2wbtcLockNotice transaction to wanchain.
             
 
             <td class="description last">json format transaction include the btc lock information.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".sendDepositX"><span class="type-signature">&lt;static> </span>sendDepositX(sender, from, gas, gasPrice, x, passwd, nonce)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        send X to redeem BTC.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sender</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the websocket sender to apiserver. ccUtil.wanSender.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">user wanchain address.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gas</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gasPrice</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the secret</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>passwd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the password of wanchain keystore</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nonce</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the nonce. null means auto set.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".calculateLocWanFee"><span class="type-signature">&lt;static> </span>calculateLocWanFee(value, coin2WanRatio, txFeeRatio)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        calculate the fee when wbtc->btc.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the amout of the transaction.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>coin2WanRatio</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ratio of btc2Wan</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>txFeeRatio</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ratio of storemanGroup for crosschain.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".fund"><span class="type-signature">&lt;static> </span>fund(senderKp, ReceiverHash160Addr, value)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        the wallet fund bitcoin to storeman.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>senderKp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ecpair arrry in the bitcoin wallet</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ReceiverHash160Addr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">storeman hash160 address</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the amount that wallet send to storeman</td>
         </tr>
 
     
@@ -728,6 +1476,328 @@ thus wallet send a btc2wbtcLockNotice transaction to wanchain.
             
 <hr>
 <dt>
+    <h4 class="name" id=".revokeWithHashX"><span class="type-signature">&lt;static> </span>revokeWithHashX(hashx, revokeKp)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        the wallet redeem the wbtc to btc
+when wbtc->btc,  storeman --> wallet.
+storeman is sender.  wallet is receiverKp.
+when btc->wbtc,  wallet --> storeman;
+wallet is sender, storeman is receiver;
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hashx</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the hash of secret x</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>revokeKp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ecPair of wallet</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".redeemWithHashX"><span class="type-signature">&lt;static> </span>redeemWithHashX(hashx, receiverKp)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        the wallet redeem the wbtc to btc
+when wbtc->btc,  storeman --> wallet.
+storeman is sender.  wallet is receiverKp.
+when btc->wbtc,  wallet --> storeman;
+wallet is sender, storeman is receiver;
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hashx</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the hash of secret x</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>receiverKp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ecPair of wallet</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
     <h4 class="name" id=".redeemSriptCheck"><span class="type-signature">&lt;static> </span>redeemSriptCheck(sriptData)</h4>
     
     
@@ -789,6 +1859,139 @@ thus wallet send a btc2wbtcLockNotice transaction to wanchain.
             
 
             <td class="description last">the redeem script data.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		ccUtil.js
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".getBtcWanTxHistory"><span class="type-signature">&lt;static> </span>getBtcWanTxHistory(option)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        find the crosschain transaction records.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>option</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the filter of search.</td>
         </tr>
 
     
@@ -1056,7 +2259,7 @@ thus wallet send a btc2wbtcLockNotice transaction to wanchain.
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on Monday, November 12th 2018, 10:21:07 am
+		on Monday, November 19th 2018, 5:11:21 pm
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
