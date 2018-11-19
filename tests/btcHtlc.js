@@ -30,7 +30,7 @@ const alice = bitcoin.ECPair.fromWIF(
 );
 let aliceAddr;
 let aliceH160;
-let storemanH160 = '0x83e5ca256c9ffd0ae019f98e4371e67ef5026d2d';
+let storemanH160 = '83e5ca256c9ffd0ae019f98e4371e67ef5026d2d';
 
 
 
@@ -73,10 +73,11 @@ describe('btc2wbtc test', ()=> {
         tx.userH160 = '0x'+aliceH160;
         tx.hashx='0x'+lockBtcRecord.hashx;
         tx.txHash = '0x'+lockBtcRecord.txhash;
-        tx.lockedTimestamp = lockBtcRecord.LockedTimestamp;
+        tx.lockedTimestamp = lockBtcRecord.redeemLockTimeStamp;
         tx.gas = 1000000;
         tx.gasPrice = 200000000000; //200G;
         tx.passwd='wanglu';
+        console.log("sendWanNotice tx: ",tx);
         let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
         console.log("sendWanNotice txHash:", txHash);
 
@@ -100,8 +101,10 @@ describe('btc2wbtc test', ()=> {
     });
     step('TC012: redeemBtc', async ()=>{
         //(sender, from, gas, gasPrice, x, passwd, nonce)
+        const gasLimit = 1000000;
+        const gasPrice = 200000000000; //200G;
         let hashid = await ccUtil.sendDepositX(ccUtil.wanSender, "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd",
-            config.gasLimit, config.gasPrice, lockBtcRecord.x, "wanglu");
+            gasLimit, gasPrice, '0x'+lockBtcRecord.x, "wanglu");
         console.log("redeem hashid: ", hashid);
         //wait until redeem success
         console.log("check redeem tx");
@@ -129,7 +132,7 @@ describe('btc2wbtc test', ()=> {
 
 
 
-describe.only('wbtc2btc test', ()=> {
+describe('wbtc2btc test', ()=> {
     const wdValue = 200000;
     let wanHashX;
     before(async () => {
@@ -190,6 +193,7 @@ describe.only('wbtc2btc test', ()=> {
         await pu.sleep(3000);
         let hashid = await ccUtil.redeemWithHashX(wanHashX, alice);
         console.log("redeem hashid: ", hashid);
+        await pu.sleep(3000);
         let ctx = await ccUtil.getBtcTransaction(ccUtil.btcSender, hashid);
         console.log(ctx);
         //wait until redeem success
