@@ -179,6 +179,10 @@ const Backend = {
         let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
         return b;
     },
+    /**
+     * fetch the storemanGroup list.
+     * @param {Object} sender the websocket sender to apiserver. ccUtil.wanSender.
+     */
     getBtcSmgList(sender) {
         let b = pu.promisefy(sender.sendMessage, ['syncStoremanGroups'], sender);
         return b;
@@ -272,6 +276,16 @@ const Backend = {
 
         return txhash;
     },
+    /**
+     * send X to redeem BTC.
+     * @param {Object} sender the websocket sender to apiserver. ccUtil.wanSender.
+     * @param {string} from user wanchain address.
+     * @param {string} gas
+     * @param {string} gasPrice
+     * @param {string} x the secret
+     * @param {string} passwd the password of wanchain keystore
+     * @param {number} nonce the nonce. null means auto set.
+     */
     async sendDepositX(sender, from, gas, gasPrice, x, passwd, nonce) {
         let newTrans = this.createTrans(sender);
         newTrans.createTransaction(from, config.wanchainHtlcAddr, null, null, null, gas, gasPrice, 'BTC2WBTC', nonce);
@@ -429,6 +443,12 @@ const Backend = {
         let bs = pu.promisefy(sender.sendMessage, ['getBalance', addr], sender);
         return bs;
     },
+    /**
+     * calculate the fee when wbtc->btc.
+     * @param {number} value the amout of the transaction.
+     * @param {number} coin2WanRatio  the ratio of btc2Wan
+     * @param {number} txFeeRatio  the ratio of storemanGroup for crosschain.
+     */
     calculateLocWanFee(value, coin2WanRatio, txFeeRatio) {
         let wei = web3.toBigNumber(value);
         const DEFAULT_PRECISE = 10000;
@@ -436,6 +456,11 @@ const Backend = {
 
         return '0x' + fee.toString(16);
     },
+    /**
+     * the wallet send lockWbtc transaction to storeman.
+     * @param {Object} sender the websocket sender to apiserver. ccUtil.wanSender.
+     * @param {Object} tx  the transaction to lockWbtc
+     */
     async sendWanHash(sender, tx) {
         let newTrans = this.createTrans(sender);
         newTrans.createTransaction(tx.from, config.wanchainHtlcAddr, tx.amount, tx.storemanGroup, tx.cross,
@@ -598,8 +623,15 @@ const Backend = {
         return res;
 
     },
-    // when btc -- > wbtc, alice is revoker,  storeman is receiver.
-    // when wbtc --> btc,  alice is receiver,  storeman is revoker.
+    /**
+     * the wallet redeem the wbtc to btc
+     * when wbtc->btc,  storeman --> wallet.
+     * storeman is sender.  wallet is receiverKp.
+     * when btc->wbtc,  wallet --> storeman;
+     * wallet is sender, storeman is receiver;
+     * @param {string} hashx the hash of secret x
+     * @param {Object} revokeKp the ecPair of wallet
+     */
     async revokeWithHashX(hashx, revokeKp) {
 
         let res = this.getBtcWanTxHistory({'HashX': hashx});
@@ -668,10 +700,16 @@ const Backend = {
         return btcHash;
     },
 
-    // when wbtc->btc,  storeman --> wallet.
-    //storeman is sender.  wallet is receiverKp.
-    // when btc->wbtc,  wallet --> storeman;
-    // wallet is sender, storeman is receiver;
+
+    /**
+     * the wallet redeem the wbtc to btc
+     * when wbtc->btc,  storeman --> wallet.
+     * storeman is sender.  wallet is receiverKp.
+     * when btc->wbtc,  wallet --> storeman;
+     * wallet is sender, storeman is receiver;
+     * @param {string} hashx the hash of secret x
+     * @param {Object} receiverKp the ecPair of wallet
+     */
     async redeemWithHashX(hashx, receiverKp) {
         let res = this.getBtcWanTxHistory({'HashX': hashx});
         let redeemLockTimeStamp = Number(res[0].btcRedeemLockTimeStamp) / 1000;
@@ -980,6 +1018,10 @@ const Backend = {
         return '0x' + randomBuf.toString('hex');
     },
 
+    /**
+     * find the crosschain transaction records.
+     * @param {Object} option the filter of search.
+     */
     getBtcWanTxHistory(option) {
         this.collection = this.getCrossdbCollection();
         let Data = this.collection.find(option);

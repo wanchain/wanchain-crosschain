@@ -104,13 +104,11 @@ describe('btc api test', ()=>{
 
 
     it('TC007: get all btcAddress', async ()=>{
-        // mocha --timeout 100000 test.js
         let result = await btcUtil.getAddressList();
         console.log('result: ', result);
     });
 
     it('TC006: get all ECPair', async ()=>{
-        // mocha --timeout 100000 test.js
         let result = await btcUtil.getECPairs('1234567890');
         console.log('result: ', result);
     });
@@ -124,16 +122,16 @@ describe('btc api test', ()=>{
         const txid = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";  // 12345000
         let value;
         value = await ccUtil.getUtxoValueByIdStoreman(txid);
-        console.log('result: ', value);
+        console.log('getUtxoValueByIdStoreman result: ', value);
         assert(value, 12345000,"wrong value");
         value = await ccUtil.getUtxoValueByIdWallet(txid);
         assert(value, 12345000,"wrong value");
-        console.log('result: ', value);
+        console.log('getUtxoValueByIdWallet result: ', value);
     });
 
     after('end', async ()=>{
         wanchainCore.close();
-        process.exit(0);
+        //process.exit(0);
     })
 });
 

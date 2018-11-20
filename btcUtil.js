@@ -227,6 +227,9 @@ const btcUtil = {
         }
     },
 
+    /**
+     * generate a random for privatekey or the secret X
+     */
     generatePrivateKey () {
         let randomBuf
         do {
