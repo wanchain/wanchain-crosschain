@@ -271,7 +271,7 @@ describe('btc2wbtc test', ()=> {
         console.log("storemanAddr: ", storemanAddr);
     });
 
-    it('TC002: btcLock', async ()=>{
+    it('TC000: btcLock', async ()=>{
         let record = await ccUtil.fund([alice], storemanH160, value);
         console.log("htcl lock record: ", record);
         await pu.sleep(5000);
@@ -279,7 +279,7 @@ describe('btc2wbtc test', ()=> {
         assert(web3.toBigNumber(btcTx.vout[0].value).mul(100000000).toNumber(), value, "amount is wrong");
         lockBtcRecord = record;
     });
-    it('TC002: sendWanNotice', async ()=>{
+    it('TC001: sendWanNotice', async ()=>{
         let tx = {};
         tx.storeman = '0x'+storemanH160;
         tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
@@ -294,7 +294,7 @@ describe('btc2wbtc test', ()=> {
         let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
         console.log("sendWanNotice txHash:", txHash);
     });
-    it('TC003: redeemBtc', async ()=>{
+    it('TC002: redeemBtc', async ()=>{
         let hashid = await ccUtil.redeem(lockBtcRecord.x, lockBtcRecord.hashx, lockBtcRecord.LockedTimestamp, lockBtcRecord.senderH160Addr, storeman, lockBtcRecord.value,lockBtcRecord.txhash);
         console.log("redeem hashid: ", hashid);
         await pu.sleep(5000);
@@ -302,7 +302,7 @@ describe('btc2wbtc test', ()=> {
         console.log(ctx);
         assert(web3.toBigNumber(ctx.vout[0].value).mul(100000000).toNumber(), value-config.feeHard, "amount is wrong");
     });
-    it.skip('TC020: onlineCheck', async ()=>{
+    it.skip('TC003: onlineCheck', async ()=>{
     });
     after('end', async ()=>{
         wanchainCore.close();
@@ -328,7 +328,7 @@ describe.only('wbtc2btc test', ()=> {
         console.log("storemanAddr: ", storemanAddr);
     });
 
-    it('TC002: btcLock', async ()=>{
+    it('TC000: wbtcLock', async ()=>{
         const value = 200000;
         let record = await ccUtil.fund([alice], storemanH160, value);
         console.log("htcl lock record: ", record);
@@ -351,7 +351,7 @@ describe.only('wbtc2btc test', ()=> {
         assert(web3.toBigNumber(btcTx.vout[0].value).mul(100000000).toNumber(), value, "amount is wrong");
         lockBtcRecord = record;
     });
-    it('TC002: sendWanNotice', async ()=>{
+    it('TC001: sendWanNotice', async ()=>{
         let tx = {};
         tx.storeman = '0x'+storemanH160;
         tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
@@ -366,7 +366,7 @@ describe.only('wbtc2btc test', ()=> {
         let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
         console.log("sendWanNotice txHash:", txHash);
     });
-    it('TC003: redeemWithHashX', async ()=>{
+    it('TC002: redeemWithHashX', async ()=>{
         let hashid = await ccUtil.redeemWithHashX(lockBtcRecord.hashx, storeman);
         console.log("redeem hashid: ", hashid);
         let rawTx = await ccUtil.getTxInfo(ccUtil.btcSender, hashid);
@@ -384,7 +384,7 @@ describe.only('wbtc2btc test', ()=> {
             console.log("inScHex", inScHex);
         }
     });
-    it('TC001: redeemSriptCheck', async () => {
+    it('TC003: redeemSriptCheck', async () => {
         let redeemScriptSigData = '473044022015c227f40f5dae2f8e40124eb6c2b0556c48d428208823d595803a522454ebd5022061bfb8fa71a00013d3d719d11f2b046a85162bc70c10d9831ee08aca5c3916f501210334de97350340e8537fdae10f92081f40378fe3d46346b0c753b2cb8f1169290a209d5b27cd395af22ce9a30a11c0ea62d6add2864da21b5a11410d3b8a17aac1b5514c5c63a820eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e58876a9147ef9142e7d6f28dda806accb891e4054d6fa9eae670309c500b17576a914d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe6888ac'
         let res = ccUtil.redeemSriptCheck(redeemScriptSigData)
         assert.notEqual(res, undefined, 'redeemSriptCheck failed')
@@ -393,7 +393,7 @@ describe.only('wbtc2btc test', ()=> {
         assert.equal(res.DESTHASH160.toString('hex'), '7ef9142e7d6f28dda806accb891e4054d6fa9eae', 'redeemSriptCheck failed')
         assert.equal(res.REVOKERHASH160.toString('hex'), 'd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'redeemSriptCheck failed')
     })
-    it.skip('TC020: onlineCheck', async ()=>{
+    it.skip('TC004: onlineCheck', async ()=>{
     });
     after('end', async ()=>{
         wanchainCore.close();

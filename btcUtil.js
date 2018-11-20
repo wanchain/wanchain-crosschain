@@ -190,6 +190,11 @@ const btcUtil = {
         }
     },
 
+    /**
+     * remove a bitcoin address
+     * @param {string}  addr the wallet address.
+     * @param {string}  passwd the wallet password.
+     */
     async removeAddress(addr, passwd) {
         let filter = {}
         if (addr) {filter.address = addr}
