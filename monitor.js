@@ -3,15 +3,19 @@
 const pu = require('promisefy-util');
 let config;
 const be = require('./ccUtil.js').Backend;
+const btcUtil = require('./btcUtil').btcUtil;
 const cm = require('./comm.js');
 const Web3 = require("web3");
 const web3 = new Web3();
+const coder = require('web3/lib/solidity/coder');
 
 let backendConfig = {};
 let logger;
 let handlingList = {};
 
-
+function encodeTopic(type, param) {
+    return '0x' + coder.encodeParam(type, param);
+}
 const MonitorRecord = {
     async init(cfg, ethSender, wanSender,btcSender){
         config = cfg? cfg:require('./config.js');
@@ -314,7 +318,7 @@ const MonitorRecord = {
             let sender;
             if(record.chain==="BTC"){
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getDepositCrossLockEvent(sender,'0x'+record.HashX);
+                receipt = await be.getDepositCrossLockEvent(sender,'0x'+record.HashX, encodeTopic("address", '0x'+record.crossAddress));
                 logger.debug("checkCrossHashOnline deposit: ", receipt);
                 if(receipt && receipt.length>0){
                     record.crossConfirmed = 1;
@@ -330,20 +334,25 @@ const MonitorRecord = {
                 }
             }else {
                 sender = this.getSenderbyChain("WAN");
-                receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX);
+                // in btc record, crossAddress has no 0x, but wan record has 0x
+                receipt = await be.getBtcWithdrawStoremanNoticeEvent(sender,'0x'+record.HashX, encodeTopic("address", record.crossAddress));
                 logger.debug("checkCrossHashOnline WAN:", receipt);
                 if(receipt && receipt.length>0){
                     let btcLockTxHash = receipt[0].data.slice(2,66);
                     let redeemLockTimeStamp = Number('0x'+receipt[0].data.slice(66));
+                    let StoremanBtcH160 = receipt[0].topics[1].slice(26);
                     let btcSender = this.getSenderbyChain('BTC');
                     let btcTx = await be.getBtcTransaction(btcSender, btcLockTxHash);
                     logger.debug("checkCrossHashOnline btcTx:", btcTx);
-                    if(btcTx && btcTx.confirmations) {
+                    let contract = btcUtil.hashtimelockcontract(record.HashX, redeemLockTimeStamp, record.crossAddress, StoremanBtcH160)
+
+                    if(btcTx && btcTx.confirmations && btcTx.locktime===0) {
                         let  btcTx_value = Number(web3.toBigNumber(btcTx.vout[0].value).mul(100000000));
-                        if(btcTx_value == record.value){
+                        let  btcTx_p2sh = btcTx.vout[0].scriptPubKey.addresses[0];
+                        if(btcTx_value === Number(record.value) && btcTx_p2sh ===contract.p2sh){
                             record.crossConfirmed = 1;
                             record.crossLockHash = receipt[0].transactionHash;// the storeman notice hash.
-                            record.StoremanBtcH160 = receipt[0].topics[1].slice(26);
+                            record.StoremanBtcH160 = StoremanBtcH160;
                             record.btcRedeemLockTimeStamp = redeemLockTimeStamp*1000;
                             record.btcLockTxHash = btcLockTxHash;
                             record.status = 'waitingCrossConfirming';
@@ -356,7 +365,7 @@ const MonitorRecord = {
                 }
             }
         }catch(err){
-            logger.error("checkCrossHashOnline:", err);
+            logger.error("checkCrossHashOnline:", err.message||err);
         }
     },
     updateRecord(record){

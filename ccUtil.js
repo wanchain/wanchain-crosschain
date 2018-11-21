@@ -316,13 +316,13 @@ const Backend = {
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.originalChainHtlc, topics], sender);
         return p;
     },
-    getBtcWithdrawStoremanNoticeEvent(sender, hashX) {
-        let topics = [this.getEventHash(config.withdrawBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, null, hashX];
+    getBtcWithdrawStoremanNoticeEvent(sender, hashX, walletAddr) {
+        let topics = [this.getEventHash(config.withdrawBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, walletAddr, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
         return p;
     },
-    getDepositCrossLockEvent(sender, hashX) {
-        let topics = [this.getEventHash(config.depositBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, null, hashX];
+    getDepositCrossLockEvent(sender, hashX, walletAddr) {
+        let topics = [this.getEventHash(config.depositBtcCrossLockEvent, config.HTLCWBTCInstAbi), null, walletAddr, hashX];
         let p = pu.promisefy(sender.sendMessage, ['getScEvent', config.wanchainHtlcAddr, topics], sender);
         return p;
     },
