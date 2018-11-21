@@ -14,6 +14,9 @@ config.bitcoinNetwork = bitcoin.networks.testnet;
 config.MAX_CONFIRM_BLKS = 100000000;
 config.MIN_CONFIRM_BLKS = 0;
 
+config.gasLimit = 1000000;
+config.gasPrice = 200000000000;
+
 
 if (process.platform === 'darwin') {
     config.rpcIpcPath = path.join(process.env.HOME, '/Library/Wanchain',wanchainNet,'gwan.ipc');

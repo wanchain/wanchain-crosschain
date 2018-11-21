@@ -22,7 +22,21 @@ describe('btc api test', ()=>{
         console.log("start");
     });
 
-    it('TC001: send a transaction', async ()=>{
+    it('TC000: remove btc address', async ()=>{
+        let result = await btcUtil.getAddressList();
+        console.log('address: ', result);
+        console.log('create btc address.');
+        await btcUtil.createAddress('1234567890');
+        console.log('create btc address finsih.');
+        result = await btcUtil.getAddressList();
+        console.log('address: ', result);
+        let address = result.pop();
+        console.log('remove address:', address.address);
+        btcUtil.removeAddress(address.address, '1234567890');
+        console.log('remove finish.');
+    });
+
+    it.only('TC001: send a btc2wbtc lock transaction', async ()=>{
         const aliceAddr = "mtCotFuC1JP448Y3uhEbyPeP7UduYUn6Vb";
         const aliceWif = "6PYSkjxao4iBgTn4mW5AgYD77PtwePM8a9UmpKm8snRc4A4SqryGpvHief";
         const alice = bitcoin.ECPair.fromWIF(aliceWif,bitcoin.networks.testnet );
@@ -75,7 +89,7 @@ describe('btc api test', ()=>{
         utxos = await ccUtil.getBtcUtxo(ccUtil.btcSender, 0, 10000000, [address]);
         console.log("utxos: ", utxos);
     });
-    it('TC003: get block number', async ()=>{
+    it('TC003: get btc block number', async ()=>{
         let height = await ccUtil.getBlockNumber(ccUtil.btcSender);
         console.log("block number: ", height);
     });
@@ -84,7 +98,7 @@ describe('btc api test', ()=>{
         let tx = await ccUtil.getTxInfo(ccUtil.btcSender, hash);
         console.log("get transaction: ", tx);
     });
-    it('TC005: create btc addr', null, async ()=>{
+    it('TC005: create btc addr', async ()=>{
         await btcUtil.createAddress('1234567890');
     });
 
@@ -92,34 +106,19 @@ describe('btc api test', ()=>{
     it('TC007: get all btcAddress', async ()=>{
         let result = await btcUtil.getAddressList();
         console.log('result: ', result);
-   });
+    });
 
     it('TC006: get all ECPair', async ()=>{
         let result = await btcUtil.getECPairs('1234567890');
         console.log('result: ', result);
     });
 
-   it('TC008: get block number', async ()=>{
-       console.log('tc008start');
-       let height = await ccUtil.getBlockNumber(ccUtil.btcSender);
-       console.log("block number: ", height);
-       console.log('tc008end');
-   });
-   it('TC009: get raw transaction', async ()=>{
-       let hash = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";
-       let tx = await ccUtil.getTxInfo(ccUtil.btcSender, hash);
-       console.log("get transaction: ", tx);
-   });
-
-    it('TC011: get btc address list', async ()=>{
-        let result = await btcUtil.getAddressList();
-        console.log('result: ', result);
-    });
-    it('TC012: getP2shxByHashx', async ()=>{
+    it('TC007: getP2shxByHashx', async ()=>{
+        // mocha --timeout 100000 test.js
         let result = await ccUtil.getP2shxByHashx(ccUtil.btcSender, "f0370fd4cf3f85a17e770213923f64e1212aafe72f33b3a3b0a82b5ae1852774");
         console.log('result: ', result);
     });
-    it('TC013: getUtxoValueById', async ()=>{
+    it('TC008: getUtxoValueById', async ()=>{
         const txid = "7168a86c84eda0bbfb7ae553118b02983516e8a6c448dc4c0630d26299297f20";  // 12345000
         let value;
         value = await ccUtil.getUtxoValueByIdStoreman(txid);

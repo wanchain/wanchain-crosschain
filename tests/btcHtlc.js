@@ -55,8 +55,8 @@ describe('btc2wbtc test', ()=> {
         aliceH160 = btcUtil.addressToHash160(aliceAddr, 'pubkeyhash', btcNetworkName);
         console.log("aliceAddr: ", aliceAddr);
     });
-    step('TC010: btcLock', async ()=>{
-        const value = 200000;
+
+    it('TC000: btcLock', async ()=>{
         let record = await ccUtil.fund([alice], storemanH160, value);
         console.log("htcl lock record: ", record);
 
@@ -65,7 +65,7 @@ describe('btc2wbtc test', ()=> {
         assert(web3.toBigNumber(btcTx.vout[0].value).mul(100000000).toNumber(), value, "amount is wrong");
         lockBtcRecord = record;
     });
-    step('TC011: sendWanNotice', async ()=>{
+    it('TC001: sendWanNotice', async ()=>{
         let tx = {};
         tx.storeman = '0x'+storemanH160;
         tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
@@ -99,30 +99,15 @@ describe('btc2wbtc test', ()=> {
         }
         console.log("lockBtcTest done. x: ", lockBtcRecord.x);
     });
-    step('TC012: redeemBtc', async ()=>{
-        //(sender, from, gas, gasPrice, x, passwd, nonce)
-        const gasLimit = 1000000;
-        const gasPrice = 200000000000; //200G;
-        let hashid = await ccUtil.sendDepositX(ccUtil.wanSender, "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd",
-            gasLimit, gasPrice, '0x'+lockBtcRecord.x, "wanglu");
+    it('TC002: redeemBtc', async ()=>{
+        let hashid = await ccUtil.redeem(lockBtcRecord.x, lockBtcRecord.hashx, lockBtcRecord.LockedTimestamp, lockBtcRecord.senderH160Addr, storeman, lockBtcRecord.value,lockBtcRecord.txhash);
         console.log("redeem hashid: ", hashid);
-        //wait until redeem success
-        console.log("check redeem tx");
-        let lastStatus = 'sentXPending';
-        while(1){
-            let checkres = ccUtil.getBtcWanTxHistory({'HashX':lockBtcRecord.hashx})
-            assert.equal(checkres.length, 1, "records not found");
-            let record = checkres[0]
-            if(lastStatus !== record.status){
-                lastStatus = record.status
-                console.log("new status: ", lastStatus)
-            }
-            if(record.status === 'redeemFinished'){
-                break;
-            }
-            await pu.sleep(10000);
-        }
-        console.log("redeemWithHashX done. ");
+        await pu.sleep(5000);
+        let ctx = await ccUtil.getBtcTransaction(ccUtil.btcSender, hashid);
+        console.log(ctx);
+        assert(web3.toBigNumber(ctx.vout[0].value).mul(100000000).toNumber(), value-config.feeHard, "amount is wrong");
+    });
+    it.skip('TC003: onlineCheck', async ()=>{
     });
     after('end', async ()=>{
         wanchainCore.close();
@@ -146,52 +131,47 @@ describe('wbtc2btc test', ()=> {
         aliceH160 = btcUtil.addressToHash160(aliceAddr, 'pubkeyhash', btcNetworkName);
         console.log("aliceAddr: ", aliceAddr);
     });
-    step('TC010: wbtcLock', async ()=>{
-        console.log("wbtcLock");
-        let smgs = await ccUtil.getBtcSmgList(ccUtil.btcSender);
-        console.log("smgs: ", smgs);
-        let smg = smgs[0];
-        let wdTx = {};
-        wdTx.storemanGroup = smg.wanAddress;
-        wdTx.gas = '0x'+(1000000).toString(16);
-        wdTx.gasPrice = '0x'+(200000000000).toString(16); //200G;
-        wdTx.passwd='wanglu';
-        wdTx.cross = '0x'+aliceH160;
-        wdTx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
-        wdTx.amount = '0x'+wdValue.toString(16);//0.2
-        const txFeeRatio = smg.txFeeRatio;
-        wdTx.value = ccUtil.calculateLocWanFee(wdTx.amount,ccUtil.c2wRatio,  txFeeRatio);
-        console.log("wdTx.value: ",wdTx.value);
-        let x = btcUtil.generatePrivateKey().slice(2); // hex string without 0x
-        let hashx = bitcoin.crypto.sha256(Buffer.from(x, 'hex')).toString('hex');
-        wdTx.x = x;
-        console.log("wdTx:", wdTx);
-        console.log("wdtx hashx:", hashx);
-        let wdHash = await ccUtil.sendWanHash(ccUtil.wanSender, wdTx);
-        console.log("wdHash: ",wdHash);
 
-        //wait storeman lock
-        console.log("check storeman lock tx");
-        let lastStatus = 'sentHashPending';
-        while(1){
-            let checkres = ccUtil.getBtcWanTxHistory({'HashX':hashx})
-            assert.equal(checkres.length, 1, "records not found");
-            let record = checkres[0]
-            if(lastStatus !== record.status){
-                lastStatus = record.status
-                console.log("new status: ", lastStatus)
-            }
-            if(record.status === 'waitingX'){
-                break;
-            }
-            await pu.sleep(10000);
-        }
-        wanHashX = hashx;
+    it('TC000: wbtcLock', async ()=>{
+        const value = 200000;
+        let record = await ccUtil.fund([alice], storemanH160, value);
+        console.log("htcl lock record: ", record);
+        let tx = {};
+        tx.storeman = '0x'+storemanH160;
+        tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.userH160 = '0x'+aliceH160;
+        tx.hashx='0x'+record.hashx;
+        tx.txHash = '0x'+record.txhash;
+        tx.lockedTimestamp = record.LockedTimestamp;
+        tx.gas = 1000000;
+        tx.gasPrice = 200000000000; //200G;
+        tx.passwd='wanglu';
+        let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
+        console.log("sendWanNotice txHash:", txHash);
+
+        await pu.sleep(2000);
+        let btcTx = await ccUtil.getBtcTransaction(ccUtil.btcSender, record.txhash);
+        assert(web3.toBigNumber(btcTx.vout[0].value).mul(100000000).toNumber(), value, "amount is wrong");
+        lockBtcRecord = record;
     });
-
-    step('TC012: redeemWithHashX', async ()=>{
-        await pu.sleep(3000);
-        let hashid = await ccUtil.redeemWithHashX(wanHashX, alice);
+    it('TC001: sendWanNotice', async ()=>{
+        let tx = {};
+        tx.storeman = '0x'+storemanH160;
+        tx.from = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.userWanAddr = "0xbd100cf8286136659a7d63a38a154e28dbf3e0fd";
+        tx.userH160 = '0x'+aliceH160;
+        tx.hashx='0x'+record.hashx;
+        tx.txHash = '0x'+record.txhash;
+        tx.lockedTimestamp = record.LockedTimestamp;
+        tx.gas = 1000000;
+        tx.gasPrice = 200000000000; //200G;
+        tx.passwd='wanglu';
+        let txHash = await ccUtil.sendWanNotice(ccUtil.wanSender, tx);
+        console.log("sendWanNotice txHash:", txHash);
+    });
+    it('TC002: redeemWithHashX', async ()=>{
+        let hashid = await ccUtil.redeemWithHashX(lockBtcRecord.hashx, storeman);
         console.log("redeem hashid: ", hashid);
         await pu.sleep(3000);
         let ctx = await ccUtil.getBtcTransaction(ccUtil.btcSender, hashid);
@@ -214,8 +194,19 @@ describe('wbtc2btc test', ()=> {
         }
         console.log("redeemWithHashX done. ");
     });
-
+    it('TC003: redeemSriptCheck', async () => {
+        let redeemScriptSigData = '473044022015c227f40f5dae2f8e40124eb6c2b0556c48d428208823d595803a522454ebd5022061bfb8fa71a00013d3d719d11f2b046a85162bc70c10d9831ee08aca5c3916f501210334de97350340e8537fdae10f92081f40378fe3d46346b0c753b2cb8f1169290a209d5b27cd395af22ce9a30a11c0ea62d6add2864da21b5a11410d3b8a17aac1b5514c5c63a820eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e58876a9147ef9142e7d6f28dda806accb891e4054d6fa9eae670309c500b17576a914d3a80a8e8bf8fbfea8eee3193dc834e61f257dfe6888ac'
+        let res = ccUtil.redeemSriptCheck(redeemScriptSigData)
+        assert.notEqual(res, undefined, 'redeemSriptCheck failed')
+        assert.equal(res.HASHX.toString('hex'), 'eb8f616b3f2f4137639185a10458e918e04b8d6c30c24007be3542a80f6e11e5', 'redeemSriptCheck failed')
+        assert.equal(res.LOCKTIME.toString('hex'), '09c500', 'redeemSriptCheck failed')
+        assert.equal(res.DESTHASH160.toString('hex'), '7ef9142e7d6f28dda806accb891e4054d6fa9eae', 'redeemSriptCheck failed')
+        assert.equal(res.REVOKERHASH160.toString('hex'), 'd3a80a8e8bf8fbfea8eee3193dc834e61f257dfe', 'redeemSriptCheck failed')
+    })
+    it.skip('TC004: onlineCheck', async ()=>{
+    });
     after('end', async ()=>{
         wanchainCore.close();
     });
 });
+
