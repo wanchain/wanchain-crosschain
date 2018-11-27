@@ -325,7 +325,7 @@ console.log("Your WAN address is: 0x"+keyObject.address);
 
 
 ****
-**ATTENTION**：You must get sum balance in your wan account and btc address before you try the crosschain transaction. That's why we learn create account first. 
+**ATTENTION**：You must get some balance in your wan account and btc address before you try the crosschain transaction. That's why we learn create account first. 
 ****
 
 ## 2.6 Get BTC balance
@@ -413,6 +413,11 @@ let smgs = await ccUtil.getBtcSmgList(ccUtil.btcSender);
 You can get the transactions' info like this:
 ```
 let records = ccUtil.getBtcWanTxHistory({});
+```
+
+And you can fill a filter to get custom records such as:
+```
+let records = ccUtil.getBtcWanTxHistory({status: 'waitingX', chain: 'BTC'});
 ```
 
 ## 2.11 Normal BTC transaction
