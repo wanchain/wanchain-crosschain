@@ -95,7 +95,7 @@ describe('btc basic api test', () => {
         assert.equal(hash1602, hash1602_exp, 'address2hash160 failed')
     });
     it('TC001: hash160ToAddress', async ()=> {
-        let userH160 = "83C96ffdCE7A2206421A4C33B2CF2030CE53e772";
+        let userH160 = "8aA1955D1Dd388ec13b1F92A3D3861bF4D0B765C".toLowerCase();
         let addr = btcUtil.hash160ToAddress(userH160,'pubkeyhash','mainnet');
         console.log("the address from hash160: " + addr);
         assert.equal(addr, '1D1pqFX6zm9rVEwquZbdmHwAYYeCCVm6dE', 'hash160ToAddress failed')

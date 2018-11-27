@@ -86,46 +86,26 @@ const MonitorRecord = {
             logger.error("checkOriginLockOnline:", err);
         }
     },
-    async checkXOnline(record){
+    async checkXOnlineBtc(record){
         try {
-            let sender;
-            let receipt;
-            if(record.chain === "BTC"){
-                sender = this.getSenderbyChain("WAN");
-                receipt = await be.getDepositRedeemEvent(sender,'0x'+record.HashX);
-                if(receipt && receipt.length>0){
-                    record.status = 'sentXConfirming';
-                    this.updateRecord(record );
-                }
-            } else {
-                let redeemTxHash = record.btcRefundTxHash;
-                let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
-                logger.debug("checkXOnline: ", btcTx);
-                if(btcTx && btcTx.confirmations && btcTx.confirmations>0){
-                    record.status = 'sentXConfirming';
-                    this.updateRecord(record );
-                }
+            let redeemTxHash = record.btcRefundTxHash;
+            let btcTx = await be.getBtcTransaction(be.btcSender, redeemTxHash);
+            logger.debug("checkXOnline: ", btcTx);
+            if(btcTx && btcTx.confirmations && btcTx.confirmations>0) {
+                record.status = 'sentXConfirming';
+                this.updateRecord(record);
             }
         }catch(err){
             logger.error("checkTxOnline:", err);
         }
     },
-    async checkRevokeOnline(record){
+    async checkRevokeOnlineBtc(record){
         try {
-            if(record.chain === "BTC"){
-                let btcTx = await be.getBtcTransaction(be.btcSender, record.btcRevokeTxHash);
-                logger.debug("checkRevokeOnline: ", btcTx);
-                if(btcTx && btcTx.confirmations && btcTx.confirmations>=1){
-                    record.status = 'sentRevokeConfirming';
-                    this.updateRecord(record );
-                }
-            }else {
-                let sender = this.getSenderbyChain("WAN");
-                let receipt = await be.getWithdrawRevokeEvent(sender,'0x'+record.HashX);
-                if(receipt && receipt.length>0){
-                    record.status = 'sentRevokeConfirming';
-                    this.updateRecord(record );
-                }
+            let btcTx = await be.getBtcTransaction(be.btcSender, record.btcRevokeTxHash);
+            logger.debug("checkRevokeOnline: ", btcTx);
+            if(btcTx && btcTx.confirmations && btcTx.confirmations>=1){
+                record.status = 'sentRevokeConfirming';
+                this.updateRecord(record );
             }
         }catch(err){
             //console.log("checkRevokeOnline:", err);
@@ -142,6 +122,42 @@ const MonitorRecord = {
                 record.lockConfirmed += 1;
                 if(record.lockConfirmed >= config.confirmBlocks){
                     record.status = 'waitingCross';
+                }
+                this.updateRecord(record);
+            }
+        }catch(err){
+            //console.log("checkHashConfirm:", err);
+        }
+    },
+    async checkXOnlineWan(record){
+        try {
+            let sender = this.getSenderbyChain("WAN");
+            let txhash = '0x'+record.refundTxHash;
+            let receipt = await this.monitorTxConfirm(sender, txhash, 0);
+            logger.debug("checkRedeemConfirmWan: ", receipt);
+            if(receipt){
+                if(receipt.status === '0x1'){
+                    record.status = 'sentXConfirming';
+                }else{
+                    record.status = 'sentRedeemFailed';
+                }
+                this.updateRecord(record);
+            }
+        }catch(err){
+            //console.log("checkHashConfirm:", err);
+        }
+    },
+    async checkRevokeOnlineWan(record){
+        try {
+            let sender = this.getSenderbyChain("WAN");
+            let txhash = '0x'+record.revokeTxHash;
+            let receipt = await this.monitorTxConfirm(sender, txhash, 0);
+            logger.debug("checkRevokeConfirmWan: ", receipt);
+            if(receipt){
+                if(receipt.status === '0x1'){
+                    record.status = 'sentRevokeConfirming';
+                }else{
+                    record.status = 'sentRevokeFailed';
                 }
                 this.updateRecord(record);
             }
@@ -439,15 +455,24 @@ const MonitorRecord = {
                 }
                 break;
             case 'sentRevokePending':
-                await this.checkRevokeOnline(record);
+                if(record.chain === 'BTC') {
+                    await this.checkRevokeOnlineBtc(record);
+                } else {
+                    await this.checkRevokeOnlineWan(record);
+                }
                 break;
             case 'sentRevokeConfirming':
                 await this.checkRevokeConfirm(record);
                 break;
 
             case 'sentXPending':
-                await this.checkXOnline(record);
+                if(record.chain === 'BTC') {
+                    await this.checkXOnlineWan(record);
+                } else {
+                    await this.checkXOnlineBtc(record);
+                }
                 break;
+            case 'suspending':
             case 'sentXConfirming':
                 await this.checkXConfirm(record);
                 break;
