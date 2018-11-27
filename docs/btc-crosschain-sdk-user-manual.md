@@ -1,11 +1,11 @@
-# BTC CrossChain SDK User Manual
+# Wanchain CrossChain for BTC SDK User Manual
 
 --------
 
 # Contents
 <!-- TOC -->
 
-- [BTC CrossChain SDK User Manual](#btc-crosschain-sdk-user-manual)
+- [Wanchain CrossChain for BTC SDK User Manual](#wanchain-crosschain-for-btc-sdk-user-manual)
 - [Contents](#contents)
 - [1. Introduction](#1-introduction)
   - [1.1 Function and use](#11-function-and-use)
@@ -38,11 +38,11 @@
 
 # 1. Introduction
 
-This is a user manual which tell developers how to use the BTC crosschain sdk.
+This is a user manual which tell developers how to use the Wanchain CrossChain for BTC sdk.
 
 ## 1.1 Function and use
 
-BTC crosschain sdk has many useful tools and function for developers to develop a custom crosschain wallet.
+Wanchain CrossChain for BTC sdk has many useful tools and function for developers to develop a custom crosschain wallet.
 
 Developers can use this sdk to perform crosschain transactions between BTC blockchain and WAN blockchain.
 
