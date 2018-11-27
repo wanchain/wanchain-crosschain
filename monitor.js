@@ -472,7 +472,6 @@ const MonitorRecord = {
                     await this.checkXOnlineBtc(record);
                 }
                 break;
-            case 'suspending':
             case 'sentXConfirming':
                 await this.checkXConfirm(record);
                 break;
