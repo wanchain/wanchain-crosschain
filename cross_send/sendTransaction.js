@@ -190,6 +190,7 @@ module.exports = class sendTransaction{
         let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
         if(value){
             value.refundTxHash = hexTrip0x(result);
+            value.status = 'sentXPending';
             collection.update(value);
         }
     }
@@ -198,6 +199,7 @@ module.exports = class sendTransaction{
         let value = collection.findOne({HashX:hexTrip0x(trans.Contract.hashKey)});
         if(value){
             value.revokeTxHash = hexTrip0x(result);
+            value.status = 'sentRevokePending';
             collection.update(value);
         }
     }

@@ -308,6 +308,7 @@ const MonitorRecord = {
         }
         if(record.status === "waitingRevoke"
             || record.status ==="sentRevokePending"
+            || record.status ==="sentRevokeFailed"
             || record.status ==="sentRevokeConfirming"){
             return true;
         }
@@ -427,32 +428,36 @@ const MonitorRecord = {
                 }
                 break;
             case 'waitingX':
-                if(record.chain === "BTC"){
-                    if(record.refundTxHash){
-                        record.status = 'sentXPending';
-                        this.updateRecord(record);
-                    }
-                }else {
-                    if(record.btcRefundTxHash){
-                        record.status = 'sentXPending';
-                        this.updateRecord(record);
-                    }
-                }
+                // if(record.chain === "BTC"){
+                //     if(record.refundTxHash){
+                //         record.status = 'sentXPending';
+                //         this.updateRecord(record);
+                //     }
+                // }else {
+                //     if(record.btcRefundTxHash){
+                //         record.status = 'sentXPending';
+                //         this.updateRecord(record);
+                //     }
+                // }
                 break;
             case 'suspending':
                 // do nothing.
                 break;
+            case 'sentRevokeFailed':
+                break;
+            case 'sentRedeemFailed':
+                break;
             case 'waitingRevoke':
-                let txhash;
-                if(record.chain === "BTC"){
-                    txhash = record.btcRevokeTxHash;
-                }else {
-                    txhash = record.revokeTxHash;
-                }
-                if(txhash){
-                    record.status = 'sentRevokePending';
-                    this.updateRecord(record);
-                }
+                // let txhash;
+                // if(record.chain === "BTC"){
+                //     txhash = record.btcRevokeTxHash;
+                // }else {
+                //     txhash = record.revokeTxHash;
+                // }
+                // if(txhash){
+                //     record.status = 'sentRevokePending';
+                //     this.updateRecord(record);
+                // }
                 break;
             case 'sentRevokePending':
                 if(record.chain === 'BTC') {
