@@ -81,9 +81,9 @@ module.exports = class btcWanTxSendRec {
         } else {
             throw(new Error('Not supported cross chain type'));
         }
-        trans.status = 'sentXPending';
         if (value != null) {
             value.btcRefundTxHash = trans.refundTxHash;
+            value.status = 'sentXPending';
             let res = collection.update(value);
             logger.debug("refund item=");
             logger.debug(res);
@@ -108,9 +108,9 @@ module.exports = class btcWanTxSendRec {
         } else {
             throw(new Error('Not supported cross chain type'));
         }
-        trans.status = 'sentRevokePending';
         if (value != null) {
             value.btcRevokeTxHash = trans.revokeTxHash;
+            value.status = 'sentRevokePending';
             let res = collection.update(value);
             logger.debug("revoke item:", res);
         } else {
